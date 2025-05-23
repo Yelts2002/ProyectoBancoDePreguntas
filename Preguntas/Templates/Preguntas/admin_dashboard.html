@@ -1,0 +1,296 @@
+{% extends 'Preguntas/home.html' %}
+
+{% block title %}Dashboard del Administrador{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4 text-center animate__animated animate__fadeInDown">Dashboard del Administrador</h2>
+
+    <!-- Tarjetas de resumen -->
+    <div class="row mb-4 animate__animated animate__fadeIn">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-1 shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-university fa-2x mb-2"></i><br>
+                        Total Universidades
+                    </h5>
+                    <p class="card-text display-4">{{ universidades_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-1 shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success">
+                        <i class="fas fa-graduation-cap fa-2x mb-2"></i><br>
+                        Total Cursos
+                    </h5>
+                    <p class="card-text display-4">{{ cursos_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-1 shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-info">
+                        <i class="fas fa-book fa-2x mb-2"></i><br>
+                        Total Temas
+                    </h5>
+                    <p class="card-text display-4">{{ temas_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-1 shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">
+                        <i class="fas fa-question-circle fa-2x mb-2"></i><br>
+                        Total Preguntas
+                    </h5>
+                    <p class="card-text display-4">{{ preguntas_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preguntas por Usuario -->
+    <div class="card mb-4 shadow-sm animate__animated animate__fadeInLeft">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Preguntas por Usuario</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Cantidad de Preguntas</th>
+                            <th>Estado</th>
+                            <th>Acciones</th> <!-- Nueva columna para acciones -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario, info in preguntas_por_usuario.items %}
+                        <tr>
+                            <td>{{ usuario }}</td>
+                            <td>{{ info.cantidad }}</td>
+                            <td>
+                                {% if info.is_active %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Suspendido</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'toggle-user-status' usuario %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-warning btn-sm">
+                                        {% if info.is_active %}
+                                            Desactivar
+                                        {% else %}
+                                            Activar
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">No hay usuarios registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4 shadow-sm animate__animated animate__fadeIn">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Filtrar Preguntas</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" id="filtroForm" class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label for="universidad" class="form-label">Universidad</label>
+                    <select name="universidad" id="universidad" class="form-select">
+                        <option value="">Todas</option>
+                        {% for uni in universidades %}
+                        <option value="{{ uni.id }}" {% if universidad_filter|default:"" == uni.id|stringformat:"s" %}selected{% endif %}>
+                            {{ uni.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="curso" class="form-label">Curso</label>
+                    <select name="curso" id="curso" class="form-select">
+                        <option value="">Todos</option>
+                        {% for curso in cursos %}
+                        <option value="{{ curso.id }}" {% if curso_filter|default:"" == curso.id|stringformat:"s" %}selected{% endif %}>
+                            {{ curso.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="tema" class="form-label">Tema</label>
+                    <select name="tema" id="tema" class="form-select">
+                        <option value="">Todos</option>
+                        {% for tema in temas %}
+                        <option value="{{ tema.id }}" {% if tema_filter|default:"" == tema.id|stringformat:"s" %}selected{% endif %}>
+                            {{ tema.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Preguntas Recientes -->
+    <div class="card mb-4 shadow-sm animate__animated animate__fadeInRight">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0"><i class="fas fa-clock me-2"></i>Preguntas Recientes</h5>
+            <!-- Botón para exportar la tabla -->
+            <a href="{% url 'export-preguntas-recientes' %}" class="btn btn-outline-primary">
+                <i class="fas fa-file-export"></i> Exportar
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Universidad</th>
+                            <th>Curso</th>
+                            <th>Tema</th>
+                            <th>Nivel</th>
+                            <th>Fecha de Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pregunta in preguntas_recientes %}
+                        <tr>
+                            <td>{{ pregunta.usuario.user.username }}</td>
+                            <td>{{ pregunta.universidad.nombre }}</td>
+                            <td>{{ pregunta.curso.nombre }}</td>
+                            <td>{{ pregunta.tema.nombre }}</td>
+                            <td>{{ pregunta.nivel }}</td>
+                            <td>{{ pregunta.fecha_creacion|date:"Y-m-d H:i:s" }}</td>
+                            <td>
+                                <button type="button"
+                                        class="btn btn-info btn-sm"
+                                        data-url="{% url 'vista-previa' pregunta.id %}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#previewModal"
+                                        onclick="loadPdfPreview(this)">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Vista previa</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No hay preguntas recientes.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Controles de paginación -->
+            <nav aria-label="Paginación">
+                <ul class="pagination justify-content-center">
+                    {% if preguntas_recientes.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ preguntas_recientes.previous_page_number }}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&laquo;</span>
+                    </li>
+                    {% endif %}
+
+                    {% for num in preguntas_recientes.paginator.page_range %}
+                    {% if preguntas_recientes.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if preguntas_recientes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ preguntas_recientes.next_page_number }}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}" aria-label="Siguiente">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Asigna el listener a cada botón de vista previa
+    document.querySelectorAll('.load-preview').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var preguntaId = btn.getAttribute('data-id');
+            loadPreview(preguntaId);
+        });
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+        const form = document.getElementById("filtroForm");
+
+        // Detecta cambios en los filtros y envía el formulario automáticamente
+        document.querySelectorAll("#filtroForm select").forEach(select => {
+            select.addEventListener("change", function() {
+                form.submit();
+            });
+        });
+    });
+    
+function loadPdfPreview(button) {
+    const url = button.getAttribute('data-url');
+    const iframe = document.getElementById('previewFrame');
+    iframe.src = url;
+}
+</script>
+
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="previewModalLabel">Vista previa de la pregunta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <iframe id="previewFrame" src="" width="100%" height="700px" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'Preguntas/home.html' %}
+
+{% block title %}Confirmar Eliminación{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Confirmar Eliminación</h3>
+            </div>
+            <div class="card-body">
+                <p>¿Estás seguro de que deseas eliminar la pregunta "{{ pregunta.nombre }}"?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="text-end">
+                        <a href="{% url 'pregunta-list' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

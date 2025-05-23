@@ -1,0 +1,33 @@
+{% extends 'Preguntas/home.html' %}
+
+{% block title %}Eliminar Curso{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Confirmar Eliminación</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">¿Está seguro que desea eliminar el curso "{{ curso.nombre }}"?</p>
+                <p class="text-danger mb-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Esta acción eliminará todos los temas y preguntas asociadas a este curso.
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="text-end">
+                        <a href="{% url 'curso-list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Eliminar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

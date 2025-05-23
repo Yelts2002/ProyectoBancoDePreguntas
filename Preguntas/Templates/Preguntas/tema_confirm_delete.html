@@ -1,0 +1,31 @@
+{% extends 'Preguntas/home.html' %}
+
+{% block title %}Eliminar Tema{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Confirmar Eliminación</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">¿Está seguro que desea eliminar el tema "{{ tema.nombre }}"?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="text-end">
+                        <a href="{% url 'tema-list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </a>
+                        {% if user.is_staff %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Eliminar
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

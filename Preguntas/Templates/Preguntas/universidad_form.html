@@ -1,0 +1,277 @@
+{% extends 'Preguntas/home.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}Editar{% else %}Nueva{% endif %} Universidad
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">
+                    {% if form.instance.pk %}
+                        Editar Universidad
+                    {% else %}
+                        Nueva Universidad
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre</label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.nombre.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.cursos.id_for_label }}" class="form-label fw-bold">
+                            Cursos Ofrecidos
+                            <span class="badge bg-danger badge-required">Requerido</span>
+                        </label>
+                        
+                        <!-- Selector personalizado con checkboxes -->
+                        <div class="curso-selector border rounded p-0 overflow-hidden">
+                            <!-- Barra de búsqueda -->
+                            <div class="search-bar border-bottom p-2 bg-light">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="fas fa-search text-muted"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0 search-input" 
+                                           placeholder="Buscar cursos..." 
+                                           aria-label="Buscar cursos">
+                                </div>
+                            </div>
+                            
+                            <!-- Lista de checkboxes -->
+                            <div class="curso-list p-0" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Ocultar el select original pero mantenerlo para el envío del formulario -->
+                                <select name="cursos" id="{{ form.cursos.id_for_label }}" multiple style="display: none;">
+                                    {% for curso in form.cursos.field.queryset %}
+                                        <option value="{{ curso.id }}" {% if curso.id in form.cursos.value %}selected{% endif %}>
+                                            {{ curso.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                
+                                <!-- Lista de checkboxes personalizada -->
+                                <ul class="list-group list-group-flush">
+                                    {% for curso in form.cursos.field.queryset %}
+                                    <li class="list-group-item curso-item border-0 px-3 py-2">
+                                        <div class="form-check d-flex align-items-center">
+                                            <input class="form-check-input curso-checkbox" 
+                                                   type="checkbox" 
+                                                   value="{{ curso.id }}" 
+                                                   id="curso_check_{{ curso.id }}"
+                                                   {% if curso.id in form.cursos.value %}checked{% endif %}
+                                                   data-curso-nombre="{{ curso.nombre }}">
+                                            <label class="form-check-label ms-2 w-100 d-flex justify-content-between align-items-center" 
+                                                   for="curso_check_{{ curso.id }}">
+                                                <span>{{ curso.nombre }}</span>
+                                                {% if curso.creditos %}
+                                                    <small class="text-muted ms-2 badge bg-light text-dark">{{ curso.creditos }} créditos</small>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            
+                            <!-- Resumen de selección -->
+                            <div class="selected-summary p-2 bg-light border-top">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <span id="selected-count">0</span> curso(s) seleccionado(s)
+                                    </small>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-secondary clear-selection">
+                                            <i class="fas fa-times-circle me-1"></i>Limpiar
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary select-all" aria-label="Seleccionar todos los cursos">
+                                            <i class="fas fa-check-square me-1"></i>Seleccionar todos
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mostrar seleccionados -->
+                        <div class="selected-tags mt-2 d-flex flex-wrap gap-2" id="selected-tags-container"></div>
+                        
+                        {% if form.cursos.errors %}
+                            <div class="invalid-feedback d-block mt-2">
+                                <i class="fas fa-exclamation-triangle me-1"></i>{{ form.cursos.errors.0 }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle me-1 text-primary"></i>
+                            Selecciona los cursos que la universidad ofrece marcando las casillas correspondientes.
+                        </div>
+                    </div>
+                    
+                    
+
+                    <div class="text-end">
+                        <a href="{% url 'universidad-list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+
+    
+    .selected-tags .badge {
+        font-weight: normal;
+        padding: 0.5rem 0.75rem;
+        border-radius: 50px;
+        background-color: #e9ecef;
+        color: #212529;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+</style>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos DOM
+    const checkboxes = document.querySelectorAll('.curso-checkbox');
+    const selectElement = document.querySelector('#{{ form.cursos.id_for_label }}');
+    const searchInput = document.querySelector('.search-input');
+    const clearButton = document.querySelector('.clear-selection');
+    const selectedCount = document.querySelector('#selected-count');
+    const selectedTagsContainer = document.querySelector('#selected-tags-container');
+    const selectAllButton = document.querySelector('.select-all');
+    
+    // Función para actualizar el contador
+    function updateSelectedCount() {
+        const checkedBoxes = document.querySelectorAll('.curso-checkbox:checked');
+        selectedCount.textContent = checkedBoxes.length;
+    }
+    
+    // Función para actualizar los tags seleccionados
+    function updateSelectedTags() {
+        selectedTagsContainer.innerHTML = '';
+        const checkedBoxes = document.querySelectorAll('.curso-checkbox:checked');
+        
+        checkedBoxes.forEach(checkbox => {
+            const nombre = checkbox.dataset.cursoNombre;
+            const id = checkbox.value;
+            
+            const tag = document.createElement('span');
+            tag.className = 'badge';
+            tag.innerHTML = `
+                <i class="fas fa-book-open text-primary"></i>
+                ${nombre}
+                <i class="fas fa-times-circle remove-tag" data-id="${id}"></i>
+            `;
+            
+            selectedTagsContainer.appendChild(tag);
+        });
+
+        // Botón: Seleccionar todos
+        selectAllButton.addEventListener('click', function () {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateSelectOptions();
+            updateSelectedCount();
+            updateSelectedTags();
+        });
+
+        // Agregar event listeners para remover tags
+        document.querySelectorAll('.remove-tag').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const checkbox = document.querySelector(`.curso-checkbox[value="${id}"]`);
+                if (checkbox) {
+                    checkbox.checked = false;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    }
+    
+    // Función para actualizar las opciones del select original
+    function updateSelectOptions() {
+        const options = selectElement.options;
+        for (let i = 0; i < options.length; i++) {
+            const checkbox = document.querySelector(`.curso-checkbox[value="${options[i].value}"]`);
+            if (checkbox) {
+                options[i].selected = checkbox.checked;
+            }
+        }
+    }
+    
+    // Event listener para los checkboxes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectOptions();
+            updateSelectedCount();
+            updateSelectedTags();
+        });
+    });
+    
+    // Event listener para la búsqueda
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const items = document.querySelectorAll('.curso-item');
+        
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+    
+    // Event listener para el botón de limpiar
+    clearButton.addEventListener('click', function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateSelectOptions();
+        updateSelectedCount();
+        updateSelectedTags();
+    });
+    
+    // Inicializar
+    updateSelectedCount();
+    updateSelectedTags();
+    
+    // Hacer que los elementos li también sean clickeables
+    document.querySelectorAll('.curso-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (e.target !== this) return;
+            
+            const checkbox = this.querySelector('.curso-checkbox');
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change'));
+        });
+    });
+});
+</script>
+
+{% endblock %}

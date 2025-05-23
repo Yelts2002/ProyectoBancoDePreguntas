@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Preguntas{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- CSS Personalizado -->
+    <link rel="stylesheet" href="\static\home.css">
+    <link rel="stylesheet" href="\static\form.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://academiaroberthooke.com/wp-content/uploads/2023/07/logo-robert-hooke.png">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="mb-4">
+        <div class="container text-center">
+            <img src="https://academiaroberthooke.com/wp-content/uploads/2023/07/logo-robert-hooke.png" 
+                 alt="Logo de la Empresa" class="img-fluid header-image animate__animated animate__fadeInDown" style="max-height: 150px;">
+            {% if user.is_authenticated %}
+                <p class="mt-2" style="color:black">Bienvenido, <strong>{{ user.username }}</strong>!</p>
+            {% endif %}
+        </div>
+    </header>
+
+    {% with request.path as current_path %}
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <!-- Branding -->
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-book-open me-2"></i>Sistema de Preguntas
+            </a>
+
+            <!-- Botón responsive -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Contenido colapsable -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+                    <!-- Navegación principal -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'universidad-list' %}">
+                            <i class="fas fa-university me-1"></i>Universidades
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'curso-list' %}">
+                            <i class="fas fa-graduation-cap me-1"></i>Cursos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tema-list' %}">
+                            <i class="fas fa-book me-1"></i>Temas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pregunta-list' %}">
+                            <i class="fas fa-question-circle me-1"></i>Mis Preguntas
+                        </a>
+                    </li>
+
+                    <!-- Área de administración -->
+                    {% if user.is_staff %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-tools me-1"></i>Admin
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'generar-examen' %}">
+                                    <i class="fas fa-file-alt me-2"></i>Generar Examen
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'todas_las_preguntas' %}">
+                                    <i class="fas fa-database me-2"></i>Preguntas del Sistema
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin-dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard Admin
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    <!-- Usuario y logout -->
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <span class="nav-link disabled text-light">
+                            <i class="fas fa-user-circle me-1"></i>{{ user.username }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link nav-link text-white">
+                                <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                            </button>
+                        </form>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endwith %}
+
+
+    <!-- Contenido principal -->
+    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show animate__animated animate__fadeIn" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card mb-4 animate__animated animate__fadeInLeft">
+                        <div class="card-body text-center">
+                            <i class="fas fa-university text-primary fa-3x mb-3"></i>
+                            <h5 class="card-title">Universidades</h5>
+                            <p class="card-text">{{ universidades_count }} registradas</p>
+                            <a href="{% url 'universidad-list' %}" class="btn btn-primary">Gestionar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card mb-4 animate__animated animate__fadeInUp">
+                        <div class="card-body text-center">
+                            <i class="fas fa-graduation-cap text-success fa-3x mb-3"></i>
+                            <h5 class="card-title">Cursos</h5>
+                            <p class="card-text">{{ cursos_count }} registrados</p>
+                            <a href="{% url 'curso-list' %}" class="btn btn-success">Gestionar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card mb-4 animate__animated animate__fadeInUp">
+                        <div class="card-body text-center">
+                            <i class="fas fa-book text-info fa-3x mb-3"></i>
+                            <h5 class="card-title">Temas</h5>
+                            <p class="card-text">{{ temas_count }} registrados</p>
+                            <a href="{% url 'tema-list' %}" class="btn btn-info">Gestionar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card mb-4 animate__animated animate__fadeInRight">
+                        <div class="card-body text-center">
+                            <i class="fas fa-question-circle text-warning fa-3x mb-3"></i>
+                            <h5 class="card-title">Preguntas</h5>
+                            <p class="card-text">{{ preguntas_count }} registradas</p>
+                            <a href="{% url 'pregunta-list' %}" class="btn btn-warning">Gestionar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="bg-dark text-white text-center py-3 mt-4 animate__animated animate__fadeInUp">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Sistema de Preguntas Academia Robert Hooke. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+        
+    <script>
+
+        function loadPreview(preguntaId) {
+            fetch(`/preguntas/vista_previa/${preguntaId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Error en la respuesta del servidor: " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Vista previa response:", data);
+                    var modalBody = document.getElementById("modalBody");
+                    if (data.docx_text && data.docx_text.trim() !== "") {
+                        modalBody.innerHTML = `<h4>${data.pregunta_nombre}</h4>${data.docx_text}`;
+                    } else {
+                        modalBody.innerHTML = `<h4>${data.pregunta_nombre}</h4><p>No hay contenido disponible.</p>`;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error loading preview:", error);
+                    document.getElementById("modalBody").innerHTML = "<p class='text-danger'>Error al cargar el contenido.</p>";
+                });
+        }
+    </script>
+</body>
+</html>

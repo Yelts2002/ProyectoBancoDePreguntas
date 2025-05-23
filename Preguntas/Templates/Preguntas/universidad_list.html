@@ -1,0 +1,136 @@
+{% extends 'Preguntas/home.html' %}
+
+{% block title %}Universidades{% endblock %}
+
+{% block content %}
+<main class="container-fluid py-4">
+    <section class="card shadow-lg animate__animated animate__fadeIn" aria-labelledby="university-title">
+        <header class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+            <h1 class="h2 mb-0" id="university-title" >
+                <i class="fas fa-university me-2" aria-hidden="true"></i>Universidades
+            </h1>
+            <a href="{% url 'universidad-create' %}" class="btn btn-light btn-hover-effect" aria-label="Crear nueva universidad">
+                <i class="fas fa-plus me-1" aria-hidden="true"></i>Nueva Universidad
+            </a>
+        </header>
+        <div class="card-body">
+            <!-- Tabla de universidades -->
+            <div class="static-content">
+                <div class="table-responsive crisp-table" tabindex="0">
+                    <table class="table table-striped align-middle table-hover-custom text-nowrap" aria-labelledby="university-table-title">
+                        <caption class="visually-hidden" id="university-table-title">Listado de universidades y sus cursos asociados</caption>
+                        <thead class="table-dark">
+                            <tr>
+                                {% if user.is_staff %}<th scope="col">ID</th>{% endif %}                                
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Cursos</th>
+                                {% if user.is_staff %}
+                                <th scope="col" class="text-center">Acciones</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for universidad in universidades %}
+                            <tr>
+                                {% if user.is_staff %}<td class="text-break" style="max-width: 300px;">{{ universidad.id }}</td>{% endif %}                                
+                                <td class="text-break" style="max-width: 300px;">{{ universidad.nombre }}</td>
+                                <td>
+                                    <span class="badge bg-info text-dark">{{ universidad.cursos.count }}</span>
+                                    {% if universidad.cursos.count > 0 %}
+                                    <button class="btn btn-link btn-sm p-0 ms-2 text-decoration-none" 
+                                            type="button" 
+                                            data-bs-toggle="popover" 
+                                            data-bs-placement="right" 
+                                            data-bs-trigger="focus" 
+                                            title="Cursos de {{ universidad.nombre }}" 
+                                            data-bs-content="{% for curso in universidad.cursos.all %}{{ curso.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                                {% if user.is_staff %}
+                                <td class="text-center">
+                                    <div class="d-flex flex-column flex-md-row justify-content-center gap-1">
+                                        <a href="{% url 'universidad-update' universidad.pk %}" 
+                                           class="btn btn-warning btn-sm btn-hover-effect" 
+                                           aria-label="Editar {{ universidad.nombre }}">
+                                            <i class="fas fa-edit" aria-hidden="true"></i>
+                                        </a>
+                                        <a href="{% url 'universidad-delete' universidad.pk %}" 
+                                           class="btn btn-danger btn-sm btn-hover-effect" 
+                                           aria-label="Eliminar {{ universidad.nombre }}">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>
+                                        </a>
+                                        <a href="{% url 'curso-create' %}?universidad_id={{ universidad.pk }}" 
+                                           class="btn btn-success btn-sm btn-hover-effect" 
+                                           aria-label="Añadir curso a {{ universidad.nombre }}">
+                                            <i class="fas fa-plus" aria-hidden="true"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="{% if user.is_staff %}3{% else %}2{% endif %}" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-university fa-3x text-muted mb-3" aria-hidden="true"></i>
+                                        <p class="lead">No hay universidades registradas.</p>
+                                        {% if user.is_staff %}
+                                        <a href="{% url 'universidad-create' %}" class="btn btn-primary mt-2">
+                                            <i class="fas fa-plus me-1" aria-hidden="true"></i> Crear Primera Universidad
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted">Total: <strong>{{ universidades|length }}</strong> universidades</small>
+                </div>
+                {% if user.is_staff %}
+                <div>
+                    <a href="{% url 'universidad-create' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus me-1" aria-hidden="true"></i> Nueva Universidad
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Scripts para animaciones y funcionalidades -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar animaciones WOW
+    if (typeof WOW !== 'undefined') {
+        new WOW().init();
+    }
+    
+    // Inicializar popovers para mostrar listados de cursos
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    if (typeof bootstrap !== 'undefined') {
+        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+    }
+    
+    // Agregar efectos de hover a los botones
+    document.querySelectorAll('.btn-hover-effect').forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.classList.add('shadow-sm');
+        });
+        button.addEventListener('mouseleave', function() {
+            this.classList.remove('shadow-sm');
+        });
+    });
+});
+</script>
+{% endblock %}

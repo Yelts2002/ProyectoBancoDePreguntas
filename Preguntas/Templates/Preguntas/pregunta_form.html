@@ -1,0 +1,183 @@
+{% extends 'Preguntas/home.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- Formulario principal -->
+        <div class="col-lg-8 mx-auto"> <!-- La clase 'mx-auto' centra el contenedor -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-question-circle me-2"></i>{{ title }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="form-messages" class="mb-3"></div>
+                    <form id="preguntaForm" method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>{{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ field.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ field.errors.0 }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-end mt-4 pt-3 border-top">
+                            <a href="{% url 'pregunta-list' %}" class="btn btn-secondary me-2">
+                                <i class="fas fa-times me-1"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nota flotante -->
+        <div class="col-lg-4">
+            <div class="floating-note sticky-top" style="top: 20px;">
+                <div class="card h-100 border-info shadow-lg">
+                    <div class="card-header bg-info text-white d-flex align-items-center">
+                        <i class="fas fa-lightbulb me-2 fs-4"></i>
+                        <h4 class="mb-0 fw-bold">Guía para Elaboración de Preguntas</h4>
+                    </div>
+                    <div class="card-body" style="font-size: 0.95rem; line-height: 1.5;">
+                        <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+                            <strong><i class="fas fa-exclamation-triangle me-2"></i>Atención:</strong> Siga estas pautas para garantizar la calidad de las preguntas.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        
+                        <div class="guidelines-list">
+                            <div class="guideline-item mb-3 p-3 bg-light rounded">
+                                <h5 class="fw-bold text-primary"><i class="fas fa-question-circle me-2"></i>Enunciado</h5>
+                                <p class="mb-0">Incluya el origen del ejercicio (solo universidades) al final del enunciado.</p>
+                            </div>
+                            
+                            <div class="guideline-item mb-3 p-3 bg-light rounded">
+                                <h5 class="fw-bold text-primary"><i class="fas fa-key me-2"></i>Opciones de Respuesta</h5>
+                                <ul class="mb-0 ps-3">
+                                    <li>5 opciones en <span class="text-uppercase fw-bold">mayúsculas</span></li>
+                                    <li>Conceptos como oraciones completas o respuestas numéricas</li>
+                                    <li><span class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i>Clave correcta resaltada</span></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="guideline-item mb-3 p-3 bg-light rounded">
+                                <h5 class="fw-bold text-primary"><i class="fas fa-check-double me-2"></i>Solución</h5>
+                                <p class="mb-0">Debe comenzar con <span class="badge bg-dark text-white">SOLUCIÓN</span> en mayúsculas y negrita.(de tener solución), </p>
+                            </div>
+                            
+                            <div class="guideline-item mb-3 p-3 bg-light rounded">
+                                <h5 class="fw-bold text-primary"><i class="fas fa-file-alt me-2"></i>Formato</h5>
+                                <ul class="mb-0 ps-3">
+                                    <li>Sin espacios o interlineados adicionales</li>
+                                    <li>Sin numeración tipo "Ejercicio 1"</li>
+                                    <li>Texto justificado y fórmulas centradas</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="examples mt-4">
+                            <div class="example-correct mb-4">
+                                <h5 class="fw-bold text-success mb-3"><i class="fas fa-thumbs-up me-2"></i>Formato Correcto</h5>
+                                <div class="ratio" style="--bs-aspect-ratio: 130%;">
+                                    <img src="{% static 'EjemploCorrecto.JPG' %}" alt="Formato correcto" class="img-fluid rounded shadow border border-3 border-success" loading="lazy" />
+                                </div>
+                            </div>
+                            
+                            <div class="example-incorrect">
+                                <h5 class="fw-bold text-danger mb-3"><i class="fas fa-thumbs-down me-2"></i>Formato Incorrecto</h5>
+                                <div class="ratio" style="--bs-aspect-ratio: 130%;">
+                                    <img src="{% static 'EjemplosIncorrectos.JPG' %}" alt="Formato incorrecto" class="img-fluid rounded shadow border border-3 border-danger" loading="lazy" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Lógica para habilitar el campo 'id_nombre' solo si 'id_add_nombre' está marcado
+    document.getElementById('id_add_nombre').addEventListener('change', function() {
+        const nombreInput = document.getElementById('id_nombre');
+        nombreInput.disabled = !this.checked;
+        if (!this.checked) nombreInput.value = ''; // Limpiar el campo si no está habilitado
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window._cascadaStarted) return;
+        window._cascadaStarted = true;
+
+        const universidadSelect = document.getElementById('id_universidad');
+        const cursoSelect      = document.getElementById('id_curso');
+        const temaSelect       = document.getElementById('id_tema');
+
+        universidadSelect.addEventListener('change', function() {
+            resetear(cursoSelect, 'Seleccione un curso');
+            resetear(temaSelect,   'Seleccione un tema');
+
+            const uniId = this.value;
+            if (!uniId) return;
+
+            fetch(`/preguntas/ajax/load-cursos/?universidad_id=${uniId}`)
+            .then(r => r.json())
+            .then(data => {
+                cursoSelect.disabled = false;
+                // Llevar un Set para evitar duplicados
+                const vistos = new Set();
+                data.forEach(c => {
+                if (!vistos.has(c.id)) {
+                    cursoSelect.add(new Option(c.nombre, c.id));
+                    vistos.add(c.id);
+                }
+                });
+            })
+            .catch(e => console.error('Cursos error:', e));
+        });
+
+        cursoSelect.addEventListener('change', function() {
+            resetear(temaSelect, 'Seleccione un tema');
+            const cursoId = this.value;
+            if (!cursoId) return;
+
+            fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
+            .then(r => r.json())
+            .then(data => {
+                temaSelect.disabled = false;
+                const vistos = new Set();
+                data.forEach(t => {
+                if (!vistos.has(t.id)) {
+                    temaSelect.add(new Option(t.nombre, t.id));
+                    vistos.add(t.id);
+                }
+                });
+            })
+            .catch(e => console.error('Temas error:', e));
+        });
+
+        function resetear(select, placeholder) {
+            select.options.length = 0;
+            select.add(new Option(placeholder, ''));
+            select.disabled = true;
+        }
+        });
+</script>
+{% endblock %}
+{% endblock %}

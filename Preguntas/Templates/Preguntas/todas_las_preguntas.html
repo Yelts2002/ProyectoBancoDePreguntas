@@ -1,0 +1,319 @@
+{% extends 'Preguntas/home.html' %}
+
+{% block title %}Todas las Preguntas {% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <header class="page-header">
+        <h1 class="page-title">
+            <i class="icon-questions"></i>
+            Todas las preguntas del sistema
+        </h1>
+    </header>
+
+    <!-- Formulario de Filtros -->
+    <section class="filters-section">
+        <form id="filtroForm" method="get" class="filters-form">
+            <div class="form-card">
+                <div class="form-header">
+                    <h3 class="form-title">
+                        <i class="icon-filter"></i>
+                        Filtrar preguntas
+                    </h3>
+                </div>
+                
+                <div class="form-body">
+                    <div class="form-grid">
+                        <!-- Búsqueda por nombre -->
+                        <div class="form-group">
+                            <label for="id_buscar_nombre" class="form-label">
+                                <i class="icon-search"></i>
+                                Nombre de la pregunta
+                            </label>
+                            <input 
+                                type="text" 
+                                name="buscar_nombre" 
+                                id="id_buscar_nombre" 
+                                value="{{ buscar_nombre }}" 
+                                class="form-input"
+                                placeholder="Buscar por nombre..."
+                            >
+                        </div>
+
+                        <!-- Campos del formulario Django -->
+                        <div class="form-group">
+                            <label for="universidad" class="form-label">
+                                <i class="icon-university"></i>
+                                Universidad
+                            </label>
+                            {{ form.universidad }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="curso" class="form-label">
+                                <i class="icon-book"></i>
+                                Curso
+                            </label>
+                            {{ form.curso }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tema" class="form-label">
+                                <i class="icon-topic"></i>
+                                Tema
+                            </label>
+                            {{ form.tema }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nivel" class="form-label">
+                                <i class="icon-level"></i>
+                                Nivel
+                            </label>
+                            {{ form.nivel }}
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="icon-apply"></i>
+                            Aplicar filtros
+                        </button>
+                        <a href="{% url 'todas_las_preguntas' %}" class="btn btn-secondary">
+                            <i class="icon-clear"></i>
+                            Limpiar filtros
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <!-- Contador de resultados -->
+    <div class="results-info">
+        <div class="results-badge">
+            <strong>{{ total_preguntas }}</strong> preguntas encontradas
+        </div>
+    </div>
+
+    <!-- Tabla de preguntas -->
+    <section class="table-section">
+        <div class="table-container" id="pregunta-lista-contenedor">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <i class="icon-name"></i>
+                            Nombre
+                        </th>
+                        <th>
+                            <i class="icon-level"></i>
+                            Nivel
+                        </th>
+                        <th>
+                            <i class="icon-university"></i>
+                            Universidad
+                        </th>
+                        <th>
+                            <i class="icon-book"></i>
+                            Curso
+                        </th>
+                        <th>
+                            <i class="icon-topic"></i>
+                            Tema
+                        </th>
+                        <th>
+                            <i class="icon-user"></i>
+                            Usuario
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in preguntas %}
+                    <tr class="table-row">
+                        <td class="table-cell" data-label="Nombre">
+                            <div class="cell-content">
+                                <span class="question-name">{{ p.nombre }}</span>
+                            </div>
+                        </td>
+                        <td class="table-cell" data-label="Nivel">
+                            <span class="level-badge level-{{ p.nivel|lower }}">{{ p.nivel }}</span>
+                        </td>
+                        <td class="table-cell" data-label="Universidad">{{ p.universidad.nombre }}</td>
+                        <td class="table-cell" data-label="Curso">{{ p.curso.nombre }}</td>
+                        <td class="table-cell" data-label="Tema">{{ p.tema.nombre }}</td>
+                        <td class="table-cell" data-label="Usuario">
+                            <div class="user-info">
+                                <i class="icon-user-small"></i>
+                                {{ p.usuario.user.username }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-message">
+                                <i class="icon-empty"></i>
+                                <p>No hay preguntas con los filtros seleccionados.</p>
+                                <a href="{% url 'todas_las_preguntas' %}" class="btn btn-outline">Ver todas las preguntas</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Paginación -->
+    {% if preguntas.has_other_pages %}
+    <nav class="pagination-nav" aria-label="Navegación de páginas">
+        <div class="pagination">
+            {% if preguntas.has_previous %}
+                <a href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page=1" 
+                   class="pagination-link pagination-first">
+                    <i class="icon-first"></i>
+                    Primero
+                </a>
+                <a href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ preguntas.previous_page_number }}" 
+                   class="pagination-link pagination-prev">
+                    <i class="icon-prev"></i>
+                    Anterior
+                </a>
+            {% endif %}
+
+            <span class="pagination-info">
+                Página <strong>{{ preguntas.number }}</strong> de <strong>{{ preguntas.paginator.num_pages }}</strong>
+            </span>
+
+            {% if preguntas.has_next %}
+                <a href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ preguntas.next_page_number }}" 
+                   class="pagination-link pagination-next">
+                    Siguiente
+                    <i class="icon-next"></i>
+                </a>
+                <a href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ preguntas.paginator.num_pages }}" 
+                   class="pagination-link pagination-last">
+                    Último
+                    <i class="icon-last"></i>
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const universidadSelect = document.getElementById('universidad');
+    const cursoSelect = document.getElementById('curso');
+    const temaSelect = document.getElementById('tema');
+
+    // Mejorar los selectores con clases CSS
+    [universidadSelect, cursoSelect, temaSelect].forEach(select => {
+        if (select) {
+            select.classList.add('form-input');
+        }
+    });
+
+    // Función para mostrar loading
+    function showLoading(select, message) {
+        select.innerHTML = `<option value="">${message}</option>`;
+        select.disabled = true;
+    }
+
+    // Función para habilitar select
+    function enableSelect(select, defaultOption) {
+        select.disabled = false;
+        select.innerHTML = `<option value="">${defaultOption}</option>`;
+    }
+
+    if (universidadSelect) {
+        universidadSelect.addEventListener('change', function () {
+            const universidadId = this.value;
+            
+            showLoading(cursoSelect, 'Cargando cursos...');
+            enableSelect(temaSelect, 'Seleccione curso primero');
+
+            if (universidadId) {
+                fetch(`/ajax/cargar-cursos/?universidad_id=${universidadId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al cargar cursos');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        enableSelect(cursoSelect, 'Todos los cursos');
+                        data.forEach(curso => {
+                            const option = document.createElement('option');
+                            option.value = curso.id;
+                            option.textContent = curso.nombre;
+                            cursoSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        enableSelect(cursoSelect, 'Error al cargar cursos');
+                    });
+            } else {
+                enableSelect(cursoSelect, 'Seleccione universidad primero');
+                enableSelect(temaSelect, 'Seleccione curso primero');
+            }
+        });
+    }
+
+    if (cursoSelect) {
+        cursoSelect.addEventListener('change', function () {
+            const cursoId = this.value;
+            
+            showLoading(temaSelect, 'Cargando temas...');
+
+            if (cursoId) {
+                fetch(`/ajax/cargar-temas/?curso_id=${cursoId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al cargar temas');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        enableSelect(temaSelect, 'Todos los temas');
+                        data.forEach(tema => {
+                            const option = document.createElement('option');
+                            option.value = tema.id;
+                            option.textContent = tema.nombre;
+                            temaSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        enableSelect(temaSelect, 'Error al cargar temas');
+                    });
+            } else {
+                enableSelect(temaSelect, 'Seleccione curso primero');
+            }
+        });
+    }
+
+    // Mejorar el formulario con animaciones
+    const form = document.getElementById('filtroForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="icon-loading"></i> Filtrando...';
+            submitBtn.disabled = true;
+            
+            // Restaurar después de un tiempo por si hay errores
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 5000);
+        });
+    }
+});
+</script>
+
+{% endblock %}
