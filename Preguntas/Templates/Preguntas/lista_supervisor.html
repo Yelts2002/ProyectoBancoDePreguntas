@@ -62,7 +62,6 @@
                     <th scope="col">Curso</th>
                     <th scope="col">Tema</th>
                     <th scope="col">Nivel</th>
-                    <th scope="col">Contenido</th>
                     <th scope="col">Tiempo Restante</th>
                     <th scope="col" width="160">Acciones</th>
                     </tr>
@@ -78,21 +77,18 @@
                         <small class="text-muted d-block">ID:{{ pregunta.universidad.id }}</small>
                         {% endif %}
                     </td>
-
                     <td>
                         {{ pregunta.curso.nombre }}
                         {% if user.is_staff %}
                         <small class="text-muted d-block">ID:{{ pregunta.curso.id }}</small>
                         {% endif %}
                     </td>
-
                     <td>
                         {{ pregunta.tema.nombre }}
                         {% if user.is_staff %}
                         <small class="text-muted d-block">ID:{{ pregunta.tema.id }}</small>
                         {% endif %}
                     </td>
-
                     <td>
                         <span class="badge 
                         {% if pregunta.nivel == 1 %}bg-success
@@ -105,13 +101,6 @@
                         {% else %}Desconocido{% endif %}
                         </span>
                     </td>
-
-                    <td>
-                        <a href="{{ pregunta.contenido.url }}" class="btn btn-outline-success btn-sm" aria-label="Descargar contenido de la pregunta {{ pregunta.id }}">
-                        <i class="fas fa-download"></i> Descargar
-                        </a>
-                    </td>
-
                     <td>
                         {% with tiempo_expiracion=pregunta.fecha_creacion|add:"1 day" %}
                         {% if tiempo_expiracion > now %}
@@ -121,7 +110,6 @@
                         {% endif %}
                         {% endwith %}
                     </td>
-
                     <td>
                         <div class="btn-group btn-group-sm" role="group" aria-label="Acciones para pregunta {{ pregunta.id }}">
                         <button type="button"

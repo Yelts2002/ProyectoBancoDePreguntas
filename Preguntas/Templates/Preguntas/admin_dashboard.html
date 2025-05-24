@@ -68,6 +68,7 @@
                             <th>Cantidad de Preguntas</th>
                             <th>Estado</th>
                             <th>Acciones</th> <!-- Nueva columna para acciones -->
+                            <th>Roles</th>                            
                         </tr>
                     </thead>
                     <tbody>
@@ -94,6 +95,17 @@
                                     </button>
                                 </form>
                             </td>
+                            <td>
+                            <form method="post" action="{% url 'change-user-role' usuario %}" class="d-flex gap-2 align-items-center">
+                                {% csrf_token %}
+                                <select name="role" class="form-select form-select-sm" style="max-width: 150px;">
+                                {% for value, display in roles %}
+                                    <option value="{{ value }}" {% if info.role == value %}selected{% endif %}>{{ display }}</option>
+                                {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                            </form>
+                            </td>                            
                         </tr>
                         {% empty %}
                         <tr>

@@ -8,6 +8,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
 from .auth_views import exclude_supervisor
+from django.views.decorators.http import require_POST
+
 
 @exclude_supervisor
 @staff_member_required
@@ -33,7 +35,8 @@ def admin_dashboard(request):
         preguntas_count = Pregunta.objects.filter(usuario__user=user).count()
         preguntas_por_usuario[user.username] = {
             'cantidad': preguntas_count,
-            'is_active': user.userprofile.is_active  # Acceder al estado del perfil
+            'is_active': user.userprofile.is_active,
+            'role': user.userprofile.role,
         }
     
     context = {
@@ -42,6 +45,7 @@ def admin_dashboard(request):
         'temas_count': Tema.objects.count(),
         'preguntas_count': Pregunta.objects.count(),
         'preguntas_por_usuario': preguntas_por_usuario,
+        'roles': UserProfile.ROLE_CHOICES,
         'preguntas_recientes': preguntas_recientes,
         'temas': Tema.objects.all(),
         'universidades': Universidad.objects.all(),
@@ -53,6 +57,24 @@ def admin_dashboard(request):
         context[f'{campo}_filter'] = request.GET.get(campo)
     
     return render(request, 'Preguntas/admin_dashboard.html', context)
+
+
+@login_required
+@staff_member_required
+@require_POST
+def change_user_role(request, username):
+    user = get_object_or_404(User, username=username)
+    user_profile = get_object_or_404(UserProfile, user=user)
+
+    new_role = request.POST.get('role')
+    if new_role in dict(UserProfile.ROLE_CHOICES).keys():
+        user_profile.role = new_role
+        user_profile.save()
+        messages.success(request, f"Cargo de {user.username} actualizado a {dict(UserProfile.ROLE_CHOICES)[new_role]}.")
+    else:
+        messages.error(request, "No se seleccionó un cargo válido.")
+
+    return redirect('admin-dashboard')
 
 @login_required
 @staff_member_required
