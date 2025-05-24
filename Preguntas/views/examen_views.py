@@ -3,9 +3,11 @@ from django.shortcuts import render, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
+from .auth_views import exclude_supervisor
 
 from .pregunta_views import combinar_documentos
 
+@exclude_supervisor
 @staff_member_required
 def generar_examen(request):
     # Filtros

@@ -17,22 +17,120 @@
                     <div id="form-messages" class="mb-3"></div>
                     <form id="preguntaForm" method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
-                        {% for field in form %}
+
+                        <!-- UNIVERSIDAD -->
                         <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label fw-bold">
-                                <i class="fas fa-arrow-right me-2 text-primary"></i>{{ field.label }}
+                            <label for="id_universidad" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Universidad
                             </label>
-                            {{ field }}
-                            {% if field.help_text %}
+                            {{ form.universidad }}
+                            {% if form.universidad.help_text %}
                             <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>{{ field.help_text }}
+                                <i class="fas fa-info-circle me-1"></i>{{ form.universidad.help_text }}
                             </div>
                             {% endif %}
                             <div class="invalid-feedback">
-                                {{ field.errors.0 }}
+                                {{ form.universidad.errors.0 }}
                             </div>
                         </div>
-                        {% endfor %}
+
+                        <!-- CURSO -->
+                        <div class="mb-3">
+                            <label for="id_curso" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Curso
+                            </label>
+                            {{ form.curso }}
+                            {% if form.curso.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.curso.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.curso.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- TEMA -->
+                        <div class="mb-3">
+                            <label for="id_tema" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Tema
+                            </label>
+                            {{ form.tema }}
+                            {% if form.tema.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.tema.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.tema.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- NIVEL -->
+                        <div class="mb-3">
+                            <label for="id_nivel" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Nivel
+                            </label>
+                            {{ form.nivel }}
+                            {% if form.nivel.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.nivel.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.nivel.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- RESPUESTA -->
+                        <div class="mb-3">
+                            <label for="id_respuesta" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Respuesta Correcta
+                            </label>
+                            {{ form.respuesta }}
+                            {% if form.respuesta.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.respuesta.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.respuesta.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- CONTENIDO (archivo) -->
+                        <div class="mb-3">
+                            <label for="id_contenido" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Archivo de Contenido
+                            </label>
+                            {{ form.contenido }}
+                            {% if form.contenido.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.contenido.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.contenido.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- NOMBRE (readonly) -->
+                        <div class="mb-3">
+                            <label for="id_nombre" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Nombre generado
+                            </label>
+                            {{ form.nombre }}
+                            {% if form.nombre.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.nombre.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.nombre.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- BOTONES -->
                         <div class="text-end mt-4 pt-3 border-top">
                             <a href="{% url 'pregunta-list' %}" class="btn btn-secondary me-2">
                                 <i class="fas fa-times me-1"></i> Cancelar
@@ -46,9 +144,9 @@
             </div>
         </div>
 
-        <!-- Nota flotante -->
+        <!-- Nota estática -->
         <div class="col-lg-4">
-            <div class="floating-note sticky-top" style="top: 20px;">
+            <div >
                 <div class="card h-100 border-info shadow-lg">
                     <div class="card-header bg-info text-white d-flex align-items-center">
                         <i class="fas fa-lightbulb me-2 fs-4"></i>
@@ -77,7 +175,7 @@
                             
                             <div class="guideline-item mb-3 p-3 bg-light rounded">
                                 <h5 class="fw-bold text-primary"><i class="fas fa-check-double me-2"></i>Solución</h5>
-                                <p class="mb-0">Debe comenzar con <span class="badge bg-dark text-white">SOLUCIÓN</span> en mayúsculas y negrita.(de tener solución), </p>
+                                <p class="mb-0">Debe comenzar con <span class="badge bg-dark text-white">SOLUCIÓN</span> en mayúsculas y negrita. (de tener solución)</p>
                             </div>
                             
                             <div class="guideline-item mb-3 p-3 bg-light rounded">
@@ -113,14 +211,8 @@
 </div>
 
 {% block extra_js %}
-<script>
-    // Lógica para habilitar el campo 'id_nombre' solo si 'id_add_nombre' está marcado
-    document.getElementById('id_add_nombre').addEventListener('change', function() {
-        const nombreInput = document.getElementById('id_nombre');
-        nombreInput.disabled = !this.checked;
-        if (!this.checked) nombreInput.value = ''; // Limpiar el campo si no está habilitado
-    });
 
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         if (window._cascadaStarted) return;
         window._cascadaStarted = true;

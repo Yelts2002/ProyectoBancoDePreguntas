@@ -1,6 +1,6 @@
 {% extends 'Preguntas/home.html' %}
 
-{% block title %}Todas las Preguntas {% endblock %}
+{% block title %}Preguntas - Solo Vista{% endblock %}
 
 {% block content %}
 <main class="container-fluid py-4">
@@ -50,111 +50,107 @@
             </form>
         </div>
 
-        <!-- Tabla de preguntas -->
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped align-middle text-center shadow-sm rounded" aria-describedby="tabla-preguntas-desc">
-                    <caption class="visually-hidden" id="tabla-preguntas-desc">Listado de preguntas con acciones disponibles</caption>
-                    <thead class="table-dark">
-                        <tr>
-                            <th scope="col">Código Pregunta</th>
-                            <th scope="col">Creador</th>                    
-                            <th scope="col">Universidad</th>
-                            <th scope="col">Curso</th>
-                            <th scope="col">Tema</th>
-                            <th scope="col">Nivel</th>
-                            <th scope="col">Contenido</th>
-                            <th scope="col">Tiempo Restante</th>
-                            <th scope="col" width="160">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for pregunta in preguntas %}
-                        <tr>
-                            <td>{{ pregunta.nombre }}</td>
-                            <!-- Universidad -->
-                            <td>{{ pregunta.usuario.user.username }}</td>
-                            <td>
-                                {{ pregunta.universidad.nombre }}
-                                {% if user.is_staff %}
-                                <small class="text-muted d-block">ID:{{ pregunta.universidad.id }}</small>
-                                {% endif %}
-                            </td>
-                            <!-- Curso -->
-                            <td>
-                                {{ pregunta.curso.nombre }}
-                                {% if user.is_staff %}
-                                <small class="text-muted d-block">ID:{{ pregunta.curso.id }}</small>
-                                {% endif %}                                        
-                            </td>
-                            <!-- Tema -->
-                            <td>
-                                {{ pregunta.tema.nombre }}
-                                {% if user.is_staff %}
-                                <small class="text-muted d-block">ID:{{ pregunta.tema.id }}</small>
-                                {% endif %}                                        
-                            </td>
-                            <!-- Nivel -->
-                            <td>
-                                <span class="badge 
-                                    {% if pregunta.nivel == 1 %}bg-success
-                                    {% elif pregunta.nivel == 2 %}bg-warning text-dark
-                                    {% elif pregunta.nivel == 3 %}bg-danger
-                                    {% else %}bg-secondary{% endif %}">
-                                    {% if pregunta.nivel == 1 %}1 - Bajo
-                                    {% elif pregunta.nivel == 2 %}2 - Medio
-                                    {% elif pregunta.nivel == 3 %}3 - Alto
-                                    {% else %}Desconocido{% endif %}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="{{ pregunta.contenido.url }}" class="btn btn-outline-success btn-sm" aria-label="Descargar contenido de la pregunta {{ pregunta.id }}">
-                                    <i class="fas fa-download"></i> Descargar
-                                </a>
-                            </td>
-                            <td>
-                                {% with tiempo_expiracion=pregunta.fecha_creacion|add:"1 day" %}
-                                {% if tiempo_expiracion > now %}
-                                    <span class="text-success"><i class="fas fa-clock"></i> {{ tiempo_expiracion|timeuntil }} restantes</span>
-                                {% else %}
-                                    <span class="text-danger"><i class="fas fa-clock"></i> Expirada</span>
-                                {% endif %}
-                                {% endwith %}
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm" role="group" aria-label="Acciones para pregunta {{ pregunta.id }}">
-                                    <button type="button"
-                                            class="btn btn-info"
-                                            data-url="{% url 'vista-previa' pregunta.id %}"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#previewModal"
-                                            onclick="loadPdfPreview(this)">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning" aria-label="Editar pregunta">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                    <a href="{% url 'pregunta-delete' pregunta.pk %}" class="btn btn-danger" aria-label="Eliminar pregunta">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-5">
-                                <i class="fas fa-inbox fa-2x mb-3"></i>
-                                <p>No hay preguntas con los filtros seleccionados.</p>
-                                <a href="{% url 'todas_las_preguntas' %}" class="btn btn-outline-primary mt-2">
-                                    <i class="fas fa-list me-1"></i> Ver todas las preguntas
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+                <caption class="visually-hidden" id="tabla-preguntas-desc">Listado de preguntas con acciones disponibles</caption>
+                <thead class="table-dark">
+                    <tr>
+                    <th scope="col">Código Pregunta</th>
+                    <th scope="col">Creador</th>
+                    <th scope="col">Universidad</th>
+                    <th scope="col">Curso</th>
+                    <th scope="col">Tema</th>
+                    <th scope="col">Nivel</th>
+                    <th scope="col">Contenido</th>
+                    <th scope="col">Tiempo Restante</th>
+                    <th scope="col" width="160">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pregunta in preguntas %}
+                    <tr>
+                    <td>{{ pregunta.nombre }}</td>
+                    <td>{{ pregunta.usuario.user.username }}</td>
+                    <td>
+                        {{ pregunta.universidad.nombre }}
+                        {% if user.is_staff %}
+                        <small class="text-muted d-block">ID:{{ pregunta.universidad.id }}</small>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ pregunta.curso.nombre }}
+                        {% if user.is_staff %}
+                        <small class="text-muted d-block">ID:{{ pregunta.curso.id }}</small>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ pregunta.tema.nombre }}
+                        {% if user.is_staff %}
+                        <small class="text-muted d-block">ID:{{ pregunta.tema.id }}</small>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="badge 
+                        {% if pregunta.nivel == 1 %}bg-success
+                        {% elif pregunta.nivel == 2 %}bg-warning text-dark
+                        {% elif pregunta.nivel == 3 %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {% if pregunta.nivel == 1 %}1 - Bajo
+                        {% elif pregunta.nivel == 2 %}2 - Medio
+                        {% elif pregunta.nivel == 3 %}3 - Alto
+                        {% else %}Desconocido{% endif %}
+                        </span>
+                    </td>
+
+                    <td>
+                        <a href="{{ pregunta.contenido.url }}" class="btn btn-outline-success btn-sm" aria-label="Descargar contenido de la pregunta {{ pregunta.id }}">
+                        <i class="fas fa-download"></i> Descargar
+                        </a>
+                    </td>
+
+                    <td>
+                        {% with tiempo_expiracion=pregunta.fecha_creacion|add:"1 day" %}
+                        {% if tiempo_expiracion > now %}
+                            <span class="text-success"><i class="fas fa-clock"></i> {{ tiempo_expiracion|timeuntil }} restantes</span>
+                        {% else %}
+                            <span class="text-danger"><i class="fas fa-clock"></i> Expirada</span>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Acciones para pregunta {{ pregunta.id }}">
+                        <button type="button"
+                                class="btn btn-info"
+                                data-url="{% url 'vista-previa' pregunta.id %}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#previewModal"
+                                onclick="loadPdfPreview(this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        </div>
+                    </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                    <td colspan="9" class="text-center text-muted py-5">
+                        <i class="fas fa-inbox fa-2x mb-3"></i>
+                        <p>No hay preguntas con los filtros seleccionados.</p>
+                        <a href="{% url 'todas_las_preguntas' %}" class="btn btn-outline-primary mt-2">
+                        <i class="fas fa-list me-1"></i> Ver todas las preguntas
+                        </a>
+                    </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
                 </table>
             </div>
-        </div>
+            </div>
+
 
         <!-- Pie de tabla con paginación -->
         <div class="card-footer bg-white">
@@ -238,7 +234,7 @@
     </div>
 </div>
 
-<script>
+<script >
 document.addEventListener('DOMContentLoaded', function() {
     // Función para cargar la vista previa del PDF
     window.loadPdfPreview = function(button) {

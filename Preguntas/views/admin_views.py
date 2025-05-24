@@ -7,7 +7,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
+from .auth_views import exclude_supervisor
 
+@exclude_supervisor
 @staff_member_required
 def admin_dashboard(request):
     # Filtros
@@ -73,6 +75,7 @@ def toggle_user_status(request, username):
 
 
 
+@exclude_supervisor
 @login_required
 def export_preguntas_recientes(request):
     """

@@ -13,7 +13,8 @@
     </header>
 
     <!-- Formulario de filtrado -->
-    <section class="card mb-4 shadow-sm border rounded" aria-labelledby="filter-section" aria-labelledby="preguntas-section">
+    <section class="card mb-4 shadow-sm border rounded" aria-labelledby="filter-section"
+        aria-labelledby="preguntas-section">
         <div class="card-header bg-primary text-white d-flex align-items-center">
             <h2 class="h5 mb-0" id="filter-section">
                 <i class="fas fa-search me-2"></i> Filtros de Búsqueda
@@ -23,95 +24,96 @@
             <form method="get" id="filtroForm" class="row g-3">
                 <!-- Universidad -->
                 <div class="col-md-4">
-                  <label for="universidad" class="form-label fw-bold">Universidad</label>
-                  <div class="input-group">
-                    <span class="input-group-text bg-primary text-white">
-                      <i class="fas fa-university"></i>
-                    </span>
-                    <select name="universidad" id="universidad" class="form-select">
-                      <option value="">Todas</option>
-                      {% for uni in universidades %}
-                      <option value="{{ uni.id }}"
-                        {% if universidad_filter == uni.id|stringformat:"s" %}selected{% endif %}>
-                        {{ uni.nombre }}
-                      </option>
-                      {% endfor %}
-                    </select>
-                  </div>
+                    <label for="universidad" class="form-label fw-bold">Universidad</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="fas fa-university"></i>
+                        </span>
+                        <select name="universidad" id="universidad" class="form-select">
+                            <option value="">Todas</option>
+                            {% for uni in universidades %}
+                            <option value="{{ uni.id }}" {% if universidad_filter == uni.id|stringformat:"s" %}selected{% endif %}>
+                                {{ uni.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-              
+
                 <!-- Curso -->
                 <div class="col-md-4">
-                  <label for="curso" class="form-label fw-bold">Curso</label>
-                  <div class="input-group">
-                    <span class="input-group-text bg-primary text-white">
-                      <i class="fas fa-book"></i>
-                    </span>
-                    <select name="curso" id="curso" class="form-select" {% if not universidad_filter %}disabled{% endif %}>
-                      <option value="">
-                        {% if universidad_filter %}Todos los cursos{% else %}Primero seleccione Universidad{% endif %}
-                      </option>
-                      {% if universidades and universidad_filter %}
-                        {% for curso in cursos_para_uni %}
-                        <option value="{{ curso.id }}"
-                          {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
-                          {{ curso.nombre }}
-                        </option>
-                        {% endfor %}
-                      {% endif %}
-                    </select>
-                  </div>
+                    <label for="curso" class="form-label fw-bold">Curso</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="fas fa-book"></i>
+                        </span>
+                        <select name="curso" id="curso" class="form-select" {% if not universidad_filter %}disabled{% endif %}>
+                            <option value="">
+                                {% if universidad_filter %}Todos los cursos{% else %}Primero seleccione Universidad{% endif %}
+                            </option>
+                            {% if universidades and universidad_filter %}
+                            {% for curso in cursos_para_uni %}
+                            <option value="{{ curso.id }}" {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
+                                {{ curso.nombre }}
+                            </option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
                 </div>
-              
+
                 <!-- Tema -->
                 <div class="col-md-4">
-                  <label for="tema" class="form-label fw-bold">Tema</label>
-                  <div class="input-group">
-                    <span class="input-group-text bg-primary text-white">
-                      <i class="fas fa-question-circle"></i>
-                    </span>
-                    <select name="tema" id="tema" class="form-select" {% if not curso_filter %}disabled{% endif %}>
-                      <option value="">
-                        {% if curso_filter %}Todos los temas{% else %}Primero seleccione Curso{% endif %}
-                      </option>
-                      {% if curso_filter %}
-                        {% for tema in temas_para_curso %}
-                        <option value="{{ tema.id }}"
-                          {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
-                          {{ tema.nombre }}
-                        </option>
-                        {% endfor %}
-                      {% endif %}
-                    </select>
-                  </div>
+                    <label for="tema" class="form-label fw-bold">Tema</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="fas fa-question-circle"></i>
+                        </span>
+                        <select name="tema" id="tema" class="form-select" {% if not curso_filter %}disabled{% endif %}>
+                            <option value="">
+                                {% if curso_filter %}Todos los temas{% else %}Primero seleccione Curso{% endif %}
+                            </option>
+                            {% if curso_filter %}
+                            {% for tema in temas_para_curso %}
+                            <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
+                                {{ tema.nombre }}
+                            </option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
                 </div>
-              
+
                 <!-- Botón Aplicar -->
                 <div class="col-12 text-end">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-filter me-1"></i> Aplicar Filtros
                     </button>
                     <a href="{% url 'pregunta-list' %}" class="btn btn-outline-secondary">
-                       <i class="fas fa-undo me-1"></i> Restablecer
+                        <i class="fas fa-undo me-1"></i> Restablecer
                     </a>
                 </div>
-            </form>   
+            </form>
         </div>
 
-        <h2 class="h5 visually-hidden" id="preguntas-section">Lista de preguntas</h2>
         <form method="post" action="{% url 'descargar-preguntas' %}" id="preguntasForm">
             {% csrf_token %}
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover table-striped align-middle text-center shadow-sm rounded" aria-describedby="tabla-preguntas-desc">
-                            <caption class="visually-hidden" id="tabla-preguntas-desc">Listado de preguntas con acciones disponibles</caption>
+                        <table
+                            class="table table-bordered table-hover table-striped align-middle text-center shadow-sm rounded"
+                            aria-describedby="tabla-preguntas-desc">
+                            <caption class="visually-hidden" id="tabla-preguntas-desc">Listado de preguntas con acciones
+                                disponibles</caption>
                             <thead class="table-dark">
                                 <tr>
                                     <th scope="col">
                                         <div class="form-check">
-                                            <input type="checkbox" id="selectAll" class="form-check-input" aria-label="Seleccionar todas las preguntas">
-                                            <label class="form-check-label visually-hidden" for="selectAll">Seleccionar todas</label>
+                                            <input type="checkbox" id="selectAll" class="form-check-input"
+                                                aria-label="Seleccionar todas las preguntas">
+                                            <label class="form-check-label visually-hidden" for="selectAll">Seleccionar
+                                                todas</label>
                                         </div>
                                     </th>
                                     <th scope="col">Código Pregunta</th>
@@ -119,7 +121,9 @@
                                     <th scope="col">Curso</th>
                                     <th scope="col">Tema</th>
                                     <th scope="col">Nivel</th>
+                                    {% if user.is_staff %}
                                     <th scope="col">Contenido</th>
+                                    {% endif %}
                                     <th scope="col">Tiempo Restante</th>
                                     <th scope="col">Acciones</th>
                                 </tr>
@@ -129,31 +133,35 @@
                                 <tr>
                                     <td>
                                         <div class="form-check">
-                                            <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas" value="{{ pregunta.id }}" class="form-check-input pregunta-check" aria-label="Seleccionar pregunta {{ pregunta.id }}">
-                                            <label class="form-check-label visually-hidden" for="pregunta-{{ pregunta.id }}">Seleccionar pregunta {{ pregunta.id }}</label>
+                                            <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas"
+                                                value="{{ pregunta.id }}" class="form-check-input pregunta-check"
+                                                aria-label="Seleccionar pregunta {{ pregunta.id }}">
+                                            <label class="form-check-label visually-hidden"
+                                                for="pregunta-{{ pregunta.id }}">Seleccionar pregunta {{ pregunta.id
+                                                }}</label>
                                         </div>
                                     </td>
                                     <td>{{ pregunta.nombre }}</td>
                                     <!-- Universidad -->
                                     <td>
-                                    {{ pregunta.universidad.nombre }}
-                                    {% if user.is_staff %}
+                                        {{ pregunta.universidad.nombre }}
+                                        {% if user.is_staff %}
                                         ID:{{ pregunta.universidad.id }}
-                                    {% endif %}
+                                        {% endif %}
                                     </td>
                                     <!-- Curso -->
                                     <td>
-                                    {{ pregunta.curso.nombre }}
-                                    {% if user.is_staff %}
-                                    ID:{{ pregunta.curso.id }}
-                                    {% endif %}                                        
+                                        {{ pregunta.curso.nombre }}
+                                        {% if user.is_staff %}
+                                        ID:{{ pregunta.curso.id }}
+                                        {% endif %}
                                     </td>
                                     <!-- Tema -->
                                     <td>
-                                    {{ pregunta.tema.nombre }}
-                                    {% if user.is_staff %}
-                                    ID:{{ pregunta.tema.id }}
-                                    {% endif %}                                        
+                                        {{ pregunta.tema.nombre }}
+                                        {% if user.is_staff %}
+                                        ID:{{ pregunta.tema.id }}
+                                        {% endif %}
                                     </td>
                                     <!-- Nivel -->
                                     <td>
@@ -168,36 +176,41 @@
                                             {% else %}Desconocido{% endif %}
                                         </span>
                                     </td>
+                                    {% if user.is_staff %}
                                     <td>
-                                        <a href="{{ pregunta.contenido.url }}" class="btn btn-outline-success btn-sm" aria-label="Descargar contenido de la pregunta {{ pregunta.id }}">
+                                        <a href="{{ pregunta.contenido.url }}" class="btn btn-outline-success btn-sm"
+                                            aria-label="Descargar contenido de la pregunta {{ pregunta.id }}">
                                             <i class="fas fa-download" aria-hidden="true"></i> Descargar
                                         </a>
                                     </td>
+                                    {% endif %}
                                     <td>
                                         {% with tiempo_expiracion=pregunta.fecha_creacion|add:"1 day" %}
                                         {% if tiempo_expiracion > now %}
-                                            <span class="text-success"><i class="fas fa-clock" aria-hidden="true"></i> {{ tiempo_expiracion|timeuntil }} restantes</span>
+                                        <span class="text-success"><i class="fas fa-clock" aria-hidden="true"></i> {{
+                                            tiempo_expiracion|timeuntil }} restantes</span>
                                         {% else %}
-                                            <span class="text-danger"><i class="fas fa-clock" aria-hidden="true"></i> Expirada</span>
+                                        <span class="text-danger"><i class="fas fa-clock" aria-hidden="true"></i>
+                                            Expirada</span>
                                         {% endif %}
                                         {% endwith %}
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group" aria-label="Acciones para pregunta {{ pregunta.id }}">
-                                            <button type="button"
-                                                    class="btn btn-info btn-sm"
-                                                    data-url="{% url 'vista-previa' pregunta.id %}"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#previewModal"
-                                                    onclick="loadPdfPreview(this)">
+                                        <div class="btn-group" role="group"
+                                            aria-label="Acciones para pregunta {{ pregunta.id }}">
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                data-url="{% url 'vista-previa' pregunta.id %}" data-bs-toggle="modal"
+                                                data-bs-target="#previewModal" onclick="loadPdfPreview(this)">
                                                 <i class="fas fa-eye" aria-hidden="true"></i>
                                                 <span class="visually-hidden">Vista previa</span>
                                             </button>
-                                            <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning btn-sm" aria-label="Editar pregunta">
+                                            <a href="{% url 'pregunta-update' pregunta.id %}"
+                                                class="btn btn-warning btn-sm" aria-label="Editar pregunta">
                                                 <i class="fas fa-pencil-alt" aria-hidden="true"></i>
                                                 <span class="visually-hidden">Editar</span>
                                             </a>
-                                            <a href="{% url 'pregunta-delete' pregunta.pk %}" class="btn btn-danger btn-sm" aria-label="Eliminar pregunta">
+                                            <a href="{% url 'pregunta-delete' pregunta.pk %}"
+                                                class="btn btn-danger btn-sm" aria-label="Eliminar pregunta">
                                                 <i class="fas fa-trash" aria-hidden="true"></i>
                                                 <span class="visually-hidden">Eliminar</span>
                                             </a>
@@ -215,11 +228,15 @@
                             </tbody>
                         </table>
                     </div>
+                    {% if user.is_staff %}
                     <div class="mt-3">
-                        <button type="submit" class="btn btn-success" id="btnDescargar" disabled aria-label="Descargar preguntas seleccionadas">
+                        <button type="submit" class="btn btn-success" id="btnDescargar" disabled
+                            aria-label="Descargar preguntas seleccionadas">
                             <i class="fas fa-download" aria-hidden="true"></i> Descargar Seleccionadas
                         </button>
                     </div>
+                    {% endif %}
+
                 </div>
             </div>
         </form>
@@ -242,119 +259,119 @@
 
 {% block extra_js %}
 <script>
-function loadPdfPreview(button) {
-    const url = button.getAttribute('data-url');
-    const iframe = document.getElementById('previewFrame');
-    iframe.src = url;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Aplicar clase form-control a todos los selects en el formulario de filtro
-    document.querySelectorAll('#filtroForm select').forEach(select => {
-        select.classList.add('form-control');
-        // Añadimos atributos de accesibilidad
-        if (!select.hasAttribute('aria-label')) {
-            select.setAttribute('aria-label', select.previousElementSibling?.textContent || 'Filtro');
-        }
-    });
-    
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.pregunta-check');
-    const btnDescargar = document.getElementById('btnDescargar');
-    const form = document.getElementById("filtroForm");
-
-    // Gestión de la selección de todos los checkboxes
-    selectAll?.addEventListener('change', () => {
-        checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
-        updateDownloadButton();
-    });
-    
-    // Actualiza el estado del botón de descarga cuando cambia algún checkbox
-    checkboxes.forEach(checkbox => checkbox.addEventListener('change', updateDownloadButton));
-    
-    function updateDownloadButton() {
-        const haySeleccionados = document.querySelectorAll('.pregunta-check:checked').length > 0;
-        btnDescargar.disabled = !haySeleccionados;
-        // Actualizamos ARIA para mejorar accesibilidad
-        btnDescargar.setAttribute('aria-disabled', !haySeleccionados);
+    function loadPdfPreview(button) {
+        const url = button.getAttribute('data-url');
+        const iframe = document.getElementById('previewFrame');
+        iframe.src = url;
     }
-    
-    // Función para cargar opciones dinámicas en los selects
-    async function loadOptions(url, targetSelect, defaultText) {
-        try {
-            targetSelect.setAttribute('aria-busy', 'true');
-            const response = await fetch(url);
-            
-            if (!response.ok) throw new Error('Error en la respuesta del servidor');
-            
-            const data = await response.json();
-            targetSelect.innerHTML = `<option value="">${defaultText}</option>`;
-            data.forEach(item => targetSelect.add(new Option(item.nombre, item.id)));
-        } catch (error) {
-            console.error('Error cargando opciones:', error);
-            targetSelect.innerHTML = `<option value="">Error al cargar datos</option>`;
-        } finally {
-            targetSelect.setAttribute('aria-busy', 'false');
-        }
-    }
-    
-  
-    
-    const uniSel   = document.getElementById('universidad');
-    const cursoSel = document.getElementById('curso');
-    const temaSel  = document.getElementById('tema');
 
-    // Al cambiar Universidad → cargar cursos
-    uniSel.addEventListener('change', () => {
-        const id = uniSel.value;
-        cursoSel.disabled = true;
-        temaSel.disabled  = true;
-        cursoSel.innerHTML = '<option>Cargando…</option>';
-        temaSel.innerHTML  = '<option>Seleccione curso primero</option>';
-
-        if (!id) {
-        cursoSel.innerHTML = '<option>Primero seleccione Universidad</option>';
-        return;
-        }
-        fetch(`{% url 'load_cursos' %}?universidad_id=${id}`)
-        .then(r => r.ok ? r.json() : Promise.reject(r.status))
-        .then(data => {
-            cursoSel.disabled = false;
-            cursoSel.innerHTML = '<option value="">Todos los cursos</option>';
-            data.forEach(c => cursoSel.add(new Option(c.nombre, c.id)));
-        })
-        .catch(() => {
-            cursoSel.disabled = false;
-            cursoSel.innerHTML = '<option>Error al cargar</option>';
+    document.addEventListener('DOMContentLoaded', function () {
+        // Aplicar clase form-control a todos los selects en el formulario de filtro
+        document.querySelectorAll('#filtroForm select').forEach(select => {
+            select.classList.add('form-control');
+            // Añadimos atributos de accesibilidad
+            if (!select.hasAttribute('aria-label')) {
+                select.setAttribute('aria-label', select.previousElementSibling?.textContent || 'Filtro');
+            }
         });
-    });
 
-    // Al cambiar Curso → cargar temas
-    cursoSel.addEventListener('change', () => {
-        const id = cursoSel.value;
-        temaSel.disabled = true;
-        temaSel.innerHTML = '<option>Cargando…</option>';
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.pregunta-check');
+        const btnDescargar = document.getElementById('btnDescargar');
+        const form = document.getElementById("filtroForm");
 
-        if (!id) {
-        temaSel.innerHTML = '<option>Primero seleccione Curso</option>';
-        return;
-        }
-        fetch(`{% url 'load_temas' %}?curso_id=${id}`)
-        .then(r => r.ok ? r.json() : Promise.reject(r.status))
-        .then(data => {
-            temaSel.disabled = false;
-            temaSel.innerHTML = '<option value="">Todos los temas</option>';
-            data.forEach(t => temaSel.add(new Option(t.nombre, t.id)));
-        })
-        .catch(() => {
-            temaSel.disabled = false;
-            temaSel.innerHTML = '<option>Error al cargar</option>';
+        // Gestión de la selección de todos los checkboxes
+        selectAll?.addEventListener('change', () => {
+            checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
+            updateDownloadButton();
         });
-    });
 
-    // Auto‐submit solo al elegir Tema
-    temaSel.addEventListener('change', () => form.submit());
-});
+        // Actualiza el estado del botón de descarga cuando cambia algún checkbox
+        checkboxes.forEach(checkbox => checkbox.addEventListener('change', updateDownloadButton));
+
+        function updateDownloadButton() {
+            const haySeleccionados = document.querySelectorAll('.pregunta-check:checked').length > 0;
+            btnDescargar.disabled = !haySeleccionados;
+            // Actualizamos ARIA para mejorar accesibilidad
+            btnDescargar.setAttribute('aria-disabled', !haySeleccionados);
+        }
+
+        // Función para cargar opciones dinámicas en los selects
+        async function loadOptions(url, targetSelect, defaultText) {
+            try {
+                targetSelect.setAttribute('aria-busy', 'true');
+                const response = await fetch(url);
+
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+                const data = await response.json();
+                targetSelect.innerHTML = `<option value="">${defaultText}</option>`;
+                data.forEach(item => targetSelect.add(new Option(item.nombre, item.id)));
+            } catch (error) {
+                console.error('Error cargando opciones:', error);
+                targetSelect.innerHTML = `<option value="">Error al cargar datos</option>`;
+            } finally {
+                targetSelect.setAttribute('aria-busy', 'false');
+            }
+        }
+
+
+
+        const uniSel = document.getElementById('universidad');
+        const cursoSel = document.getElementById('curso');
+        const temaSel = document.getElementById('tema');
+
+        // Al cambiar Universidad → cargar cursos
+        uniSel.addEventListener('change', () => {
+            const id = uniSel.value;
+            cursoSel.disabled = true;
+            temaSel.disabled = true;
+            cursoSel.innerHTML = '<option>Cargando…</option>';
+            temaSel.innerHTML = '<option>Seleccione curso primero</option>';
+
+            if (!id) {
+                cursoSel.innerHTML = '<option>Primero seleccione Universidad</option>';
+                return;
+            }
+            fetch(`{% url 'load_cursos' %}?universidad_id=${id}`)
+                .then(r => r.ok ? r.json() : Promise.reject(r.status))
+                .then(data => {
+                    cursoSel.disabled = false;
+                    cursoSel.innerHTML = '<option value="">Todos los cursos</option>';
+                    data.forEach(c => cursoSel.add(new Option(c.nombre, c.id)));
+                })
+                .catch(() => {
+                    cursoSel.disabled = false;
+                    cursoSel.innerHTML = '<option>Error al cargar</option>';
+                });
+        });
+
+        // Al cambiar Curso → cargar temas
+        cursoSel.addEventListener('change', () => {
+            const id = cursoSel.value;
+            temaSel.disabled = true;
+            temaSel.innerHTML = '<option>Cargando…</option>';
+
+            if (!id) {
+                temaSel.innerHTML = '<option>Primero seleccione Curso</option>';
+                return;
+            }
+            fetch(`{% url 'load_temas' %}?curso_id=${id}`)
+                .then(r => r.ok ? r.json() : Promise.reject(r.status))
+                .then(data => {
+                    temaSel.disabled = false;
+                    temaSel.innerHTML = '<option value="">Todos los temas</option>';
+                    data.forEach(t => temaSel.add(new Option(t.nombre, t.id)));
+                })
+                .catch(() => {
+                    temaSel.disabled = false;
+                    temaSel.innerHTML = '<option>Error al cargar</option>';
+                });
+        });
+
+        // Auto‐submit solo al elegir Tema
+        temaSel.addEventListener('change', () => form.submit());
+    });
 </script>
 {% endblock %}
 

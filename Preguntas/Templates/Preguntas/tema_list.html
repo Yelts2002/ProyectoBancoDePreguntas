@@ -9,9 +9,11 @@
       <h1 class="h2 mb-0" id="temas-title">
         <i class="fas fa-book-open me-2"></i>Temas
       </h1>
+      {% if user.is_staff %}
       <a href="{% url 'tema-create' %}" class="btn btn-light btn-sm" aria-label="Crear nuevo tema">
         <i class="fas fa-plus me-1"></i>Nuevo Tema
       </a>
+      {% endif %}
     </header>
 
     <div class="card-body">
@@ -31,14 +33,10 @@
                 <span class="input-group-text bg-primary text-white">
                   <i class="fas fa-book"></i>
                 </span>
-                <select name="curso"
-                        id="curso"
-                        class="form-select"
-                        aria-label="Filtrar por curso">
+                <select name="curso" id="curso" class="form-select" aria-label="Filtrar por curso">
                   <option value="">Todos los cursos</option>
                   {% for curso in cursos %}
-                  <option value="{{ curso.id }}"
-                    {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
+                  <option value="{{ curso.id }}" {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
                     {{ curso.nombre }}
                   </option>
                   {% endfor %}
@@ -53,19 +51,14 @@
                 <span class="input-group-text bg-primary text-white">
                   <i class="fas fa-question-circle"></i>
                 </span>
-                <select name="tema"
-                        id="tema"
-                        class="form-select"
-                        aria-label="Filtrar por tema"
-                        disabled>
+                <select name="tema" id="tema" class="form-select" aria-label="Filtrar por tema" disabled>
                   <option value="">Seleccione un tema</option>
                   {% if tema_filter and temas_para_curso %}
-                    {% for tema in temas_para_curso %}
-                    <option value="{{ tema.id }}"
-                      {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
-                      {{ tema.nombre }}
-                    </option>
-                    {% endfor %}
+                  {% for tema in temas_para_curso %}
+                  <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
+                    {{ tema.nombre }}
+                  </option>
+                  {% endfor %}
                   {% endif %}
                 </select>
               </div>
@@ -107,12 +100,9 @@
                 <td>
                   <span class="badge bg-info text-dark">{{ tema.pregunta_set.count }}</span>
                   {% if tema.pregunta_set.count %}
-                  <button class="btn btn-link btn-sm p-0 ms-2 text-decoration-none"
-                          data-bs-toggle="popover"
-                          data-bs-trigger="focus"
-                          data-bs-html="true"
-                          title="Preguntas de {{ tema.nombre }}"
-                          data-bs-content="{% for p in tema.pregunta_set.all %}{{ p.nombre }}{% if not forloop.last %}<br>{% endif %}{% endfor %}">
+                  <button class="btn btn-link btn-sm p-0 ms-2 text-decoration-none" data-bs-toggle="popover"
+                    data-bs-trigger="focus" data-bs-html="true" title="Preguntas de {{ tema.nombre }}"
+                    data-bs-content="{% for p in tema.pregunta_set.all %}{{ p.nombre }}{% if not forloop.last %}<br>{% endif %}{% endfor %}">
                     <i class="fas fa-info-circle"></i>
                   </button>
                   {% endif %}
@@ -175,43 +165,43 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Popovers
-  document.querySelectorAll('[data-bs-toggle="popover"]')
-          .forEach(el => new bootstrap.Popover(el));
+  document.addEventListener('DOMContentLoaded', function () {
+    // Popovers
+    document.querySelectorAll('[data-bs-toggle="popover"]')
+      .forEach(el => new bootstrap.Popover(el));
 
-  const cursoSel = document.getElementById('curso');
-  const temaSel  = document.getElementById('tema');
-  const filtro   = document.getElementById('filtroForm');
+    const cursoSel = document.getElementById('curso');
+    const temaSel = document.getElementById('tema');
+    const filtro = document.getElementById('filtroForm');
 
-  cursoSel.addEventListener('change', function() {
-    const id = this.value;
-    temaSel.disabled = true;
-    temaSel.innerHTML = '<option value="">Cargando...</option>';
+    cursoSel.addEventListener('change', function () {
+      const id = this.value;
+      temaSel.disabled = true;
+      temaSel.innerHTML = '<option value="">Cargando...</option>';
 
-    if (!id) {
-      temaSel.innerHTML = '<option value="">Seleccione un tema</option>';
-      return;
-    }
-
-    fetch(`{% url 'load_temas' %}?curso_id=${id}`)
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(data => {
+      if (!id) {
         temaSel.innerHTML = '<option value="">Seleccione un tema</option>';
-        temaSel.disabled = false;
-        data.forEach(t => temaSel.add(new Option(t.nombre, t.id)));
-      })
-      .catch(() => {
-        temaSel.innerHTML = '<option value="">Error</option>';
-        temaSel.disabled = false;
-      });
-  });
+        return;
+      }
 
-  // Auto-submit SOLO al cambiar el tema
-  temaSel.addEventListener('change', function() {
-    filtro.submit();
+      fetch(`{% url 'load_temas' %}?curso_id=${id}`)
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(data => {
+          temaSel.innerHTML = '<option value="">Seleccione un tema</option>';
+          temaSel.disabled = false;
+          data.forEach(t => temaSel.add(new Option(t.nombre, t.id)));
+        })
+        .catch(() => {
+          temaSel.innerHTML = '<option value="">Error</option>';
+          temaSel.disabled = false;
+        });
+    });
+
+    // Auto-submit SOLO al cambiar el tema
+    temaSel.addEventListener('change', function () {
+      filtro.submit();
+    });
   });
-});
 
 </script>
 {% endblock %}

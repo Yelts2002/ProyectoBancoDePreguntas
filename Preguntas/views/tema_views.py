@@ -3,7 +3,7 @@ from ..models import Tema, Universidad, Curso
 from ..forms import TemaForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .mixins import AdminRequiredMixin, SuccessMessageMixin
+from .mixins import AdminRequiredMixin, SuccessMessageMixin, ExcludeSupervisorMixin
 
 #CRUDS DE TEMAS
 class TemaListView(LoginRequiredMixin, ListView):
@@ -12,9 +12,7 @@ class TemaListView(LoginRequiredMixin, ListView):
     context_object_name = 'temas'
 
     def get_queryset(self):
-        # Se carga la relación de Universidad a través de Curso
         queryset = super().get_queryset().select_related('curso')
-
         filtros = {}
 
         curso_id = self.request.GET.get('curso')
@@ -23,7 +21,6 @@ class TemaListView(LoginRequiredMixin, ListView):
         if curso_id:
             filtros['curso_id'] = curso_id
         if universidad_id:
-            # Se filtra a través de la relación ManyToMany entre Universidad y Curso
             filtros['curso__universidades__id'] = universidad_id
 
         return queryset.filter(**filtros) if filtros else queryset
@@ -38,8 +35,7 @@ class TemaListView(LoginRequiredMixin, ListView):
         })
         return context
 
-
-class TemaCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class TemaCreateView(ExcludeSupervisorMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Tema
     form_class = TemaForm
     template_name = 'Preguntas/tema_form.html'
@@ -53,16 +49,14 @@ class TemaCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             initial['curso'] = Curso.objects.get(id=curso_id)
         return initial
 
-
-class TemaUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class TemaUpdateView(ExcludeSupervisorMixin, LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Tema
     form_class = TemaForm
     template_name = 'Preguntas/tema_form.html'
     success_url = reverse_lazy('tema-list')
     success_message = 'Tema actualizado exitosamente.'
 
-
-class TemaDeleteView(AdminRequiredMixin, SuccessMessageMixin, DeleteView):
+class TemaDeleteView(ExcludeSupervisorMixin, AdminRequiredMixin, SuccessMessageMixin, DeleteView):
     model = Tema
     template_name = 'Preguntas/tema_confirm_delete.html'
     success_url = reverse_lazy('tema-list')

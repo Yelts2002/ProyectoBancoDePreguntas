@@ -1,6 +1,7 @@
 from django import forms
 from .models import Universidad, Curso, Tema, Pregunta, User
 from django.contrib.auth.forms import UserCreationForm
+from .models import UserProfile
 
 class UniversidadForm(forms.ModelForm):
     class Meta:
@@ -42,19 +43,18 @@ class TemaForm(forms.ModelForm):
         }
 
 class PreguntaForm(forms.ModelForm):
-    add_nombre = forms.BooleanField(required=False, label="¿Deseas añadir un nombre?")
 
     class Meta:
         model = Pregunta
-        fields = ['universidad', 'curso', 'tema', 'nivel', 'respuesta', 'nombre', 'contenido']
+        fields = ['universidad', 'curso', 'tema', 'nivel', 'respuesta','contenido', 'nombre']
         widgets = {
             'universidad': forms.Select(attrs={'class': 'form-control'}),
             'curso': forms.Select(attrs={'class': 'form-control'}),
             'tema': forms.Select(attrs={'class': 'form-control'}),
             'nivel': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
             'respuesta': forms.Select(attrs={'class': 'form-control'}),
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'contenido': forms.FileInput(attrs={'class': 'form-control'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),            
         }
 
     def __init__(self, *args, **kwargs):
@@ -154,12 +154,32 @@ class CustomUserCreationForm(UserCreationForm):
         label="Apellido",
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'})
     )
-
+    role = forms.ChoiceField(
+        choices=UserProfile.ROLE_CHOICES,
+        required=True,
+        label="Rol",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2']
+        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2', 'role']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
             'password1': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
             'password2': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar contraseña'}),
         }
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+
+        # Asigna campos adicionales antes de guardar
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        if commit:
+            user.save()
+
+            # Aquí es donde se asigna el rol
+            user.userprofile.role = self.cleaned_data['role']
+            user.userprofile.save()
+
+        return user

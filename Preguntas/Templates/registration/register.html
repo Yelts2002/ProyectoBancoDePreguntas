@@ -1,3 +1,4 @@
+
 {% extends 'Preguntas/home.html' %}
 
 {% block title %}Registro de Usuario{% endblock %}
@@ -64,6 +65,15 @@
                             {{ form.last_name }}
                         </div>
 
+                        <!-- Cargo -->                        
+                        <div class="mb-3">
+                            <label for="id_role" class="form-label">Rol</label>
+                            {{ form.role }}
+                            {% if form.role.errors %}
+                                <div class="text-danger small mt-1">{{ form.role.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
                         <!-- Contraseña -->
                         <div class="mb-3">
                             <label for="id_password1" class="form-label fw-bold">
@@ -106,10 +116,6 @@
                     </form>
 
                     <hr class="my-4">
-
-                    <div class="text-center">
-                        <p class="mb-0">¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="fw-bold text-primary">Iniciar sesión</a></p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -124,6 +130,7 @@
             btn.addEventListener('click', function () {
                 const inputId = this.getAttribute('data-target');
                 const input = document.getElementById(inputId);
+                if (!input) return;
                 const icon = this.querySelector('i');
     
                 if (input.type === 'password') {

@@ -12,20 +12,13 @@
     --transition: all 0.3s ease-in-out;
 }
 
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
+body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9fa;
     color: #333;
-}
-
-main {
-    flex: 1;
     padding-bottom: 60px;
+    min-height: 100vh;
+    position: relative;
 }
 
 .h2, h2 {
@@ -41,7 +34,7 @@ header {
 }
 
 .custom-header {
-    background-color: var(--primary);
+    background-color: #a71e52;
 }
 
 .header-image {
@@ -54,7 +47,7 @@ header {
 
 /* Navbar */
 .navbar {
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    background: linear-gradient(var(--primary));
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -101,7 +94,7 @@ header {
 }
 
 .card:hover .fas {
-    transform: scale(1.1) rotate(2deg);
+    transform: scale(1.1) rotate(5deg);
 }
 
 /* Botones */
@@ -145,8 +138,11 @@ header {
 
 /* Footer */
 footer {
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    background: linear-gradient(var(--primary));
     padding: 15px 0;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
     color: #fff;
     text-align: center;
 }
@@ -164,19 +160,13 @@ footer {
     font-weight: 500;
 }
 
-.table td,
-.table th {
+.table td, .table th {
     padding: 0.75rem;
     vertical-align: middle;
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
     background-color: rgba(0, 0, 0, 0.02);
-}
-
-/* Tabla responsiva */
-.table-responsive {
-    overflow-x: auto;
 }
 
 /* Modal */
@@ -223,8 +213,7 @@ footer {
 }
 
 /* Elementos interactivos */
-a,
-button {
+a, button {
     transition: var(--transition);
 }
 
@@ -241,29 +230,29 @@ button {
 /* Media Queries */
 @media (max-width: 992px) {
     .navbar-nav {
-        margin-top: 10px;
+    margin-top: 10px;
     }
 
     .nav-link {
-        padding: 10px;
-        margin: 2px 0;
+    padding: 10px;
+    margin: 2px 0;
     }
 }
 
 @media (max-width: 768px) {
     header {
-        padding: 15px 0;
+    padding: 15px 0;
     }
 
     .header-image {
-        max-height: 100px;
+    max-height: 100px;
     }
 
     .card {
-        margin-bottom: 20px;
+    margin-bottom: 20px;
     }
 
     body {
-        padding-bottom: 80px;
+    padding-bottom: 80px;
     }
 }

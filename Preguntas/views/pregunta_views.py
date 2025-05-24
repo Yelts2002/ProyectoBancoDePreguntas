@@ -1,37 +1,47 @@
+# Importaciones relativas del proyecto
 from ..models import Universidad, Tema, Curso, Pregunta, UserProfile
 from ..forms import Pregunta, FiltroPreguntaForm, PreguntaForm
+
+# Django - shortcuts y decoradores
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from datetime import timedelta
-from django.utils import timezone
-from django.contrib import messages
-from django.utils.text import slugify
-from docx.shared import Pt, Inches  # Para tamaño de fuente y los márgenes del doc final xd 
-from docx.oxml import OxmlElement, ns
-from django.http import HttpResponse, FileResponse, Http404
-from collections import defaultdict
-import base64
-from django.conf import settings
-from django.views.decorators.clickjacking import xframe_options_exempt
-from django.core.cache import cache
-import logging
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.core.cache import cache
+from django.http import HttpResponse, FileResponse, Http404
+from django.conf import settings
+from django.utils import timezone
+from django.utils.text import slugify
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.contrib import messages
 
+# Python estándar
+import os
+import io
+import logging
+from collections import defaultdict
+from datetime import timedelta
 
-# Librerías de terceros
+# Librerías de terceros para manejo de documentos DOCX
 from docx import Document
 from docxcompose.composer import Composer
+
 try:
     from docxcompose.composer import ImportFormatMode
 except ImportError:
     ImportFormatMode = None
 
-import io,os
-
+from docx.shared import Pt, Inches  # Tamaño de fuente y márgenes
+from docx.oxml import OxmlElement, ns
 from docx.oxml.ns import qn
 
+# Importación de vistas de autenticación propias
+from .auth_views import exclude_supervisor
+
+
 # Gestión de Preguntas
+@exclude_supervisor
 @login_required
 def pregunta_list(request):
     # Perfil del usuario
@@ -79,6 +89,38 @@ def pregunta_list(request):
     return render(request, 'Preguntas/pregunta_list.html', context)
 
 @login_required
+def pregunta_list_supervisor(request):
+    qs = Pregunta.objects.select_related('usuario__user', 'universidad', 'curso', 'tema').all()
+
+    buscar_nombre = request.GET.get('nombre')
+    if buscar_nombre:
+        qs = qs.filter(nombre__icontains=buscar_nombre)
+
+    buscar_usuario = request.GET.get('usuario')
+    if buscar_usuario:
+        qs = qs.filter(usuario_id=buscar_usuario)
+
+    qs = qs.order_by('-fecha_creacion')
+
+    paginator = Paginator(qs, 20)
+    page = request.GET.get('page')
+    qs_paginated = paginator.get_page(page)
+
+    from django.contrib.auth.models import User
+    usuarios = User.objects.all()
+
+    context = {
+        'preguntas': qs_paginated,
+        'buscar_nombre': buscar_nombre,
+        'usuarios': usuarios,
+        'buscar_usuario': buscar_usuario,
+    }
+
+    return render(request, 'Preguntas/lista_supervisor.html', context)
+
+
+
+@login_required
 def pregunta_create(request):
     if request.method == 'POST':
         form = PreguntaForm(request.POST, request.FILES)
@@ -90,16 +132,15 @@ def pregunta_create(request):
             pregunta.usuario = user_profile
 
             # Asignar nombre solo si se solicita, si no se genera automáticamente
-            if form.cleaned_data['add_nombre']:
-                pregunta.nombre = form.cleaned_data['nombre']
-            else:
-                count = Pregunta.objects.filter(
-                    universidad=pregunta.universidad,
-                    curso=pregunta.curso,
-                    tema=pregunta.tema,
-                    nivel=pregunta.nivel
-                ).count() + 1
-                pregunta.nombre = f"{pregunta.universidad.id}{pregunta.curso.id}{pregunta.tema.id}{pregunta.nivel}{count}"
+            pregunta.nombre = form.cleaned_data['nombre']
+    
+            count = Pregunta.objects.filter(
+                universidad=pregunta.universidad,
+                curso=pregunta.curso,
+                tema=pregunta.tema,
+                nivel=pregunta.nivel
+            ).count() + 1
+            pregunta.nombre = f"{pregunta.universidad.id}{pregunta.curso.id}{pregunta.tema.id}{pregunta.nivel}{count}"
 
             # Verificar si los campos obligatorios (universidad, curso, tema) no están vacíos
             if not pregunta.universidad or not pregunta.curso or not pregunta.tema:
@@ -126,6 +167,7 @@ def pregunta_create(request):
     })
 
 
+@exclude_supervisor
 @login_required
 def pregunta_update(request, pk):
     try:
@@ -134,8 +176,11 @@ def pregunta_update(request, pk):
         messages.error(request, 'No se encontró el perfil de usuario.')
         return redirect('pregunta-list')
 
-    pregunta = get_object_or_404(Pregunta, pk=pk, usuario=user_profile)
-    
+    if request.user.is_superuser:
+        pregunta = get_object_or_404(Pregunta, pk=pk)
+    else:
+        pregunta = get_object_or_404(Pregunta, pk=pk, usuario=user_profile)
+
     if request.method == 'POST':
         form = PreguntaForm(request.POST, request.FILES, instance=pregunta)
         if form.is_valid():
@@ -145,6 +190,12 @@ def pregunta_update(request, pk):
     else:
         form = PreguntaForm(instance=pregunta)
 
+        # 🚫 Bloquear campos que no deben ser editables al actualizar
+        campos_bloqueados = ['curso', 'universidad', 'tema']
+        for campo in campos_bloqueados:
+            if campo in form.fields:
+                form.fields[campo].disabled = True
+
     return render(request, 'Preguntas/pregunta_form.html', {
         'form': form,
         'pregunta': pregunta,
@@ -152,6 +203,7 @@ def pregunta_update(request, pk):
     })
 
 
+@exclude_supervisor
 @login_required
 def pregunta_delete(request, pk):
     try:
@@ -160,7 +212,10 @@ def pregunta_delete(request, pk):
         messages.error(request, 'No se encontró el perfil de usuario.')
         return redirect('pregunta-list')
 
-    pregunta = get_object_or_404(Pregunta, pk=pk, usuario=user_profile)
+    if request.user.is_superuser:
+        pregunta = get_object_or_404(Pregunta, pk=pk)
+    else:
+        pregunta = get_object_or_404(Pregunta, pk=pk, usuario=user_profile)  
 
     if request.method == 'POST':
         pregunta.delete()
@@ -203,7 +258,7 @@ def aplicar_formato_texto(doc):
 def combinar_documentos(preguntas):
     """Combina documentos de preguntas agrupadas por curso y tema en formato de tres columnas."""
     master_doc = Document()
-    master_doc.add_heading("Preguntas Combinadas", level=1)
+    master_doc.add_heading("Simulacro", level=1)
     composer = Composer(master_doc)
     
     # Configurar el documento con tres columnas y los margenes caumsa
@@ -220,13 +275,11 @@ def combinar_documentos(preguntas):
 
     # Iterar sobre cursos y temas
     for curso, temas in sorted(preguntas_ordenadas.items()):
-        master_doc.add_heading(f"Curso: {curso}", level=1)
 
         for tema, preguntas_tema in sorted(temas.items()):
-            master_doc.add_heading(f"Tema: {tema}", level=2)
 
             for pregunta in preguntas_tema:
-                master_doc.add_heading(f"Pregunta: {pregunta.nombre}", level=3)
+                master_doc.add_heading(f"Pregunta: {pregunta.nombre}")
                 sub_doc = Document(pregunta.contenido.path)
 
                 # Aplicar formato de texto en Arial Narrow 9 pt al subdocumento
@@ -246,18 +299,6 @@ def combinar_documentos(preguntas):
     buffer.seek(0)
     
     return buffer
-
-@login_required
-def convert_image_callback(image):
-    try:
-        with image.open() as image_file:
-            image_bytes = image_file.read()
-            encoded = base64.b64encode(image_bytes).decode('ascii')
-            return {"src": f"data:{image.content_type};base64,{encoded}"}
-    except Exception as e:
-        # Registra el error y devuelve una cadena vacía para la imagen
-        print("Error processing image:", e)
-        return {"src": ""}
 
 logger = logging.getLogger(__name__)
 
@@ -422,52 +463,35 @@ def cleanup_old_pdfs():
     except Exception as e:
         logger.error(f"Error en limpieza de PDFs: {e}")
 
-# solo personal del sistema (admin/staff)
 @staff_member_required
 def todas_las_preguntas(request):
-    # Base queryset: todas las preguntas
     qs = Pregunta.objects.all()
 
     # Leer filtros del GET
-    universidad_id  = request.GET.get('universidad')
-    curso_id        = request.GET.get('curso')
-    tema_id         = request.GET.get('tema')
-    nivel           = request.GET.get('nivel')
-    buscar_nombre   = request.GET.get('buscar_nombre')
+    buscar_nombre = request.GET.get('nombre')
+    usuario_id    = request.GET.get('usuario')
 
-    # Aplicar filtros
-    if universidad_id:
-        qs = qs.filter(universidad_id=universidad_id)
-    if curso_id:
-        qs = qs.filter(curso_id=curso_id)
-    if tema_id:
-        qs = qs.filter(tema_id=tema_id)
-    if nivel:
-        qs = qs.filter(nivel=nivel)
+    # Aplicar filtros si existen
     if buscar_nombre:
         qs = qs.filter(nombre__icontains=buscar_nombre)
+    if usuario_id:
+        qs = qs.filter(usuario_id=usuario_id)
+
+    # Ordenar por fecha reciente
+    qs = qs.order_by('-fecha_creacion')
 
     # Paginación
-    paginator = Paginator(qs, 20)  # 10 preguntas por página
+    paginator = Paginator(qs, 20)
     page = request.GET.get('page')
     qs_paginated = paginator.get_page(page)
 
-    # Formulario de filtro
-    form = FiltroPreguntaForm(request.GET or None)
-
     context = {
         'total_preguntas': qs.count(),
-        'preguntas':       qs_paginated,  # <-- usa paginadas
-        'form':            form,
-        'universidades':   Universidad.objects.all(),
-        'cursos_para_uni': Curso.objects.filter(universidades__id=universidad_id) if universidad_id else [],
-        'temas_para_curso': Tema.objects.filter(curso_id=curso_id) if curso_id else [],
-        'universidad_filter': universidad_id,
-        'curso_filter':       curso_id,
-        'tema_filter':        tema_id,
-        'nivel_filter':       nivel,
-        'buscar_nombre':      buscar_nombre,
-        'modo_admin':         True,  # Para activar opciones en la plantilla
+        'preguntas': qs_paginated,
+        'usuarios': User.objects.all(),
+        'buscar_nombre': buscar_nombre,
+        'usuario_id': usuario_id,
+        'modo_admin': True,
     }
 
     return render(request, 'Preguntas/todas_las_preguntas.html', context)
@@ -475,6 +499,7 @@ def todas_las_preguntas(request):
 
 
 @login_required
+@exclude_supervisor
 def descargar_preguntas(request):
     pregunta_ids = request.POST.getlist('preguntas')
     

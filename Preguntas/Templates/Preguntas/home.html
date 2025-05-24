@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- CSS Personalizado -->
     <link rel="stylesheet" href="\static\home.css">
-    <link rel="stylesheet" href="\static\form.css">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://academiaroberthooke.com/wp-content/uploads/2023/07/logo-robert-hooke.png">
@@ -22,7 +21,7 @@
     <header class="mb-4">
         <div class="container text-center">
             <img src="https://academiaroberthooke.com/wp-content/uploads/2023/07/logo-robert-hooke.png" 
-                 alt="Logo de la Empresa" class="img-fluid header-image animate__animated animate__fadeInDown" style="max-height: 150px;">
+                 alt="Logo de la Empresa" class="img-fluid header-image animate__animated animate__fadeInDown" style="max-height: 250px;">
             {% if user.is_authenticated %}
                 <p class="mt-2" style="color:black">Bienvenido, <strong>{{ user.username }}</strong>!</p>
             {% endif %}
@@ -30,52 +29,61 @@
     </header>
 
     {% with request.path as current_path %}
-    <!-- Navegación -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
         <div class="container">
-            <!-- Branding -->
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-book-open me-2"></i>Sistema de Preguntas
+
+            <!-- Marca / Logo -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <i class="fas fa-book-open me-2"></i>
+                <span>Sistema de Preguntas</span>
             </a>
 
-            <!-- Botón responsive -->
+            <!-- Botón colapsable (móvil) -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- Contenido colapsable -->
+            <!-- Menú de navegación -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                <ul class="navbar-nav ms-auto align-items-center gap-lg-3">
 
-                    <!-- Navegación principal -->
+                    <!-- Navegación general -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'universidad-list' %}">
+                        <a class="nav-link {% if current_path == '/universidades/' %}active{% endif %}" href="{% url 'universidad-list' %}">
                             <i class="fas fa-university me-1"></i>Universidades
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'curso-list' %}">
+                        <a class="nav-link {% if current_path == '/cursos/' %}active{% endif %}" href="{% url 'curso-list' %}">
                             <i class="fas fa-graduation-cap me-1"></i>Cursos
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'tema-list' %}">
+                        <a class="nav-link {% if current_path == '/temas/' %}active{% endif %}" href="{% url 'tema-list' %}">
                             <i class="fas fa-book me-1"></i>Temas
                         </a>
                     </li>
+                    {% if user.is_authenticated and user.userprofile.role == 'user' or user.userprofile.role == 'admin' %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pregunta-list' %}">
+                        <a class="nav-link {% if current_path == '/preguntas/' %}active{% endif %}" href="{% url 'pregunta-list' %}">
                             <i class="fas fa-question-circle me-1"></i>Mis Preguntas
                         </a>
                     </li>
-
+                    {% endif %}
+                    {% if user.userprofile.role == 'supervisor' %}                               
+                    <li class="nav-item">
+                        <a class="nav-link {% if current_path == '/preguntas/' %}active{% endif %}" href="{% url 'pregunta_list_supervisor' %}">
+                            <i class="fas fa-question-circle me-1"></i>Revisar Preguntas
+                        </a>
+                    </li>
+                    {% endif %}
                     <!-- Área de administración -->
-                    {% if user.is_staff %}
+                    {% if user.is_authenticated and user.is_superuser %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-tools me-1"></i>Admin
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <i class="fas fa-tools me-1"></i>Administración
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
                             <li>
@@ -97,12 +105,10 @@
                     </li>
                     {% endif %}
 
-                    <!-- Usuario y logout -->
+                    <!-- Usuario y cerrar sesión -->
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <span class="nav-link disabled text-light">
-                            <i class="fas fa-user-circle me-1"></i>{{ user.username }}
-                        </span>
+                    <li class="nav-item d-flex align-items-center text-light">
+                        <i class="fas fa-user-circle me-2"></i>{{ user.username }}
                     </li>
                     <li class="nav-item">
                         <form method="post" action="{% url 'logout' %}" class="d-inline">
@@ -113,16 +119,15 @@
                         </form>
                     </li>
                     {% endif %}
-
                 </ul>
             </div>
         </div>
     </nav>
     {% endwith %}
 
+    <main class="container py-4">
 
-    <!-- Contenido principal -->
-    <main class="container">
+        {# Mostrar mensajes flash #}
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show animate__animated animate__fadeIn" role="alert">
@@ -133,47 +138,73 @@
         {% endif %}
 
         {% block content %}
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card mb-4 animate__animated animate__fadeInLeft">
+            <div class="row g-4 justify-content-center">
+
+                {# Tarjetas principales - 3 por fila #}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm animate__animated animate__fadeInLeft">
                         <div class="card-body text-center">
                             <i class="fas fa-university text-primary fa-3x mb-3"></i>
                             <h5 class="card-title">Universidades</h5>
-                            <p class="card-text">{{ universidades_count }} registradas</p>
                             <a href="{% url 'universidad-list' %}" class="btn btn-primary">Gestionar</a>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card mb-4 animate__animated animate__fadeInUp">
+
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm animate__animated animate__fadeInUp">
                         <div class="card-body text-center">
                             <i class="fas fa-graduation-cap text-success fa-3x mb-3"></i>
                             <h5 class="card-title">Cursos</h5>
-                            <p class="card-text">{{ cursos_count }} registrados</p>
                             <a href="{% url 'curso-list' %}" class="btn btn-success">Gestionar</a>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card mb-4 animate__animated animate__fadeInUp">
+
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm animate__animated animate__fadeInRight">
                         <div class="card-body text-center">
                             <i class="fas fa-book text-info fa-3x mb-3"></i>
                             <h5 class="card-title">Temas</h5>
-                            <p class="card-text">{{ temas_count }} registrados</p>
                             <a href="{% url 'tema-list' %}" class="btn btn-info">Gestionar</a>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card mb-4 animate__animated animate__fadeInRight">
+                                
+                {% if user.is_authenticated and user.userprofile.role != 'supervisor' %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm animate__animated animate__fadeInLeft">
                         <div class="card-body text-center">
                             <i class="fas fa-question-circle text-warning fa-3x mb-3"></i>
                             <h5 class="card-title">Preguntas</h5>
-                            <p class="card-text">{{ preguntas_count }} registradas</p>
                             <a href="{% url 'pregunta-list' %}" class="btn btn-warning">Gestionar</a>
                         </div>
                     </div>
                 </div>
+                {% endif %}
+
+                {# Tarjeta: Registrar Usuarios (solo superusuarios), centrada si está sola #}
+                {% if user.is_authenticated and user.is_superuser %}
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm animate__animated animate__fadeInLeft">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-plus text-secondary fa-3x mb-3"></i>
+                                <h5 class="card-title">Registrar Usuarios</h5>
+                                <a href="{% url 'register' %}" class="btn btn-secondary">Registrar</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm animate__animated animate__fadeInLeft">
+                            <div class="card-body text-center">
+                                <i class="fas fa-tachometer-alt text-secondary fa-3x mb-3"></i>
+                                <h5 class="card-title">Panel de Administración</h5>
+                                <a href="{% url 'admin-dashboard' %}" class="btn btn-secondary">Administrar</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
             </div>
         {% endblock %}
     </main>
@@ -191,31 +222,5 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-        
-    <script>
-
-        function loadPreview(preguntaId) {
-            fetch(`/preguntas/vista_previa/${preguntaId}/`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Error en la respuesta del servidor: " + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Vista previa response:", data);
-                    var modalBody = document.getElementById("modalBody");
-                    if (data.docx_text && data.docx_text.trim() !== "") {
-                        modalBody.innerHTML = `<h4>${data.pregunta_nombre}</h4>${data.docx_text}`;
-                    } else {
-                        modalBody.innerHTML = `<h4>${data.pregunta_nombre}</h4><p>No hay contenido disponible.</p>`;
-                    }
-                })
-                .catch(error => {
-                    console.error("Error loading preview:", error);
-                    document.getElementById("modalBody").innerHTML = "<p class='text-danger'>Error al cargar el contenido.</p>";
-                });
-        }
-    </script>
 </body>
 </html>

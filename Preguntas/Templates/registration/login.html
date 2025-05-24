@@ -12,14 +12,14 @@
                 </div>
                 <div class="card-body p-4">
                     {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
+                    {% for message in messages %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
                     {% endif %}
-                    
+
                     <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
                         <div class="mb-4">
@@ -28,7 +28,8 @@
                                 <span class="input-group-text bg-light">
                                     <i class="fas fa-user"></i>
                                 </span>
-                                <input type="text" name="username" id="username" class="form-control" placeholder="Ingrese su nombre de usuario" required>
+                                <input type="text" name="username" id="username" class="form-control"
+                                    placeholder="Ingrese su nombre de usuario" required>
                                 <div class="invalid-feedback">
                                     Por favor ingrese su nombre de usuario
                                 </div>
@@ -41,7 +42,8 @@
                                 <span class="input-group-text bg-light">
                                     <i class="fas fa-lock"></i>
                                 </span>
-                                <input type="password" name="password" id="password" class="form-control" placeholder="Ingrese su contraseña" required>
+                                <input type="password" name="password" id="password" class="form-control"
+                                    placeholder="Ingrese su contraseña" required>
                                 <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -50,18 +52,12 @@
                                 </div>
                             </div>
                         </div>
-
-
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary py-2">
                                 <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                             </button>
                         </div>
                     </form>
-
-                    <div class="text-center mt-4">
-                        <p class="mb-0">¿No tienes cuenta? <a href="{% url 'register' %}" class="text-primary fw-bold">Regístrate aquí</a></p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -70,30 +66,30 @@
 
 <script>
     // Script para validación de formulario
-    (function() {
+    (function () {
         'use strict';
-        
+
         // Fetch all the forms we want to apply custom validation
         var forms = document.querySelectorAll('.needs-validation');
-        
+
         // Loop over them and prevent submission
-        Array.prototype.slice.call(forms).forEach(function(form) {
-            form.addEventListener('submit', function(event) {
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
                 if (!form.checkValidity()) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
-                
+
                 form.classList.add('was-validated');
             }, false);
         });
     })();
-    
+
     // Script para mostrar/ocultar contraseña
-    document.getElementById('togglePassword').addEventListener('click', function() {
+    document.getElementById('togglePassword').addEventListener('click', function () {
         const passwordInput = document.getElementById('password');
         const icon = this.querySelector('i');
-        
+
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
             icon.classList.remove('fa-eye');

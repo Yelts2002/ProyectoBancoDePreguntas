@@ -3,7 +3,7 @@ from ..models import Curso, Universidad
 from ..forms import CursoForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .mixins import AdminRequiredMixin, SuccessMessageMixin
+from .mixins import AdminRequiredMixin, SuccessMessageMixin, ExcludeSupervisorMixin
 
 # UniversidadListView, UniversidadCreateView, UniversidadUpdateView, UniversidadDeleteView
 # CRUD Cursos
@@ -16,7 +16,6 @@ class CursoListView(LoginRequiredMixin, ListView):
         queryset = super().get_queryset()
         universidad_id = self.request.GET.get('universidad')
         if universidad_id:
-            # Usamos el related_name 'universidades' para filtrar por el id de la Universidad
             queryset = queryset.filter(universidades__id=universidad_id)
         return queryset
     
@@ -28,8 +27,7 @@ class CursoListView(LoginRequiredMixin, ListView):
         })
         return context
 
-
-class CursoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class CursoCreateView(ExcludeSupervisorMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Curso
     form_class = CursoForm
     template_name = 'Preguntas/curso_form.html'
@@ -43,16 +41,14 @@ class CursoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             initial['universidad'] = Universidad.objects.get(id=universidad_id)
         return initial
 
-
-class CursoUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class CursoUpdateView(ExcludeSupervisorMixin, LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Curso
     form_class = CursoForm
     template_name = 'Preguntas/curso_form.html'
     success_url = reverse_lazy('curso-list')
     success_message = 'Curso actualizado exitosamente.'
 
-
-class CursoDeleteView(AdminRequiredMixin, SuccessMessageMixin, DeleteView):
+class CursoDeleteView(ExcludeSupervisorMixin, AdminRequiredMixin, SuccessMessageMixin, DeleteView):
     model = Curso
     template_name = 'Preguntas/curso_confirm_delete.html'
     success_url = reverse_lazy('curso-list')

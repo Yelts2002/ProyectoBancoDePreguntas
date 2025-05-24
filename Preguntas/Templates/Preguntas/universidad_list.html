@@ -9,9 +9,11 @@
             <h1 class="h2 mb-0" id="university-title" >
                 <i class="fas fa-university me-2" aria-hidden="true"></i>Universidades
             </h1>
+            {% if user.is_staff %}
             <a href="{% url 'universidad-create' %}" class="btn btn-light btn-hover-effect" aria-label="Crear nueva universidad">
                 <i class="fas fa-plus me-1" aria-hidden="true"></i>Nueva Universidad
             </a>
+            {% endif %}            
         </header>
         <div class="card-body">
             <!-- Tabla de universidades -->

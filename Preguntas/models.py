@@ -32,7 +32,12 @@ class Universidad(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)  # Campo para activar/desactivar
-
+    ROLE_CHOICES = [
+        ('supervisor', 'Supervisor'),
+        ('admin', 'Admin'),
+        ('user', 'User '),
+    ]
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     def __str__(self):
         return self.user.username
 

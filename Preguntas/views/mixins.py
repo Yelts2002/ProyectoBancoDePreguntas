@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseForbidden
 
 
 class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):    
@@ -22,3 +23,9 @@ class SuccessMessageMixin:
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, self.success_message)
         return super().delete(request, *args, **kwargs)
+
+class ExcludeSupervisorMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if hasattr(request.user, 'userprofile') and request.user.userprofile.role == 'supervisor':
+            return HttpResponseForbidden("No tienes permiso para acceder aquí")
+        return super().dispatch(request, *args, **kwargs)

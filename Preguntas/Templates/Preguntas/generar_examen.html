@@ -109,7 +109,7 @@
                                             <label class="form-check-label visually-hidden" for="selectAll">Seleccionar todo</label>
                                         </div>
                                     </th>
-                                    <th scope="col">Nombre(Código)de la Pregunta</th>
+                                    <th scope="col">Códigode la Pregunta</th>
                                     <th scope="col">Universidad</th>
                                     <th scope="col">Curso</th>                                    
                                     <th scope="col">Tema</th>
@@ -192,7 +192,7 @@
                 <button id="btnAgregarCarrito" class="btn btn-success">
                     <i class="fas fa-cart-plus me-1"></i>Añadir al Carrito
                 </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-secondary" id="cerrarVistaPreviaBtn">Cerrar</button>
             </div>
         </div>
     </div>
@@ -281,11 +281,12 @@ function loadPdfPreview(button) {
     const url = button.getAttribute('data-url');
     const iframe = document.getElementById('previewFrame');
     iframe.src = url;
-    
-    // Guardar el ID de la pregunta actual
+
     preguntaIdActual = button.getAttribute('data-pregunta-id');
-    
-    // Verificar si la pregunta ya está en el carrito
+
+    // 👉 Nuevo: detectar si se abrió desde el carrito
+    vistaPreviaDesdeCarrito = button.closest('#carritoModal') !== null;
+
     const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
     if (preguntaEnCarrito(preguntaIdActual)) {
         btnAgregarCarrito.disabled = true;
@@ -299,6 +300,7 @@ function loadPdfPreview(button) {
         btnAgregarCarrito.classList.add('btn-success');
     }
 }
+
 
 // Función para verificar si una pregunta está en el carrito
 function preguntaEnCarrito(preguntaId) {
@@ -565,6 +567,37 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             });
         });
+    });
+    
+    document.getElementById("cerrarVistaPreviaBtn").addEventListener("click", function () {
+        const previewModalEl = document.getElementById("previewModal");
+        const previewModal = bootstrap.Modal.getInstance(previewModalEl);
+        previewModal.hide();
+
+        // Si se abrió desde el listado y ya está en el carrito → mostrar carrito
+        if (!vistaPreviaDesdeCarrito && preguntaEnCarrito(preguntaIdActual)) {
+            const carritoModalEl = document.getElementById("carritoModal");
+            const carritoModal = new bootstrap.Modal(carritoModalEl);
+            carritoModal.show();
+        }
+    });
+    
+    const previewModalEl = document.getElementById("previewModal");
+    previewModalEl.addEventListener("hidden.bs.modal", function () {
+        if (vistaPreviaDesdeCarrito) {
+            const carritoModalEl = document.getElementById("carritoModal");
+
+            // Bootstrap 5: Si ya está visible, no es necesario volver a abrir
+            const isCarritoVisible = carritoModalEl.classList.contains("show");
+
+            if (!isCarritoVisible) {
+                const carritoModal = new bootstrap.Modal(carritoModalEl);
+                carritoModal.show();
+            }
+
+            // Restaurar el flag para futuras aperturas
+            vistaPreviaDesdeCarrito = false;
+        }
     });
 });
 </script>
