@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,8 +12,7 @@
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- CSS Personalizado -->
-    <link rel="stylesheet" href="\static\home.css">
-
+    <link rel="stylesheet" href="{% static 'home.css' %}">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://academiaroberthooke.com/wp-content/uploads/2023/07/logo-robert-hooke.png">
     {% block extra_head %}{% endblock %}

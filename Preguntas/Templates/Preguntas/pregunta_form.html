@@ -6,7 +6,7 @@
 <div class="container my-4">
     <div class="row">
         <!-- Formulario principal -->
-        <div class="col-lg-8 mx-auto"> <!-- La clase 'mx-auto' centra el contenedor -->
+        <div class="col-lg-8 mx-auto">
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white">
                     <h3 class="card-title mb-0">
@@ -14,11 +14,36 @@
                     </h3>
                 </div>
                 <div class="card-body">
+                    <!-- Mostrar información actual si es edición -->
+                    {% if is_update %}
+                    <div class="alert alert-info mb-4">
+                        <h5><i class="fas fa-info-circle me-2"></i>Información actual de la pregunta:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Universidad:</strong> {{ pregunta.universidad.nombre }}</p>
+                                <p><strong>Curso:</strong> {{ pregunta.curso.nombre }}</p>
+                                <p><strong>Tema:</strong> {{ pregunta.tema.nombre }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Nivel:</strong> {{ pregunta.nivel }}</p>
+                                <p><strong>Nombre:</strong> {{ pregunta.nombre }}</p>
+                                {% if current_file %}
+                                <p><strong>Archivo actual:</strong> <span class="text-success">{{ current_file|cut:"preguntas/" }}</span></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <i class="fas fa-edit me-2"></i><strong>Solo puedes editar:</strong> la respuesta correcta y subir un nuevo archivo
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <div id="form-messages" class="mb-3"></div>
                     <form id="preguntaForm" method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
 
-                        <!-- UNIVERSIDAD -->
+                        {% if not is_update %}
+                        <!-- UNIVERSIDAD - Solo mostrar si NO es edición -->
                         <div class="mb-3">
                             <label for="id_universidad" class="form-label fw-bold">
                                 <i class="fas fa-arrow-right me-2 text-primary"></i>Universidad
@@ -34,7 +59,7 @@
                             </div>
                         </div>
 
-                        <!-- CURSO -->
+                        <!-- CURSO - Solo mostrar si NO es edición -->
                         <div class="mb-3">
                             <label for="id_curso" class="form-label fw-bold">
                                 <i class="fas fa-arrow-right me-2 text-primary"></i>Curso
@@ -50,7 +75,7 @@
                             </div>
                         </div>
 
-                        <!-- TEMA -->
+                        <!-- TEMA - Solo mostrar si NO es edición -->
                         <div class="mb-3">
                             <label for="id_tema" class="form-label fw-bold">
                                 <i class="fas fa-arrow-right me-2 text-primary"></i>Tema
@@ -66,7 +91,7 @@
                             </div>
                         </div>
 
-                        <!-- NIVEL -->
+                        <!-- NIVEL - Solo mostrar si NO es edición -->
                         <div class="mb-3">
                             <label for="id_nivel" class="form-label fw-bold">
                                 <i class="fas fa-arrow-right me-2 text-primary"></i>Nivel
@@ -82,39 +107,7 @@
                             </div>
                         </div>
 
-                        <!-- RESPUESTA -->
-                        <div class="mb-3">
-                            <label for="id_respuesta" class="form-label fw-bold">
-                                <i class="fas fa-arrow-right me-2 text-primary"></i>Respuesta Correcta
-                            </label>
-                            {{ form.respuesta }}
-                            {% if form.respuesta.help_text %}
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>{{ form.respuesta.help_text }}
-                            </div>
-                            {% endif %}
-                            <div class="invalid-feedback">
-                                {{ form.respuesta.errors.0 }}
-                            </div>
-                        </div>
-
-                        <!-- CONTENIDO (archivo) -->
-                        <div class="mb-3">
-                            <label for="id_contenido" class="form-label fw-bold">
-                                <i class="fas fa-arrow-right me-2 text-primary"></i>Archivo de Contenido
-                            </label>
-                            {{ form.contenido }}
-                            {% if form.contenido.help_text %}
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>{{ form.contenido.help_text }}
-                            </div>
-                            {% endif %}
-                            <div class="invalid-feedback">
-                                {{ form.contenido.errors.0 }}
-                            </div>
-                        </div>
-
-                        <!-- NOMBRE (readonly) -->
+                        <!-- NOMBRE - Solo mostrar si NO es edición -->
                         <div class="mb-3">
                             <label for="id_nombre" class="form-label fw-bold">
                                 <i class="fas fa-arrow-right me-2 text-primary"></i>Nombre generado
@@ -129,6 +122,54 @@
                                 {{ form.nombre.errors.0 }}
                             </div>
                         </div>
+                        {% endif %}
+
+                        <!-- TIENE SOLUCIÓN - Checkbox -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.tiene_solucion }}
+                                <label for="id_tiene_solucion" class="form-check-label fw-bold">
+                                    <i class="fas fa-lightbulb me-2 text-info"></i>¿Tiene solución?
+                                </label>
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form.tiene_solucion.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- RESPUESTA - Siempre mostrar -->
+                        <div class="mb-3">
+                            <label for="id_respuesta" class="form-label fw-bold">
+                                <i class="fas fa-check-circle me-2 text-success"></i>Respuesta Correcta
+                                {% if is_update %}<span class="badge bg-warning text-dark ms-2">EDITABLE</span>{% endif %}
+                            </label>
+                            {{ form.respuesta }}
+                            {% if form.respuesta.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.respuesta.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.respuesta.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- CONTENIDO (archivo) - Siempre mostrar -->
+                        <div class="mb-3">
+                            <label for="id_contenido" class="form-label fw-bold">
+                                <i class="fas fa-file-word me-2 text-primary"></i>Archivo de Contenido
+                                {% if is_update %}<span class="badge bg-warning text-dark ms-2">EDITABLE</span>{% endif %}
+                            </label>
+                            {{ form.contenido }}
+                            {% if form.contenido.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.contenido.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.contenido.errors.0 }}
+                            </div>
+                        </div>
 
                         <!-- BOTONES -->
                         <div class="text-end mt-4 pt-3 border-top">
@@ -136,14 +177,14 @@
                                 <i class="fas fa-times me-1"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i> Guardar
+                                <i class="fas fa-save me-1"></i> 
+                                {% if is_update %}Actualizar{% else %}Guardar{% endif %}
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-
         <!-- Nota estática -->
         <div class="col-lg-4">
             <div >

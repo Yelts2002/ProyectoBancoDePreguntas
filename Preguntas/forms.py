@@ -42,40 +42,79 @@ class TemaForm(forms.ModelForm):
             }),
         }
 
+# forms.py - Formulario corregido
 class PreguntaForm(forms.ModelForm):
-
     class Meta:
         model = Pregunta
-        fields = ['universidad', 'curso', 'tema', 'nivel', 'respuesta','contenido', 'nombre']
+        fields = ['universidad', 'curso', 'tema', 'nivel', 'respuesta', 'contenido', 'nombre', 'tiene_solucion']
         widgets = {
             'universidad': forms.Select(attrs={'class': 'form-control'}),
             'curso': forms.Select(attrs={'class': 'form-control'}),
             'tema': forms.Select(attrs={'class': 'form-control'}),
             'nivel': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
             'respuesta': forms.Select(attrs={'class': 'form-control'}),
-            'contenido': forms.FileInput(attrs={'class': 'form-control'}),
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),            
+            'contenido': forms.FileInput(attrs={'class': 'form-control', 'accept': '.doc,.docx'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'tiene_solucion': forms.CheckboxInput(attrs={'class': 'form-check-input'}),            
         }
 
     def __init__(self, *args, **kwargs):
+        # Extraer el parámetro is_update
+        self.is_update = kwargs.pop('is_update', False)
         super().__init__(*args, **kwargs)
-        self.fields['nombre'].required = False
-        self.fields['curso'].queryset = Curso.objects.none()
-        self.fields['tema'].queryset = Tema.objects.none()
+        
+        # Configurar campos según el modo
+        if self.is_update:
+            # En modo edición: hacer campos no requeridos y deshabilitados
+            for campo in ['universidad', 'curso', 'tema', 'nivel', 'nombre']:
+                if campo in self.fields:
+                    self.fields[campo].required = False
+                    self.fields[campo].disabled = True
+                    self.fields[campo].widget.attrs.update({
+                        'readonly': True,
+                        'style': 'background-color: #f8f9fa; cursor: not-allowed;'
+                    })
 
-        if 'universidad' in self.data:
-            self._filtrar_cursos_por_universidad()
-        elif self.instance.pk and self.instance.universidad:
-            self.fields['curso'].queryset = Curso.objects.filter(
-                universidades__id=self.instance.universidad.id
-            ).order_by('nombre')
+            # Deshabilitar campo tiene_solucion en modo edición
+            if 'tiene_solucion' in self.fields:
+                self.fields['tiene_solucion'].disabled = True
+                self.fields['tiene_solucion'].widget.attrs.update({
+                    'style': 'pointer-events: none; opacity: 0.5;'
+                })
+            
+            # Contenido opcional en edición
+            self.fields['contenido'].required = False
+            
+            # Configurar querysets para campos relacionados
+            if self.instance.pk:
+                if self.instance.universidad:
+                    self.fields['curso'].queryset = Curso.objects.filter(
+                        universidades__id=self.instance.universidad.id
+                    ).order_by('nombre')
+                
+                if self.instance.curso:
+                    self.fields['tema'].queryset = Tema.objects.filter(
+                        curso__id=self.instance.curso.id
+                    ).order_by('nombre')
+        else:
+            # Modo creación normal
+            self.fields['nombre'].required = False
+            self.fields['curso'].queryset = Curso.objects.none()
+            self.fields['tema'].queryset = Tema.objects.none()
 
-        if 'curso' in self.data:
-            self._filtrar_temas_por_curso()
-        elif self.instance.pk and self.instance.curso:
-            self.fields['tema'].queryset = Tema.objects.filter(
-                curso__id=self.instance.curso.id
-            ).order_by('nombre')
+            if 'universidad' in self.data:
+                self._filtrar_cursos_por_universidad()
+            elif self.instance.pk and self.instance.universidad:
+                self.fields['curso'].queryset = Curso.objects.filter(
+                    universidades__id=self.instance.universidad.id
+                ).order_by('nombre')
+
+            if 'curso' in self.data:
+                self._filtrar_temas_por_curso()
+            elif self.instance.pk and self.instance.curso:
+                self.fields['tema'].queryset = Tema.objects.filter(
+                    curso__id=self.instance.curso.id
+                ).order_by('nombre')
 
     def _filtrar_cursos_por_universidad(self):
         try:
@@ -102,6 +141,17 @@ class PreguntaForm(forms.ModelForm):
                 "El archivo es demasiado grande. El tamaño máximo permitido es de 5 MB."
             )
         return contenido
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # En modo actualización, validar solo campos editables
+        if self.is_update:
+            # Solo validar respuesta en modo edición
+            if not cleaned_data.get('respuesta'):
+                raise forms.ValidationError("La respuesta es requerida.")
+        
+        return cleaned_data
 
 #filtrar 
 class FiltroPreguntaForm(forms.Form):

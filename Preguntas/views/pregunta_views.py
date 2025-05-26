@@ -118,8 +118,6 @@ def pregunta_list_supervisor(request):
 
     return render(request, 'Preguntas/lista_supervisor.html', context)
 
-
-
 @login_required
 def pregunta_create(request):
     if request.method == 'POST':
@@ -131,9 +129,7 @@ def pregunta_create(request):
             user_profile = UserProfile.objects.get(user=request.user)
             pregunta.usuario = user_profile
 
-            # Asignar nombre solo si se solicita, si no se genera automáticamente
-            pregunta.nombre = form.cleaned_data['nombre']
-    
+            # Generar nombre automáticamente
             count = Pregunta.objects.filter(
                 universidad=pregunta.universidad,
                 curso=pregunta.curso,
@@ -142,21 +138,33 @@ def pregunta_create(request):
             ).count() + 1
             pregunta.nombre = f"{pregunta.universidad.id}{pregunta.curso.id}{pregunta.tema.id}{pregunta.nivel}{count}"
 
-            # Verificar si los campos obligatorios (universidad, curso, tema) no están vacíos
             if not pregunta.universidad or not pregunta.curso or not pregunta.tema:
                 form.add_error(None, "Los campos universidad, curso y tema son obligatorios.")
                 return render(request, 'Preguntas/pregunta_form.html', {'form': form, 'title': 'Nueva Pregunta'})
-            
-            # Guardar la pregunta
+
             pregunta.save()
-            
-            # Si se proporciona un archivo en 'contenido', asegurarse de guardarlo
+
             if 'contenido' in request.FILES:
                 pregunta.contenido = request.FILES['contenido']
                 pregunta.save()
 
             messages.success(request, 'Pregunta creada exitosamente.')
-            return redirect('pregunta-list')
+
+            # Simular un nuevo formulario con los campos seleccionados
+            data = request.POST.copy()
+            data['nombre'] = ''
+            nuevo_formulario = PreguntaForm(data)
+
+            return render(request, 'Preguntas/pregunta_form.html', {
+                'form': nuevo_formulario,
+                'title': 'Nueva Pregunta'
+            })
+
+        else:
+            return render(request, 'Preguntas/pregunta_form.html', {
+                'form': form,
+                'title': 'Nueva Pregunta'
+            })
 
     else:
         form = PreguntaForm()
@@ -167,8 +175,10 @@ def pregunta_create(request):
     })
 
 
-@exclude_supervisor
+# views.py - Vista corregida
+
 @login_required
+@exclude_supervisor
 def pregunta_update(request, pk):
     try:
         user_profile = UserProfile.objects.get(user=request.user)
@@ -180,28 +190,51 @@ def pregunta_update(request, pk):
         pregunta = get_object_or_404(Pregunta, pk=pk)
     else:
         pregunta = get_object_or_404(Pregunta, pk=pk, usuario=user_profile)
-
+        
     if request.method == 'POST':
-        form = PreguntaForm(request.POST, request.FILES, instance=pregunta)
+        form = PreguntaForm(request.POST, request.FILES, instance=pregunta, is_update=True)
+        
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Pregunta actualizada exitosamente.')
-            return redirect('pregunta-list')
-    else:
-        form = PreguntaForm(instance=pregunta)
+            nuevo_archivo = request.FILES.get('contenido')
 
-        # 🚫 Bloquear campos que no deben ser editables al actualizar
-        campos_bloqueados = ['curso', 'universidad', 'tema']
-        for campo in campos_bloqueados:
-            if campo in form.fields:
-                form.fields[campo].disabled = True
+            # Eliminar PDF existente si hay cambios
+            pdf_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
+            safe_filename = sanitize_filename(pregunta.nombre)
+            pdf_filename = f"{safe_filename}_{pregunta.id}.pdf"
+            pdf_path = os.path.join(pdf_dir, pdf_filename)
+            
+            if os.path.exists(pdf_path):
+                try:
+                    os.remove(pdf_path)
+                    logger.info(f"PDF eliminado por actualización de pregunta: {pdf_path}")
+                except Exception as e:
+                    logger.error(f"No se pudo eliminar PDF: {e}")
+
+            # Actualizar campos
+            pregunta.respuesta = form.cleaned_data['respuesta']
+            if nuevo_archivo:
+                pregunta.contenido = nuevo_archivo
+                logger.info(f"📝 Archivo actualizado para pregunta {pk}: {nuevo_archivo.name}")
+            
+            pregunta.save()
+
+            messages.success(request, 'Pregunta actualizada con éxito.')
+            return redirect('pregunta-list')
+        else:
+            # Mostrar errores del formulario
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Error en {field}: {error}")
+    else:
+        form = PreguntaForm(instance=pregunta, is_update=True)
 
     return render(request, 'Preguntas/pregunta_form.html', {
         'form': form,
         'pregunta': pregunta,
-        'title': 'Editar Pregunta'
+        'title': 'Editar Pregunta - Solo Archivo y Respuesta',
+        'is_update': True,
+        'current_file': pregunta.contenido.name if pregunta.contenido else None
     })
-
 
 @exclude_supervisor
 @login_required
@@ -255,49 +288,83 @@ def aplicar_formato_texto(doc):
                 style.font.name = "Arial Narrow"
                 style.font.size = Pt(9)
 
+
+def eliminar_ultimo_parrafo_si_vacio(document):
+    if len(document.paragraphs) == 0:
+        return
+
+    last_paragraph = document.paragraphs[-1]
+    if not last_paragraph.text.strip():
+        p_element = last_paragraph._element
+        p_element.getparent().remove(p_element)
+
 def combinar_documentos(preguntas):
-    """Combina documentos de preguntas agrupadas por curso y tema en formato de tres columnas."""
+    """Combina documentos mostrando solo nombres de preguntas sin espacios adicionales"""
     master_doc = Document()
-    master_doc.add_heading("Simulacro", level=1)
     composer = Composer(master_doc)
     
-    # Configurar el documento con tres columnas y los margenes caumsa
+    # Configurar documento con 3 columnas y márgenes
     set_tres_columns(master_doc.sections[0])
-
     set_margenes(master_doc.sections[0])
+    
+    # Eliminar espaciado por defecto en el documento base
+    style = master_doc.styles['Normal']
+    font = style.font
+    font.name = 'Arial Narrow'
+    font.size = Pt(9)
+    paragraph_format = style.paragraph_format
+    paragraph_format.space_before = Pt(0)
+    paragraph_format.space_after = Pt(0)
+    paragraph_format.line_spacing = 1.0  # Espaciado simple
 
-    # Agrupar preguntas por curso y tema
+    # Agrupar preguntas por curso y tema (solo para orden)
     preguntas_ordenadas = defaultdict(lambda: defaultdict(list))
-
     for pregunta in preguntas:
         if pregunta.contenido and hasattr(pregunta.contenido, 'path'):
             preguntas_ordenadas[pregunta.curso.nombre][pregunta.tema.nombre].append(pregunta)
 
-    # Iterar sobre cursos y temas
+    # Procesar preguntas
     for curso, temas in sorted(preguntas_ordenadas.items()):
-
         for tema, preguntas_tema in sorted(temas.items()):
-
             for pregunta in preguntas_tema:
-                master_doc.add_heading(f"Pregunta: {pregunta.nombre}")
-                sub_doc = Document(pregunta.contenido.path)
+                try:
+                    # Agregar nombre de pregunta sin espaciado
+                    p = master_doc.add_paragraph(style='Normal')
+                    run = p.add_run(f"Pregunta: {pregunta.nombre}")
+                    run.bold = True
+                    
+                    # Procesar contenido de la pregunta
+                    sub_doc = Document(pregunta.contenido.path)
+                    
+                    # Eliminar configuraciones de sección y ajustar formato
+                    for element in sub_doc.element.body:
+                        if element.tag.endswith('sectPr'):
+                            sub_doc.element.body.remove(element)
+                    
+                    # Aplicar formato sin espacios a todos los párrafos
+                    for para in sub_doc.paragraphs:
+                        para.paragraph_format.space_before = Pt(0)
+                        para.paragraph_format.space_after = Pt(0)
+                        for run in para.runs:
+                            run.font.name = "Arial Narrow"
+                            run.font.size = Pt(9)
+                    
+                    # Combinar documentos
+                    if ImportFormatMode is not None:
+                        composer.append(sub_doc, import_format=ImportFormatMode.KEEP_SOURCE_FORMATTING)
+                    else:
+                        composer.append(sub_doc)
+                        
+                except Exception as e:
+                    logger.error(f"Error procesando pregunta {pregunta.id}: {str(e)}")
+                    continue
 
-                # Aplicar formato de texto en Arial Narrow 9 pt al subdocumento
-                aplicar_formato_texto(sub_doc)
+    # Eliminar posibles párrafos vacíos finales
+    eliminar_ultimo_parrafo_si_vacio(composer.doc)
 
-                if ImportFormatMode is not None:
-                    composer.append(sub_doc, import_format=ImportFormatMode.KEEP_SOURCE_FORMATTING)
-                else:
-                    composer.append(sub_doc)
-
-    # Aplicar formato de texto en el documento final
-    aplicar_formato_texto(master_doc)
-
-    # Guardar el documento en memoria
     buffer = io.BytesIO()
     composer.save(buffer)
     buffer.seek(0)
-    
     return buffer
 
 logger = logging.getLogger(__name__)
@@ -313,7 +380,7 @@ def sanitize_filename(filename):
 @xframe_options_exempt
 @login_required
 def vista_previa(request, pk):
-    """Vista previa mejorada usando Aspose Words"""
+    """Vista previa con reconversión solo si el PDF no existe"""
     try:
         pregunta = Pregunta.objects.get(pk=pk)
     except Pregunta.DoesNotExist:
@@ -326,116 +393,98 @@ def vista_previa(request, pk):
         logger.error(f"Archivo DOCX no encontrado: {docx_path}")
         raise Http404("El archivo DOCX no existe")
 
-    # Crear directorio para PDFs
+    # Crear directorio para PDFs si no existe
     pdf_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
     os.makedirs(pdf_dir, exist_ok=True)
 
-    # Generar nombre seguro y único para el PDF
+    # Generar nombre único para el PDF basado en la pregunta
     safe_filename = sanitize_filename(pregunta.nombre)
     pdf_filename = f"{safe_filename}_{pregunta.id}.pdf"
     pdf_path = os.path.join(pdf_dir, pdf_filename)
 
-    # Verificar cache para evitar reconversiones frecuentes
-    try:
-        docx_mtime = os.path.getmtime(docx_path)
-        cache_key = f"pdf_conversion_{pregunta.id}_{int(docx_mtime)}"
-        cached_pdf_path = cache.get(cache_key)
-        
-        if cached_pdf_path and os.path.exists(cached_pdf_path):
-            logger.info(f"Usando PDF desde cache: {cached_pdf_path}")
-            return serve_pdf_file(cached_pdf_path, pregunta.nombre)
-    except Exception as e:
-        logger.warning(f"Error verificando cache: {e}")
-
-    # Verificar si necesita conversión
-    needs_conversion = (
-        not os.path.exists(pdf_path) or 
-        os.path.getmtime(docx_path) > os.path.getmtime(pdf_path)
-    )
-
-    if needs_conversion:
+    # CONVERSIÓN SOLO SI EL PDF NO EXISTE
+    if not os.path.exists(pdf_path):
         logger.info(f"Iniciando conversión: {docx_path} -> {pdf_path}")
         
         try:
-            # Importar y usar Aspose Words
+            # Conversión con Aspose Words
             import aspose.words as aw
             
-            # Cargar documento
+            # Cargar documento DOCX
             doc = aw.Document(docx_path)
             
-            # Configurar opciones de guardado para PDF
+            # Configurar opciones de guardado
             save_options = aw.saving.PdfSaveOptions()
             save_options.compliance = aw.saving.PdfCompliance.PDF17
             save_options.preserve_form_fields = True
-            save_options.jpeg_quality = 90  # Calidad de imágenes
+            save_options.jpeg_quality = 90
             
-            # Guardar como PDF
+            # Convertir a PDF
             doc.save(pdf_path, save_options)
             
-            logger.info(f"Conversión exitosa con Aspose Words")
-            
-            # Guardar en cache por 1 hora
-            cache.set(cache_key, pdf_path, timeout=3600)
+            logger.info(f"✅ Conversión exitosa para pregunta {pk}")
             
         except ImportError:
-            logger.error("Aspose Words no está instalado")
+            logger.error("❌ Aspose Words no está instalado")
             raise Http404("Error: Aspose Words no está disponible en el sistema")
         except Exception as e:
-            logger.error(f"Error en conversión con Aspose: {e}")
+            logger.error(f"❌ Error en conversión: {e}")
             # Limpiar archivo parcial si existe
             if os.path.exists(pdf_path):
                 try:
                     os.remove(pdf_path)
                 except:
                     pass
-            raise Http404(f"Error al convertir el archivo DOCX a PDF: {str(e)}")
+            raise Http404(f"Error al convertir archivo: {str(e)}")
+    else:
+        logger.info(f"✅ Usando PDF existente para pregunta {pk}")
 
-    # Verificar que el PDF se generó correctamente
+    # VALIDACIONES FINALES
     if not os.path.exists(pdf_path):
-        logger.error(f"PDF no se generó: {pdf_path}")
+        logger.error(f"❌ PDF no se generó correctamente: {pdf_path}")
         raise Http404("No se pudo generar el archivo PDF")
 
-    # Verificar que el archivo no está vacío
     try:
         file_size = os.path.getsize(pdf_path)
         if file_size == 0:
-            logger.error(f"PDF generado está vacío: {pdf_path}")
+            logger.error(f"❌ PDF generado está vacío: {pdf_path}")
             os.remove(pdf_path)
             raise Http404("El archivo PDF generado está vacío")
-        elif file_size < 100:  # PDFs muy pequeños probablemente están corruptos
-            logger.warning(f"PDF sospechosamente pequeño ({file_size} bytes): {pdf_path}")
+        elif file_size < 100:
+            logger.warning(f"⚠️ PDF sospechosamente pequeño ({file_size} bytes): {pdf_path}")
+        
+        logger.info(f"📄 Sirviendo PDF: {pdf_path} ({file_size} bytes)")
+        
     except OSError as e:
-        logger.error(f"Error verificando tamaño del PDF: {e}")
-        raise Http404("Error al verificar el archivo PDF generado")
+        logger.error(f"❌ Error verificando PDF: {e}")
+        raise Http404("Error al verificar el archivo PDF")
 
-    logger.info(f"Sirviendo PDF: {pdf_path} ({file_size} bytes)")
     return serve_pdf_file(pdf_path, pregunta.nombre)
 
 def serve_pdf_file(pdf_path, original_name):
-    """Función auxiliar para servir archivos PDF de forma segura"""
     try:
         pdf_file = open(pdf_path, 'rb')
-        
-        # Sanitizar nombre para descarga
         safe_download_name = sanitize_filename(original_name)
-        download_filename = f"{safe_download_name}.pdf"
         
-        # Crear respuesta
+        # Obtener timestamp de modificación del archivo
+        last_modified = int(os.path.getmtime(pdf_path))
+        download_filename = f"{safe_download_name}_{last_modified}.pdf"
+        
         response = FileResponse(
-            pdf_file, 
+            pdf_file,
             content_type='application/pdf',
             filename=download_filename
         )
         
-        # Headers para mejor control de cache y seguridad
-        response['Cache-Control'] = 'private, max-age=3600'  # Cache por 1 hora
-        response['X-Content-Type-Options'] = 'nosniff'
-        response['X-Frame-Options'] = 'SAMEORIGIN'
+        # Headers para evitar cache
+        response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        response['X-Accel-Expires'] = '0'
         
         return response
-        
     except Exception as e:
-        logger.error(f"Error al servir PDF {pdf_path}: {e}")
+        logger.error(f"Error al servir PDF: {e}")
         raise Http404("Error al acceder al archivo PDF")
 
 def cleanup_old_pdfs():
@@ -464,6 +513,7 @@ def cleanup_old_pdfs():
         logger.error(f"Error en limpieza de PDFs: {e}")
 
 @staff_member_required
+@exclude_supervisor
 def todas_las_preguntas(request):
     qs = Pregunta.objects.all()
 
@@ -495,8 +545,6 @@ def todas_las_preguntas(request):
     }
 
     return render(request, 'Preguntas/todas_las_preguntas.html', context)
-
-
 
 @login_required
 @exclude_supervisor

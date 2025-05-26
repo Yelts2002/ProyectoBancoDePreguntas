@@ -102,6 +102,32 @@ class Pregunta(models.Model):
             self.fecha_creacion = timezone.now()
 
         super().save(*args, **kwargs)
+        
+    tiene_solucion = models.BooleanField(
+        default=False,
+        help_text="Indica si la pregunta tiene solución"
+    )
+    @property
+    def usada(self):
+        return ExamenPregunta.objects.filter(pregunta=self).exists()
 
     def __str__(self):
         return self.nombre
+
+class Examen(models.Model):
+    nombre = models.CharField(max_length=200)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    usuario = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.nombre
+
+class ExamenPregunta(models.Model):
+    examen = models.ForeignKey(Examen, on_delete=models.CASCADE, related_name='examen_preguntas')
+    pregunta = models.ForeignKey(Pregunta, on_delete=models.CASCADE, related_name='examen_preguntas')
+
+    class Meta:
+        unique_together = ('examen', 'pregunta')
+
+    def __str__(self):
+        return f"{self.examen.nombre} - {self.pregunta.nombre}"
