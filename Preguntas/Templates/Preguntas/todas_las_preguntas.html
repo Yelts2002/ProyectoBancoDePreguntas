@@ -7,7 +7,7 @@
     <section class="card shadow-lg animate__animated animate__fadeIn">
         <header class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
             <h1 class="h2 mb-0">
-                <i class="fas fa-question-circle me-2"></i> Gestión de Preguntas
+                <i class="fas fa-question-circle me-2"></i> Preguntas del Sistema
             </h1>
         </header>
 
@@ -122,7 +122,7 @@
                                 {% endwith %}
                             </td>
                             <td>
-                                <div class="btn-group btn-group-sm" role="group" aria-label="Acciones para pregunta {{ pregunta.id }}">
+                                <div class="d-flex flex-column flex-md-row justify-content-center gap-1" aria-label="Acciones para pregunta {{ pregunta.id }}">
                                     <button type="button"
                                             class="btn btn-info"
                                             data-url="{% url 'vista-previa' pregunta.id %}"

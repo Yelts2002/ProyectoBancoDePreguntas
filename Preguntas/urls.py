@@ -27,7 +27,7 @@ urlpatterns = [
     path('pregunta/<int:pk>/eliminar/', views.pregunta_delete, name='pregunta-delete'),
     path('pregunta/<int:pk>/editar/', views.pregunta_update, name='pregunta-update'),
     path('descargar-preguntas/', views.descargar_preguntas, name='descargar-preguntas'),
-    path('vista_previa/<int:pk>/', views.vista_previa, name='vista_previa'),  # Asegúrate de que el nombre coincida
+    path('vista_previa/<int:pk>/', views.vista_previa, name='vista_previa'),
     path('pregunta/<int:pk>/vista-previa/', views.vista_previa, name='vista-previa'),
     path('preguntas/todas/', views.todas_las_preguntas, name='todas_las_preguntas'),
 

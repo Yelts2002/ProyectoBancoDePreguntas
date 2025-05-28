@@ -14,7 +14,7 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="text-end">
-                        <a href="{% url 'pregunta-list' %}" class="btn btn-secondary">Cancelar</a>
+                        <a href="{{ volver_url }}" class="btn btn-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-danger">Eliminar</button>
                     </div>
                 </form>

@@ -5,9 +5,9 @@
 {% block content %}
 <main class="container-fluid py-4">
     <section class="card shadow-lg animate__animated animate__fadeIn" aria-labelledby="university-title">
-        <header class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
-            <h1 class="h2 mb-0" id="university-title">
-                <i class="fas fa-university me-2" aria-hidden="true"></i>
+        <header class="card-header d-flex justify-content-between align-items-center text-white py-3">
+            <h1 class="h2 mb-0" id="university-title" style="color: black;">
+                <i class="fas fa-university fs-3 me-2" aria-hidden="true"></i>
                 Universidades
             </h1>
             {% if user.is_staff %}
@@ -26,9 +26,6 @@
                 <div class="table-responsive crisp-table" tabindex="0">
                     <table class="table table-striped align-middle table-bordered table-hover-custom text-nowrap"
                            aria-labelledby="university-table-title">
-                        <caption class="visually-hidden" id="university-table-title">
-                            Listado de universidades y sus cursos asociados
-                        </caption>
                         <thead class="table-dark">
                             <tr>
                                 {% if user.is_staff %}

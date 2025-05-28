@@ -8,13 +8,13 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.core.cache import cache
 from django.http import HttpResponse, FileResponse, Http404
 from django.conf import settings
 from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib import messages
+from django.urls import reverse
 
 # Python estándar
 import os
@@ -118,6 +118,7 @@ def pregunta_list_supervisor(request):
 
     return render(request, 'Preguntas/lista_supervisor.html', context)
 
+@exclude_supervisor
 @login_required
 def pregunta_create(request):
     if request.method == 'POST':
@@ -236,8 +237,8 @@ def pregunta_update(request, pk):
         'current_file': pregunta.contenido.name if pregunta.contenido else None
     })
 
-@exclude_supervisor
 @login_required
+@exclude_supervisor
 def pregunta_delete(request, pk):
     try:
         user_profile = UserProfile.objects.get(user=request.user)
@@ -248,16 +249,21 @@ def pregunta_delete(request, pk):
     if request.user.is_superuser:
         pregunta = get_object_or_404(Pregunta, pk=pk)
     else:
-        pregunta = get_object_or_404(Pregunta, pk=pk, usuario=user_profile)  
+        pregunta = get_object_or_404(Pregunta, pk=pk, usuario=user_profile)
+
+    # Capturamos la URL anterior solo para el GET (para mostrar "volver")
+    referer = request.META.get('HTTP_REFERER', reverse('pregunta-list'))
 
     if request.method == 'POST':
         pregunta.delete()
         messages.success(request, 'Pregunta eliminada exitosamente.')
-        return redirect('pregunta-list')
+        return redirect('pregunta-list')  # Redirige siempre a la lista
 
     return render(request, 'Preguntas/pregunta_confirm_delete.html', {
-        'pregunta': pregunta
+        'pregunta': pregunta,
+        'volver_url': referer, 
     })
+
 
 #desde aquí empecé a modificar lo del formato de las preguntas
 #para darle 2 columnas al doc final

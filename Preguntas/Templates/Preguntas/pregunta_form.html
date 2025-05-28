@@ -3,10 +3,42 @@
 {% load static %}
 
 {% block content %}
-<div class="container my-4">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<div class="container-fluid">
     <div class="row">
-        <!-- Formulario principal -->
-        <div class="col-lg-8 mx-auto">
+        <!-- Formulario principal - Izquierda -->
+        <div class="col-lg-8">
+            {% if form.errors %}
+            <div id="form-error-alert"
+                class="alert alert-danger shadow-lg position-fixed top-0 start-50 translate-middle-x mt-4 animate__animated animate__fadeInDown"
+                role="alert" style="min-width: 400px; max-width: 600px; z-index: 1060;">
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-1">Error en el formulario</h5>
+                        <p class="mb-2">Por favor corrija los siguientes errores:</p>
+                        <ul class="mb-2 ps-3">
+                            {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                            <li>
+                                <strong>{{ field|capfirst }}:</strong> {{ error }}
+                                {% if field == 'contenido' %}
+                                <small class="d-block text-muted">(Tamaño máximo: 5MB, formatos permitidos: .doc,.docx)</small>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <button type="button" class="btn-close ms-2 mt-1" data-bs-dismiss="alert"
+                        aria-label="Cerrar"></button>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white">
                     <h3 class="card-title mb-0">
@@ -33,7 +65,8 @@
                             </div>
                         </div>
                         <div class="alert alert-warning mt-3 mb-0">
-                            <i class="fas fa-edit me-2"></i><strong>Solo puedes editar:</strong> la respuesta correcta y subir un nuevo archivo
+                            <i class="fas fa-edit me-2"></i><strong>Solo puedes editar:</strong> la respuesta correcta y
+                            subir un nuevo archivo
                         </div>
                     </div>
                     {% endif %}
@@ -107,23 +140,6 @@
                             </div>
                         </div>
 
-                        <!-- NOMBRE - Solo mostrar si NO es edición -->
-                        <div class="mb-3">
-                            <label for="id_nombre" class="form-label fw-bold">
-                                <i class="fas fa-arrow-right me-2 text-primary"></i>Nombre generado
-                            </label>
-                            {{ form.nombre }}
-                            {% if form.nombre.help_text %}
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>{{ form.nombre.help_text }}
-                            </div>
-                            {% endif %}
-                            <div class="invalid-feedback">
-                                {{ form.nombre.errors.0 }}
-                            </div>
-                        </div>
-                        {% endif %}
-
                         <!-- TIENE SOLUCIÓN - Checkbox -->
                         <div class="mb-3">
                             <div class="form-check">
@@ -170,14 +186,30 @@
                                 {{ form.contenido.errors.0 }}
                             </div>
                         </div>
-
+                        <!-- NOMBRE - Solo mostrar si NO es edición -->
+                        <div class="mb-3">
+                            <label for="id_nombre" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Nombre generado
+                            </label>
+                            {{ form.nombre }}
+                            {% if form.nombre.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.nombre.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.nombre.errors.0 }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <!-- BOTONES -->
                         <div class="text-end mt-4 pt-3 border-top">
                             <a href="{% url 'pregunta-list' %}" class="btn btn-secondary me-2">
                                 <i class="fas fa-times me-1"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i> 
+                                <i class="fas fa-save me-1"></i>
                                 {% if is_update %}Actualizar{% else %}Guardar{% endif %}
                             </button>
                         </div>
@@ -185,63 +217,69 @@
                 </div>
             </div>
         </div>
-        <!-- Nota estática -->
+
+        <!-- Nota estática flotante - Derecha -->
         <div class="col-lg-4">
-            <div >
-                <div class="card h-100 border-info shadow-lg">
-                    <div class="card-header bg-info text-white d-flex align-items-center">
-                        <i class="fas fa-lightbulb me-2 fs-4"></i>
-                        <h4 class="mb-0 fw-bold">Guía para Elaboración de Preguntas</h4>
+                <div class="card border-info shadow-lg sticky-top ms-3" style="top: 1px; max-height: calc(150vh - 160px); overflow-y: auto; width: 100%; max-width: 380px;">                <div class="card-header bg-info text-white d-flex align-items-center">
+                    <i class="fas fa-lightbulb me-2 fs-4"></i>
+                    <h4 class="mb-0 fw-bold">Guía para Elaboración de Preguntas</h4>
+                </div>
+                <div class="card-body" style="font-size: 0.95rem; line-height: 1.5;">
+                    <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+                        <strong><i class="fas fa-exclamation-triangle me-2"></i>Atención:</strong> Siga estas pautas
+                        para garantizar la calidad de las preguntas.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    <div class="card-body" style="font-size: 0.95rem; line-height: 1.5;">
-                        <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
-                            <strong><i class="fas fa-exclamation-triangle me-2"></i>Atención:</strong> Siga estas pautas para garantizar la calidad de las preguntas.
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+                    <div class="guidelines-list">
+                        <div class="guideline-item mb-3 p-3 bg-light rounded">
+                            <h5 class="fw-bold text-primary"><i class="fas fa-question-circle me-2"></i>Enunciado</h5>
+                            <p class="mb-0">Incluya el origen del ejercicio (solo universidades) al final del enunciado.
+                            </p>
                         </div>
-                        
-                        <div class="guidelines-list">
-                            <div class="guideline-item mb-3 p-3 bg-light rounded">
-                                <h5 class="fw-bold text-primary"><i class="fas fa-question-circle me-2"></i>Enunciado</h5>
-                                <p class="mb-0">Incluya el origen del ejercicio (solo universidades) al final del enunciado.</p>
-                            </div>
-                            
-                            <div class="guideline-item mb-3 p-3 bg-light rounded">
-                                <h5 class="fw-bold text-primary"><i class="fas fa-key me-2"></i>Opciones de Respuesta</h5>
-                                <ul class="mb-0 ps-3">
-                                    <li>5 opciones en <span class="text-uppercase fw-bold">mayúsculas</span></li>
-                                    <li>Conceptos como oraciones completas o respuestas numéricas</li>
-                                    <li><span class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i>Clave correcta resaltada</span></li>
-                                </ul>
-                            </div>
-                            
-                            <div class="guideline-item mb-3 p-3 bg-light rounded">
-                                <h5 class="fw-bold text-primary"><i class="fas fa-check-double me-2"></i>Solución</h5>
-                                <p class="mb-0">Debe comenzar con <span class="badge bg-dark text-white">SOLUCIÓN</span> en mayúsculas y negrita. (de tener solución)</p>
-                            </div>
-                            
-                            <div class="guideline-item mb-3 p-3 bg-light rounded">
-                                <h5 class="fw-bold text-primary"><i class="fas fa-file-alt me-2"></i>Formato</h5>
-                                <ul class="mb-0 ps-3">
-                                    <li>Sin espacios o interlineados adicionales</li>
-                                    <li>Sin numeración tipo "Ejercicio 1"</li>
-                                    <li>Texto justificado y fórmulas centradas</li>
-                                </ul>
+
+                        <div class="guideline-item mb-3 p-3 bg-light rounded">
+                            <h5 class="fw-bold text-primary"><i class="fas fa-key me-2"></i>Opciones de Respuesta</h5>
+                            <ul class="mb-0 ps-3">
+                                <li>5 opciones en <span class="text-uppercase fw-bold">mayúsculas</span></li>
+                                <li>Conceptos como oraciones completas o respuestas numéricas</li>
+                                <li><span class="badge bg-success text-white"><i
+                                            class="fas fa-check-circle me-1"></i>Clave correcta resaltada</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="guideline-item mb-3 p-3 bg-light rounded">
+                            <h5 class="fw-bold text-primary"><i class="fas fa-check-double me-2"></i>Solución</h5>
+                            <p class="mb-0">Debe comenzar con <span class="badge bg-dark text-white">SOLUCIÓN</span> en
+                                mayúsculas y negrita. (de tener solución)</p>
+                        </div>
+
+                        <div class="guideline-item mb-3 p-3 bg-light rounded">
+                            <h5 class="fw-bold text-primary"><i class="fas fa-file-alt me-2"></i>Formato</h5>
+                            <ul class="mb-0 ps-3">
+                                <li>Sin espacios o interlineados adicionales</li>
+                                <li>Sin numeración tipo "Ejercicio 1"</li>
+                                <li>Texto justificado y fórmulas centradas</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="examples mt-4">
+                        <div class="example-correct mb-4">
+                            <h5 class="fw-bold text-success mb-3"><i class="fas fa-thumbs-up me-2"></i>Formato Correcto
+                            </h5>
+                            <div class="ratio" style="--bs-aspect-ratio: 130%;">
+                                <img src="{% static 'EjemploCorrecto.JPG' %}" alt="Formato correcto"
+                                    class="img-fluid rounded shadow border border-3 border-success" loading="lazy" />
                             </div>
                         </div>
-                        
-                        <div class="examples mt-4">
-                            <div class="example-correct mb-4">
-                                <h5 class="fw-bold text-success mb-3"><i class="fas fa-thumbs-up me-2"></i>Formato Correcto</h5>
-                                <div class="ratio" style="--bs-aspect-ratio: 130%;">
-                                    <img src="{% static 'EjemploCorrecto.JPG' %}" alt="Formato correcto" class="img-fluid rounded shadow border border-3 border-success" loading="lazy" />
-                                </div>
-                            </div>
-                            
-                            <div class="example-incorrect">
-                                <h5 class="fw-bold text-danger mb-3"><i class="fas fa-thumbs-down me-2"></i>Formato Incorrecto</h5>
-                                <div class="ratio" style="--bs-aspect-ratio: 130%;">
-                                    <img src="{% static 'EjemplosIncorrectos.JPG' %}" alt="Formato incorrecto" class="img-fluid rounded shadow border border-3 border-danger" loading="lazy" />
-                                </div>
+
+                        <div class="example-incorrect">
+                            <h5 class="fw-bold text-danger mb-3"><i class="fas fa-thumbs-down me-2"></i>Formato
+                                Incorrecto</h5>
+                            <div class="ratio" style="--bs-aspect-ratio: 130%;">
+                                <img src="{% static 'EjemplosIncorrectos.JPG' %}" alt="Formato incorrecto"
+                                    class="img-fluid rounded shadow border border-3 border-danger" loading="lazy" />
                             </div>
                         </div>
                     </div>
@@ -254,55 +292,55 @@
 {% block extra_js %}
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         if (window._cascadaStarted) return;
         window._cascadaStarted = true;
 
         const universidadSelect = document.getElementById('id_universidad');
-        const cursoSelect      = document.getElementById('id_curso');
-        const temaSelect       = document.getElementById('id_tema');
+        const cursoSelect = document.getElementById('id_curso');
+        const temaSelect = document.getElementById('id_tema');
 
-        universidadSelect.addEventListener('change', function() {
+        universidadSelect.addEventListener('change', function () {
             resetear(cursoSelect, 'Seleccione un curso');
-            resetear(temaSelect,   'Seleccione un tema');
+            resetear(temaSelect, 'Seleccione un tema');
 
             const uniId = this.value;
             if (!uniId) return;
 
             fetch(`/preguntas/ajax/load-cursos/?universidad_id=${uniId}`)
-            .then(r => r.json())
-            .then(data => {
-                cursoSelect.disabled = false;
-                // Llevar un Set para evitar duplicados
-                const vistos = new Set();
-                data.forEach(c => {
-                if (!vistos.has(c.id)) {
-                    cursoSelect.add(new Option(c.nombre, c.id));
-                    vistos.add(c.id);
-                }
-                });
-            })
-            .catch(e => console.error('Cursos error:', e));
+                .then(r => r.json())
+                .then(data => {
+                    cursoSelect.disabled = false;
+                    // Llevar un Set para evitar duplicados
+                    const vistos = new Set();
+                    data.forEach(c => {
+                        if (!vistos.has(c.id)) {
+                            cursoSelect.add(new Option(c.nombre, c.id));
+                            vistos.add(c.id);
+                        }
+                    });
+                })
+                .catch(e => console.error('Cursos error:', e));
         });
 
-        cursoSelect.addEventListener('change', function() {
+        cursoSelect.addEventListener('change', function () {
             resetear(temaSelect, 'Seleccione un tema');
             const cursoId = this.value;
             if (!cursoId) return;
 
             fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
-            .then(r => r.json())
-            .then(data => {
-                temaSelect.disabled = false;
-                const vistos = new Set();
-                data.forEach(t => {
-                if (!vistos.has(t.id)) {
-                    temaSelect.add(new Option(t.nombre, t.id));
-                    vistos.add(t.id);
-                }
-                });
-            })
-            .catch(e => console.error('Temas error:', e));
+                .then(r => r.json())
+                .then(data => {
+                    temaSelect.disabled = false;
+                    const vistos = new Set();
+                    data.forEach(t => {
+                        if (!vistos.has(t.id)) {
+                            temaSelect.add(new Option(t.nombre, t.id));
+                            vistos.add(t.id);
+                        }
+                    });
+                })
+                .catch(e => console.error('Temas error:', e));
         });
 
         function resetear(select, placeholder) {
@@ -310,7 +348,24 @@
             select.add(new Option(placeholder, ''));
             select.disabled = true;
         }
-        });
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        const errorAlert = document.getElementById('form-error-alert');
+        if (errorAlert) {
+            setTimeout(() => {
+                errorAlert.classList.remove('animate__fadeInDown');
+                errorAlert.classList.add('animate__fadeOutUp');
+                setTimeout(() => errorAlert.remove(), 500);
+            }, 4000);
+
+            // Cerrar al hacer clic en el botón
+            errorAlert.querySelector('.btn-close').addEventListener('click', function () {
+                errorAlert.classList.remove('animate__fadeInDown');
+                errorAlert.classList.add('animate__fadeOutUp');
+                setTimeout(() => errorAlert.remove(), 500);
+            });
+        }
+    });     
 </script>
 {% endblock %}
 {% endblock %}

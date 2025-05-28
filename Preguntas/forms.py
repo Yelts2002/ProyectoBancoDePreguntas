@@ -42,7 +42,6 @@ class TemaForm(forms.ModelForm):
             }),
         }
 
-# forms.py - Formulario corregido
 class PreguntaForm(forms.ModelForm):
     class Meta:
         model = Pregunta
@@ -51,7 +50,7 @@ class PreguntaForm(forms.ModelForm):
             'universidad': forms.Select(attrs={'class': 'form-control'}),
             'curso': forms.Select(attrs={'class': 'form-control'}),
             'tema': forms.Select(attrs={'class': 'form-control'}),
-            'nivel': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'nivel': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 3}),
             'respuesta': forms.Select(attrs={'class': 'form-control'}),
             'contenido': forms.FileInput(attrs={'class': 'form-control', 'accept': '.doc,.docx'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),

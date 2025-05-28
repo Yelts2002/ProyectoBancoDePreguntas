@@ -5,28 +5,30 @@
 
 {% block content %}
 <main class="container py-4">
-    <header class="card-header d-flex justify-content-between align-items-center text-white py-3 px-4">
-        <div class="d-flex align-items-center">
-            <i class="fas fa-question-circle fa-lg me-3" aria-hidden="true"></i>
-            <h1 class="h2 mb-0" id="preguntas-title">
-                Mis Preguntas
-                {% if total_preguntas %}
-                <span class="badge bg-light text-dark ms-2 fs-6 fw-normal" aria-label="Total de preguntas">
-                    {{ total_preguntas }}
-                </span>
-                {% endif %}
-            </h1>
-        </div>
-        {% if user.is_staff %}
-        <a href="{% url 'pregunta-create' %}" class="btn btn-light btn-sm px-3" aria-label="Crear nueva pregunta">
-            <i class="fas fa-plus me-2" aria-hidden="true"></i>
-            <span>Nueva Pregunta</span>
-        </a>
-        {% endif %}
-    </header>
-
     <!-- Sección de Filtros y Listado de Preguntas -->
     <section class="card mb-4 shadow-sm border rounded" aria-labelledby="filter-section">
+        <header class="card-header d-flex justify-content-between align-items-center text-white py-3 px-4">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-question-circle fa-lg me-3" aria-hidden="true"></i>
+                <h1 class="h2 mb-0 text-black" id="preguntas-title">
+                    Mis Preguntas
+                    {% if total_preguntas %}
+                    <span 
+                        class="badge ms-2 fs-6 fw-normal" 
+                        style="background-color: #4CAF50; color: white;" 
+                        aria-label="Total de preguntas: {{ total_preguntas }}">
+                        {{ total_preguntas }}
+                    </span>
+                    {% endif %}
+                </h1>
+            </div>
+            <a href="{% url 'pregunta-create' %}" class="btn btn-light btn-sm px-3" aria-label="Crear nueva pregunta">
+                <i class="fas fa-plus me-2" aria-hidden="true"></i>
+                <span>Nueva Pregunta</span>
+            </a>
+        </header>
+
+
         <!-- Encabezado -->
         <div class="card-header bg-primary text-white d-flex align-items-center">
             <h2 class="h5 mb-0" id="filter-section">
@@ -139,12 +141,13 @@
                                     <th scope="col">Nivel</th>
                                     {% if user.is_staff %}<th scope="col">Contenido</th>{% endif %}
                                     <th scope="col">Tiempo Restante</th>
-                                    <th scope="col">Acciones</th>
+                                    {% if user.is_staff %}<th scope="col">Acciones</th>{% endif %}
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for pregunta in preguntas %}
                                     <tr>
+                                        {% if user.is_staff %}                                    
                                         <td>
                                             <div class="form-check">
                                                 <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas"
@@ -155,6 +158,8 @@
                                                 </label>
                                             </div>
                                         </td>
+                                        {% endif %}
+                                        
                                         <td>{{ pregunta.nombre }}</td>
                                         <td>
                                             {{ pregunta.universidad.nombre }}
@@ -202,8 +207,9 @@
                                                 {% endif %}
                                             {% endwith %}
                                         </td>
+                                        {% if user.is_staff %}
                                         <td>
-                                            <div class="btn-group" role="group" aria-label="Acciones para pregunta {{ pregunta.id }}">
+                                            <div class="d-flex flex-column flex-md-row justify-content-center gap-1"  aria-label="Acciones para pregunta {{ pregunta.id }}">
                                                 <button type="button" class="btn btn-info btn-sm"
                                                         data-url="{% url 'vista-previa' pregunta.id %}"
                                                         data-bs-toggle="modal" data-bs-target="#previewModal"
@@ -218,6 +224,8 @@
                                                 </a>
                                             </div>
                                         </td>
+                                        {% endif %}
+                                        
                                     </tr>
                                 {% empty %}
                                     <tr>

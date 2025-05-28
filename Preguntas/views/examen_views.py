@@ -60,6 +60,7 @@ def generar_examen(request):
 
             # CREAR EL EXAMEN EN LA BASE DE DATOS
             from datetime import datetime
+            fecha_actual = datetime.now().strftime('%Y-%m-%d')    
             examen = Examen.objects.create(
                 nombre=f"Examen_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
                 usuario=request.user.userprofile  # Ajusta según tu modelo de usuario
@@ -78,10 +79,8 @@ def generar_examen(request):
                 buffer,
                 content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
             )
-            response['Content-Disposition'] = f'attachment; filename="examen_{examen.id}.docx"'
-            
-            request.session['carrito'] = []
-            
+            response['Content-Disposition'] = f'attachment; filename="Simulacro {fecha_actual}.docx"'
+                        
             return response
 
         elif 'download_respuestas' in request.POST:
@@ -91,10 +90,12 @@ def generar_examen(request):
                 return redirect('generar_examen')
 
             import csv
+            from datetime import datetime
             from django.utils.encoding import smart_str
+            fecha_actual = datetime.now().strftime('%Y-%m-%d')  # Formato: AAAA-MM-DD           
 
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="respuestas_examen.csv"'
+            response['Content-Disposition'] = f'attachment; filename="Alternativas {fecha_actual}.csv"'
 
             writer = csv.writer(response, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(['N°', 'Curso', 'Tema', 'Nombre de la Pregunta', 'Respuesta'])
@@ -108,10 +109,8 @@ def generar_examen(request):
                     smart_str(pregunta.get_respuesta_display())
                 ])
 
-            return response
 
-    # MOVER AQUÍ LA CONSULTA DE PREGUNTAS CON ANOTACIONES
-    # Para que se ejecute después de cualquier operación POST que pueda cambiar el estado
+            return response
     
     # Subquery para verificar uso
     subquery = ExamenPregunta.objects.filter(pregunta=OuterRef('pk'))
@@ -126,11 +125,6 @@ def generar_examen(request):
         usada_flag=Exists(subquery),
         fecha_ultimo_uso=Subquery(fecha_ultimo_uso_subquery)
     )
-
-    # DEBUG TEMPORAL - quitar después de confirmar que funciona
-    for p in preguntas:
-        print(f"Pregunta {p.id}: usada_flag={p.usada_flag}, fecha_ultimo_uso={p.fecha_ultimo_uso}")
-    # FIN DEBUG
 
     # Recargar carrito actualizado para mostrar en la plantilla
     carrito_preguntas = Pregunta.objects.filter(id__in=carrito_ids)
