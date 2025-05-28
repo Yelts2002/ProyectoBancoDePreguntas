@@ -152,7 +152,23 @@
                                 {{ form.tiene_solucion.errors.0 }}
                             </div>
                         </div>
-
+                        <!-- NOMBRE - Solo mostrar si NO es edición -->
+                        <div class="mb-3">
+                            <label for="id_nombre" class="form-label fw-bold">
+                                <i class="fas fa-arrow-right me-2 text-primary"></i>Nombre generado
+                            </label>
+                            {{ form.nombre }}
+                            {% if form.nombre.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.nombre.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.nombre.errors.0 }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <!-- RESPUESTA - Siempre mostrar -->
                         <div class="mb-3">
                             <label for="id_respuesta" class="form-label fw-bold">
@@ -186,22 +202,6 @@
                                 {{ form.contenido.errors.0 }}
                             </div>
                         </div>
-                        <!-- NOMBRE - Solo mostrar si NO es edición -->
-                        <div class="mb-3">
-                            <label for="id_nombre" class="form-label fw-bold">
-                                <i class="fas fa-arrow-right me-2 text-primary"></i>Nombre generado
-                            </label>
-                            {{ form.nombre }}
-                            {% if form.nombre.help_text %}
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>{{ form.nombre.help_text }}
-                            </div>
-                            {% endif %}
-                            <div class="invalid-feedback">
-                                {{ form.nombre.errors.0 }}
-                            </div>
-                        </div>
-                        {% endif %}
                         
                         <!-- BOTONES -->
                         <div class="text-end mt-4 pt-3 border-top">
