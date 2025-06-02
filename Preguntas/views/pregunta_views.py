@@ -118,31 +118,24 @@ def pregunta_list_supervisor(request):
 
     return render(request, 'Preguntas/lista_supervisor.html', context)
 
-@exclude_supervisor
 @login_required
+@exclude_supervisor
 def pregunta_create(request):
     if request.method == 'POST':
         form = PreguntaForm(request.POST, request.FILES)
         if form.is_valid():
             pregunta = form.save(commit=False)
-
-            # Asignar el usuario actual a la pregunta
             user_profile = UserProfile.objects.get(user=request.user)
             pregunta.usuario = user_profile
 
-            # Generar nombre automáticamente
             count = Pregunta.objects.filter(
                 universidad=pregunta.universidad,
                 curso=pregunta.curso,
                 tema=pregunta.tema,
                 nivel=pregunta.nivel
             ).count() + 1
+
             pregunta.nombre = f"{pregunta.universidad.id}{pregunta.curso.id}{pregunta.tema.id}{pregunta.nivel}{count}"
-
-            if not pregunta.universidad or not pregunta.curso or not pregunta.tema:
-                form.add_error(None, "Los campos universidad, curso y tema son obligatorios.")
-                return render(request, 'Preguntas/pregunta_form.html', {'form': form, 'title': 'Nueva Pregunta'})
-
             pregunta.save()
 
             if 'contenido' in request.FILES:
@@ -151,10 +144,11 @@ def pregunta_create(request):
 
             messages.success(request, 'Pregunta creada exitosamente.')
 
-            # Simular un nuevo formulario con los campos seleccionados
+            # ✅ SIMULAR nuevo formulario
             data = request.POST.copy()
             data['nombre'] = ''
-            nuevo_formulario = PreguntaForm(data)
+            nuevo_formulario = PreguntaForm(data, is_update=False)
+            nuevo_formulario.fields['contenido'].required = False  # << Recomendado
 
             return render(request, 'Preguntas/pregunta_form.html', {
                 'form': nuevo_formulario,
@@ -174,9 +168,6 @@ def pregunta_create(request):
         'form': form,
         'title': 'Nueva Pregunta'
     })
-
-
-# views.py - Vista corregida
 
 @login_required
 @exclude_supervisor

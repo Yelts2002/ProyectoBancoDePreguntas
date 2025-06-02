@@ -232,3 +232,130 @@ class CustomUserCreationForm(UserCreationForm):
             user.userprofile.save()
 
         return user
+
+
+class MasivaPreguntaForm(forms.Form):
+    universidad = forms.ModelChoiceField(
+        queryset=Universidad.objects.all(),
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'id_universidad_masiva'  # Cambiado para evitar conflicto
+        })
+    )
+    curso = forms.ModelChoiceField(
+        queryset=Curso.objects.none(),
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'id_curso_masiva'
+        })
+    )
+    tema = forms.ModelChoiceField(
+        queryset=Tema.objects.none(),
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'id_tema_masiva'
+        })
+    )
+    nivel = forms.IntegerField(
+        min_value=1,
+        max_value=3,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+    archivo = forms.FileField(
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.docx,.doc'
+        }),
+        help_text="Suba un archivo Word (.docx) con preguntas separadas por '*****'"
+    )
+    respuesta_default = forms.ChoiceField(
+        choices=Pregunta.RESPUESTA_CHOICES,
+        initial='A',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text="Respuesta por defecto para todas las preguntas"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        if 'universidad' in self.data:
+            try:
+                universidad_id = int(self.data.get('universidad'))
+                self.fields['curso'].queryset = Curso.objects.filter(
+                    universidades__id=universidad_id
+                ).distinct()
+            except (ValueError, TypeError):
+                pass
+
+    def clean_archivo(self):
+        archivo = self.cleaned_data.get('archivo')
+        if archivo:
+            if not archivo.name.lower().endswith(('.docx', '.doc')):
+                raise forms.ValidationError("Solo se permiten archivos Word (.docx o .doc)")
+            
+            try:
+                from docx import Document
+                from io import BytesIO
+                
+                doc = Document(BytesIO(archivo.read()))
+                full_text = "\n".join([para.text for para in doc.paragraphs])
+                
+                if '*****' not in full_text:
+                    raise forms.ValidationError("El archivo debe contener '*****' para separar preguntas")
+                
+                archivo.seek(0)
+            except Exception as e:
+                raise forms.ValidationError(f"No se pudo leer el archivo: {str(e)}")
+        
+        return archivo
+
+
+class CargaMasivaPreguntaForm(forms.Form):
+    universidad = forms.ModelChoiceField(
+        queryset=Universidad.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    curso = forms.ModelChoiceField(
+        queryset=Curso.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False
+    )
+    tema = forms.ModelChoiceField(
+        queryset=Tema.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False
+    )
+    nivel = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 3}),
+        initial=1
+    )
+    archivo = forms.FileField(
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.doc,.docx'}),
+        help_text="Suba un archivo Word con preguntas separadas por '*****'"
+    )
+    respuesta_default = forms.ChoiceField(
+        choices=Pregunta.RESPUESTA_CHOICES,
+        initial='A',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        if 'universidad' in self.data:
+            try:
+                universidad_id = int(self.data.get('universidad'))
+                self.fields['curso'].queryset = Curso.objects.filter(
+                    universidades__id=universidad_id
+                ).order_by('nombre')
+            except (ValueError, TypeError):
+                pass
+
+        if 'curso' in self.data:
+            try:
+                curso_id = int(self.data.get('curso'))
+                self.fields['tema'].queryset = Tema.objects.filter(
+                    curso__id=curso_id
+                ).order_by('nombre')
+            except (ValueError, TypeError):
+                pass

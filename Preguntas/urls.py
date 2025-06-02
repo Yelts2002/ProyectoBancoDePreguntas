@@ -29,6 +29,7 @@ urlpatterns = [
     path('pregunta/<int:pk>/vista-previa/', views.vista_previa, name='vista-previa'),
     path('pregunta/<int:pk>/vista-previa/', views.vista_previa, name='vista-previa'),
     path('preguntas/todas/', views.todas_las_preguntas, name='todas_las_preguntas'),
+    path('preguntas/masivo/', views.masivo_pregunta_create, name='masivo_pregunta_create'),
 
     # URL para Generar Examen (solo administrador)
     path('examen/generar/', views.generar_examen, name='generar-examen'),

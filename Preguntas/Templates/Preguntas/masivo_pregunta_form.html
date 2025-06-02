@@ -1,0 +1,306 @@
+{% extends 'Preguntas/home.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Formulario principal - Izquierda -->
+        <div class="col-lg-8">
+            {% if form.errors %}
+            <div id="form-error-alert"
+                class="alert alert-danger shadow-lg position-fixed top-0 start-50 translate-middle-x mt-4 animate__animated animate__fadeInDown"
+                role="alert" style="min-width: 400px; max-width: 600px; z-index: 1060;">
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-1">Error en el formulario</h5>
+                        <p class="mb-2">Por favor corrija los siguientes errores:</p>
+                        <ul class="mb-2 ps-3">
+                            {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                            <li>
+                                <strong>{{ field|capfirst }}:</strong> {{ error }}
+                                {% if field == 'archivo' %}
+                                <small class="d-block text-muted">(Formato permitido: .docx, debe contener separador '*****')</small>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <button type="button" class="btn-close ms-2 mt-1" data-bs-dismiss="alert"
+                        aria-label="Cerrar"></button>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-file-import me-2"></i>{{ title }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Información sobre el proceso -->
+                    <div class="alert alert-info mb-4">
+                        <h5><i class="fas fa-info-circle me-2"></i>Instrucciones para carga masiva:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Formato del archivo:</strong> Documento Word (.docx)</p>
+                                <p><strong>Separador de preguntas:</strong> Línea con '*****'</p>
+                                <p><strong>Respuesta por defecto:</strong> A (puede cambiarse después)</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Nivel por defecto:</strong> {{ form.nivel.value }}</p>
+                                <p><strong>Nombres generados:</strong> Automáticamente</p>
+                                <p><strong>Archivos generados:</strong> Uno por pregunta</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="form-messages" class="mb-3"></div>
+                    <form id="masivaForm" method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <!-- UNIVERSIDAD -->
+                        <div class="mb-3">
+                            <label for="id_universidad" class="form-label fw-bold">
+                                <i class="fas fa-university me-2 text-primary"></i>Universidad
+                            </label>
+                            {{ form.universidad }}
+                            <div class="invalid-feedback">
+                                {{ form.universidad.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- CURSO -->
+                        <div class="mb-3">
+                            <label for="id_curso" class="form-label fw-bold">
+                                <i class="fas fa-book me-2 text-primary"></i>Curso
+                            </label>
+                            {{ form.curso }}
+                            <div class="invalid-feedback">
+                                {{ form.curso.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- TEMA -->
+                        <div class="mb-3">
+                            <label for="id_tema" class="form-label fw-bold">
+                                <i class="fas fa-tag me-2 text-primary"></i>Tema
+                            </label>
+                            {{ form.tema }}
+                            <div class="invalid-feedback">
+                                {{ form.tema.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- NIVEL -->
+                        <div class="mb-3">
+                            <label for="id_nivel" class="form-label fw-bold">
+                                <i class="fas fa-layer-group me-2 text-primary"></i>Nivel de Dificultad
+                            </label>
+                            {{ form.nivel }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Se aplicará a todas las preguntas
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form.nivel.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- RESPUESTA POR DEFECTO -->
+                        <div class="mb-3">
+                            <label for="id_respuesta_default" class="form-label fw-bold">
+                                <i class="fas fa-check-circle me-2 text-success"></i>Respuesta por Defecto
+                            </label>
+                            {{ form.respuesta_default }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Puede editar las respuestas individualmente después
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form.respuesta_default.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- ARCHIVO MASIVO -->
+                        <div class="mb-4">
+                            <label for="id_archivo" class="form-label fw-bold">
+                                <i class="fas fa-file-word me-2 text-primary"></i>Archivo con Preguntas
+                            </label>
+                            {{ form.archivo }}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.archivo.help_text }}
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form.archivo.errors.0 }}
+                            </div>
+                            
+                            <!-- Ejemplo de formato -->
+                            <div class="alert alert-secondary mt-3">
+                                <h6><i class="fas fa-file-alt me-2"></i>Ejemplo de formato:</h6>
+                                <pre class="mb-1 mt-2 p-2 bg-light border rounded">
+¿Cuál es la capital de Perú?
+A) Lima  B) Bogotá  C) Santiago  D) Quito  E) Buenos Aires
+*****
+¿Cuánto es 2+2?
+A) 1  B) 4  C) 3  D) 10  E) 50
+*****
+¿Quién pintó la Mona Lisa?
+A) Picasso  B) Van Gogh  C) Da Vinci  D) Monet  E) Dalí</pre>
+                                <p class="mb-0 mt-2"><small class="text-muted">Cada pregunta debe estar separada por una línea con exactamente '*****'</small></p>
+                            </div>
+                        </div>
+                        
+                        <!-- BOTONES -->
+                        <div class="text-end mt-4 pt-3 border-top">
+                            <a href="{% url 'pregunta-list' %}" class="btn btn-secondary me-2">
+                                <i class="fas fa-times me-1"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-file-import me-1"></i> Procesar Archivo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de ayuda - Derecha -->
+        <div class="col-lg-4">
+            <div class="card shadow-lg sticky-top" style="top: 20px;">
+                <div class="card-header bg-info text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-question-circle me-2"></i>Ayuda para Carga Masiva
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-info mb-3">
+                        <i class="fas fa-lightbulb me-2"></i>Recomendaciones
+                    </h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Verifique el formato</strong> antes de subir
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Revise las preguntas</strong> después de cargarlas
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>No incluya imágenes</strong> en las preguntas
+                        </li>
+                    </ul>
+
+                    <h5 class="text-info mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Precauciones
+                    </h5>
+                    <div class="alert alert-warning">
+                        <ul class="mb-0">
+                            <li>Todas las preguntas tendrán la misma respuesta por defecto</li>
+                            <li>El nivel de dificultad será el mismo para todas</li>
+                            <li>No podrá deshacer la operación después de guardar</li>
+                        </ul>
+                    </div>
+
+                    <h5 class="text-info mb-3">
+                        <i class="fas fa-history me-2"></i>Proceso Automático
+                    </h5>
+                    <div class="timeline-steps">
+                        <div class="timeline-step">
+                            <div class="timeline-content">
+                                <div class="inner-circle bg-primary"></div>
+                                <p class="mb-0"><strong>1. Subir archivo</strong></p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-content">
+                                <div class="inner-circle bg-primary"></div>
+                                <p class="mb-0"><strong>2. Dividir preguntas</strong></p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-content">
+                                <div class="inner-circle bg-primary"></div>
+                                <p class="mb-0"><strong>3. Crear documentos</strong></p>
+                            </div>
+                        </div>
+                        <div class="timeline-step">
+                            <div class="timeline-content">
+                                <div class="inner-circle bg-primary"></div>
+                                <p class="mb-0"><strong>4. Guardar en sistema</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const universidadSelect = document.getElementById('id_universidad');
+    const cursoSelect = document.getElementById('id_curso');
+    const temaSelect = document.getElementById('id_tema');
+
+    // Función para cargar cursos
+    function cargarCursos(universidadId) {
+        if (!universidadId) {
+            cursoSelect.innerHTML = '<option value="">---------</option>';
+            temaSelect.innerHTML = '<option value="">---------</option>';
+            return;
+        }
+
+        fetch(`/preguntas/ajax/load-cursos/?universidad_id=${universidadId}`)
+            .then(response => response.json())
+            .then(data => {
+                let options = '<option value="">---------</option>';
+                data.forEach(curso => {
+                    options += `<option value="${curso.id}">${curso.nombre}</option>`;
+                });
+                cursoSelect.innerHTML = options;
+                temaSelect.innerHTML = '<option value="">---------</option>';
+            });
+    }
+
+    // Función para cargar temas
+    function cargarTemas(cursoId) {
+        if (!cursoId) {
+            temaSelect.innerHTML = '<option value="">---------</option>';
+            return;
+        }
+
+        fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
+            .then(response => response.json())
+            .then(data => {
+                let options = '<option value="">---------</option>';
+                data.forEach(tema => {
+                    options += `<option value="${tema.id}">${tema.nombre}</option>`;
+                });
+                temaSelect.innerHTML = options;
+            });
+    }
+
+    // Event listeners
+    universidadSelect.addEventListener('change', function() {
+        cargarCursos(this.value);
+    });
+
+    cursoSelect.addEventListener('change', function() {
+        cargarTemas(this.value);
+    });
+
+    // Cargar inicialmente si hay valor en universidad
+    if (universidadSelect.value) {
+        cargarCursos(universidadSelect.value);
+        if (cursoSelect.value) {
+            cargarTemas(cursoSelect.value);
+        }
+    }
+});
+</script>
+{% endblock %}
