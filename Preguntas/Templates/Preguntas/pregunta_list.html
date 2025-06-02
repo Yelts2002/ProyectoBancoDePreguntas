@@ -215,7 +215,7 @@
                                                         data-bs-toggle="modal" data-bs-target="#previewModal"
                                                         onclick="loadPdfPreview(this)">
                                                     <i class="fas fa-eye" aria-hidden="true"></i>
-                                                </button>
+                                                </button>                                              
                                                 <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning btn-sm">
                                                     <i class="fas fa-pencil-alt" aria-hidden="true"></i>
                                                 </a>
@@ -269,14 +269,15 @@
     </div>
 </main>
 
+
+
 {% block extra_js %}
 <script>
-    function loadPdfPreview(button) {
-        const url = button.getAttribute('data-url');
-        const iframe = document.getElementById('previewFrame');
-        iframe.src = url;
-    }
-
+function loadPdfPreview(button) {
+    const url = button.getAttribute('data-url');
+    const iframe = document.getElementById('previewFrame');
+    iframe.src = url;
+}
     document.addEventListener('DOMContentLoaded', function () {
         // Aplicar clase form-control a todos los selects en el formulario de filtro
         document.querySelectorAll('#filtroForm select').forEach(select => {
