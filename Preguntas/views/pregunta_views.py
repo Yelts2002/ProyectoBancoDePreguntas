@@ -73,7 +73,7 @@ def pregunta_list(request):
         qs = qs.filter(nivel=nivel)
 
     # Paginación - 30 preguntas por página
-    paginator = Paginator(qs, 30)
+    paginator = Paginator(qs, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -264,6 +264,38 @@ def pregunta_delete(request, pk):
         'pregunta': pregunta,
         'volver_url': referer, 
     })
+
+@login_required
+@exclude_supervisor
+def eliminar_preguntas(request):
+    if request.method == 'POST':
+        pregunta_ids = request.POST.getlist('preguntas')
+        
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            messages.error(request, "No se encontró el perfil de usuario.")
+            return redirect('pregunta-list')
+
+        # Verificar que todas las preguntas pertenecen al usuario (a menos que sea superuser)
+        if request.user.is_superuser:
+            preguntas = Pregunta.objects.filter(id__in=pregunta_ids)
+        else:
+            preguntas = Pregunta.objects.filter(id__in=pregunta_ids, usuario=user_profile)
+
+        count = preguntas.count()
+        if count == 0:
+            messages.error(request, 'No se encontraron preguntas para eliminar.')
+            return redirect('pregunta-list')
+
+        # Eliminar las preguntas
+        preguntas.delete()
+        messages.success(request, f'Se eliminaron {count} pregunta(s) correctamente.')
+        
+        return redirect('pregunta-list')
+
+    # Si no es POST, redirigir
+    return redirect('pregunta-list')
 
 
 #desde aquí empecé a modificar lo del formato de las preguntas

@@ -126,7 +126,7 @@ def generar_examen(request):
     ).order_by('-fecha_creacion')  # Ordenar por fecha de creación descendente
 
     # Paginación - 30 preguntas por página
-    paginator = Paginator(preguntas, 30)
+    paginator = Paginator(preguntas, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 

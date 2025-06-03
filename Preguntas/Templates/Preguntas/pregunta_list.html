@@ -245,6 +245,10 @@
                             <button type="submit" class="btn btn-success" id="btnDescargar" disabled aria-label="Descargar preguntas seleccionadas">
                                 <i class="fas fa-download" aria-hidden="true"></i> Descargar Seleccionadas
                             </button>
+                            <button type="button" class="btn btn-danger" id="btnEliminar" disabled aria-label="Eliminar preguntas seleccionadas" 
+                                    data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <i class="fas fa-trash" aria-hidden="true"></i> Eliminar Seleccionadas
+                            </button>        
                         </div>
                     {% endif %}
                 </div>
@@ -318,6 +322,25 @@
         </div>
     </div>
 </main>
+
+<!-- Agrega este modal al final del archivo, antes del cierre del main -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar las preguntas seleccionadas? Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% block extra_js %}
 <script>
@@ -432,6 +455,37 @@ function loadPdfPreview(button) {
 
         // Auto‐submit solo al elegir Tema
         temaSel.addEventListener('change', () => form.submit());
+
+        const btnEliminar = document.getElementById('btnEliminar');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+        // Actualiza ambos botones cuando cambia la selección
+        function updateActionButtons() {
+            const haySeleccionados = document.querySelectorAll('.pregunta-check:checked').length > 0;
+            btnDescargar.disabled = !haySeleccionados;
+            btnEliminar.disabled = !haySeleccionados;
+            btnDescargar.setAttribute('aria-disabled', !haySeleccionados);
+            btnEliminar.setAttribute('aria-disabled', !haySeleccionados);
+        }
+
+        // Reemplaza tu función updateDownloadButton por esta
+        function updateDownloadButton() {
+            updateActionButtons();
+        }
+
+        // Manejar el clic en el botón de eliminar
+        btnEliminar.addEventListener('click', function() {
+            // El modal se abre automáticamente por data-bs-toggle
+        });
+
+        // Confirmar eliminación
+        confirmDeleteBtn.addEventListener('click', function() {
+            const form = document.getElementById('preguntasForm');
+            form.action = "{% url 'eliminar-preguntas' %}";  // Cambia la acción del formulario
+            form.submit();
+        });
+    
+    
     });
 </script>
 {% endblock %}
