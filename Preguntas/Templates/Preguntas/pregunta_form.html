@@ -124,34 +124,6 @@
                             </div>
                         </div>
 
-                        <!-- NIVEL - Solo mostrar si NO es edición -->
-                        <div class="mb-3">
-                            <label for="id_nivel" class="form-label fw-bold">
-                                <i class="fas fa-arrow-right me-2 text-primary"></i>Nivel
-                            </label>
-                            {{ form.nivel }}
-                            {% if form.nivel.help_text %}
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>{{ form.nivel.help_text }}
-                            </div>
-                            {% endif %}
-                            <div class="invalid-feedback">
-                                {{ form.nivel.errors.0 }}
-                            </div>
-                        </div>
-
-                        <!-- TIENE SOLUCIÓN - Checkbox -->
-                        <div class="mb-3">
-                            <div class="form-check">
-                                {{ form.tiene_solucion }}
-                                <label for="id_tiene_solucion" class="form-check-label fw-bold">
-                                    <i class="fas fa-lightbulb me-2 text-info"></i>¿Tiene solución?
-                                </label>
-                            </div>
-                            <div class="invalid-feedback">
-                                {{ form.tiene_solucion.errors.0 }}
-                            </div>
-                        </div>
                         <!-- NOMBRE - Solo mostrar si NO es edición -->
                         <div class="mb-3">
                             <label for="id_nombre" class="form-label fw-bold">
@@ -168,6 +140,37 @@
                             </div>
                         </div>
                         {% endif %}
+                        
+                        <!-- NIVEL - Mostrar siempre pero con diferente estilo en edición -->
+                        <div class="mb-3">
+                            <label for="id_nivel" class="form-label fw-bold">
+                                <i class="fas fa-layer-group me-2 text-primary"></i>Nivel
+                                {% if is_update %}<span class="badge bg-warning text-dark ms-2">EDITABLE</span>{% endif %}
+                            </label>
+                            {{ form.nivel }}
+                            {% if form.nivel.help_text %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>{{ form.nivel.help_text }}
+                            </div>
+                            {% endif %}
+                            <div class="invalid-feedback">
+                                {{ form.nivel.errors.0 }}
+                            </div>
+                        </div>
+
+                        <!-- TIENE SOLUCIÓN - Mostrar siempre pero con diferente estilo en edición -->
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                {{ form.tiene_solucion }}
+                                <label for="id_tiene_solucion" class="form-check-label fw-bold">
+                                    <i class="fas fa-lightbulb me-2 text-info"></i>¿Tiene solución?
+                                    {% if is_update %}<span class="badge bg-warning text-dark ms-2">EDITABLE</span>{% endif %}
+                                </label>
+                            </div>
+                            <div class="invalid-feedback">
+                                {{ form.tiene_solucion.errors.0 }}
+                            </div>
+                        </div>
                         
                         <!-- RESPUESTA - Siempre mostrar -->
                         <div class="mb-3">

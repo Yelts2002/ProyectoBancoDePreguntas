@@ -47,9 +47,9 @@ class PreguntaForm(forms.ModelForm):
         model = Pregunta
         fields = ['universidad', 'curso', 'tema', 'nivel', 'respuesta', 'contenido', 'nombre', 'tiene_solucion']
         widgets = {
-            'universidad': forms.Select(attrs={'class': 'form-control'}),
-            'curso': forms.Select(attrs={'class': 'form-control'}),
-            'tema': forms.Select(attrs={'class': 'form-control'}),
+            'universidad': forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
+            'curso': forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
+            'tema': forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
             'nivel': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 3}),
             'respuesta': forms.Select(attrs={'class': 'form-control'}),
             'contenido': forms.FileInput(attrs={'class': 'form-control', 'accept': '.doc,.docx'}),
@@ -64,8 +64,8 @@ class PreguntaForm(forms.ModelForm):
         
         # Configurar campos según el modo
         if self.is_update:
-            # En modo edición: hacer campos no requeridos y deshabilitados
-            for campo in ['universidad', 'curso', 'tema', 'nivel', 'nombre']:
+            # En modo edición: hacer campos no editables
+            for campo in ['universidad', 'curso', 'tema', 'nombre']:
                 if campo in self.fields:
                     self.fields[campo].required = False
                     self.fields[campo].disabled = True
@@ -74,12 +74,16 @@ class PreguntaForm(forms.ModelForm):
                         'style': 'background-color: #f8f9fa; cursor: not-allowed;'
                     })
 
-            # Deshabilitar campo tiene_solucion en modo edición
-            if 'tiene_solucion' in self.fields:
-                self.fields['tiene_solucion'].disabled = True
-                self.fields['tiene_solucion'].widget.attrs.update({
-                    'style': 'pointer-events: none; opacity: 0.5;'
-                })
+            # Habilitar nivel y tiene_solucion en modo edición
+            self.fields['nivel'].disabled = False
+            self.fields['nivel'].widget.attrs.update({
+                'style': 'background-color: #fff; cursor: auto;'
+            })
+            
+            self.fields['tiene_solucion'].disabled = False
+            self.fields['tiene_solucion'].widget.attrs.update({
+                'style': 'cursor: pointer; opacity: 1;'
+            })
             
             # Contenido opcional en edición
             self.fields['contenido'].required = False

@@ -1,12 +1,12 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from django.utils import timezone
 from django.contrib import messages
+from django.core.paginator import Paginator
 
 from ..models import Examen, Pregunta, ExamenPregunta, Tema, Universidad, Curso
 from .pregunta_views import combinar_documentos
-from django.db.models import OuterRef, Exists, Subquery, Max
+from django.db.models import OuterRef, Exists, Subquery
 
 @staff_member_required
 def generar_examen(request):
@@ -63,7 +63,7 @@ def generar_examen(request):
             fecha_actual = datetime.now().strftime('%Y-%m-%d')    
             examen = Examen.objects.create(
                 nombre=f"Examen_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                usuario=request.user.userprofile  # Ajusta según tu modelo de usuario
+                usuario=request.user.userprofile
             )
 
             # RELACIONAR LAS PREGUNTAS CON EL EXAMEN
@@ -92,7 +92,7 @@ def generar_examen(request):
             import csv
             from datetime import datetime
             from django.utils.encoding import smart_str
-            fecha_actual = datetime.now().strftime('%Y-%m-%d')  # Formato: AAAA-MM-DD           
+            fecha_actual = datetime.now().strftime('%Y-%m-%d')
 
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = f'attachment; filename="Alternativas {fecha_actual}.csv"'
@@ -109,7 +109,6 @@ def generar_examen(request):
                     smart_str(pregunta.get_respuesta_display())
                 ])
 
-
             return response
     
     # Subquery para verificar uso
@@ -120,29 +119,33 @@ def generar_examen(request):
         pregunta=OuterRef('pk')
     ).select_related('examen').order_by('-examen__fecha_creacion').values('examen__fecha_creacion')[:1]
 
-    # Aplicar filtro y anotaciones juntas para no perder el filtro
+    # Aplicar filtro y anotaciones juntas con ordenación
     preguntas = Pregunta.objects.filter(**filtros).annotate(
         usada_flag=Exists(subquery),
         fecha_ultimo_uso=Subquery(fecha_ultimo_uso_subquery)
-    )
+    ).order_by('-fecha_creacion')  # Ordenar por fecha de creación descendente
+
+    # Paginación - 30 preguntas por página
+    paginator = Paginator(preguntas, 30)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Asignar atributos temporales para la plantilla
+    for pregunta in page_obj.object_list:
+        pregunta.is_usada = pregunta.usada_flag
 
     # Recargar carrito actualizado para mostrar en la plantilla
     carrito_preguntas = Pregunta.objects.filter(id__in=carrito_ids)
 
-    # Asignar atributos temporales para la plantilla
-    for pregunta in preguntas:
-        pregunta.is_usada = pregunta.usada_flag
-        # fecha_ultimo_uso ya viene anotada, no hace falta reasignar
-
     context = {
-        'preguntas': preguntas,
+        'page_obj': page_obj,  # Usar page_obj en lugar de preguntas
         'temas': Tema.objects.all(),
         'universidades': Universidad.objects.all(),
         'cursos': Curso.objects.all(),
         'carrito': carrito_preguntas,
+        'tema_filter': request.GET.get('tema'),
+        'universidad_filter': request.GET.get('universidad'),
+        'curso_filter': request.GET.get('curso'),
     }
-
-    for campo in ['tema', 'universidad', 'curso']:
-        context[f'{campo}_filter'] = request.GET.get(campo)
 
     return render(request, 'Preguntas/generar_examen.html', context)

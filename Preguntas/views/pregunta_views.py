@@ -41,6 +41,8 @@ from .auth_views import exclude_supervisor
 
 
 # Gestión de Preguntas
+from django.core.paginator import Paginator
+
 @exclude_supervisor
 @login_required
 def pregunta_list(request):
@@ -56,9 +58,9 @@ def pregunta_list(request):
 
     # Leer filtros del GET
     universidad_id = request.GET.get('universidad')
-    curso_id       = request.GET.get('curso')
-    tema_id        = request.GET.get('tema')
-    nivel          = request.GET.get('nivel')
+    curso_id = request.GET.get('curso')
+    tema_id = request.GET.get('tema')
+    nivel = request.GET.get('nivel')
 
     # Aplicar filtros en cascada
     if universidad_id:
@@ -70,21 +72,26 @@ def pregunta_list(request):
     if nivel:
         qs = qs.filter(nivel=nivel)
 
+    # Paginación - 30 preguntas por página
+    paginator = Paginator(qs, 30)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     # Formulario para el nivel (opcional)
     form = FiltroPreguntaForm(request.GET or None)
 
     # Contexto para la plantilla
     context = {
         'total_preguntas': Pregunta.objects.filter(usuario=user_profile).count(),
-        'preguntas':       qs,
-        'form':            form,
-        'universidades':   Universidad.objects.all(),
+        'page_obj': page_obj,  # Cambiamos 'preguntas' por 'page_obj'
+        'form': form,
+        'universidades': Universidad.objects.all(),
         'cursos_para_uni': Curso.objects.filter(universidades__id=universidad_id) if universidad_id else [],
-        'temas_para_curso': Tema.objects.filter(curso_id=curso_id)            if curso_id else [],
+        'temas_para_curso': Tema.objects.filter(curso_id=curso_id) if curso_id else [],
         'universidad_filter': universidad_id,
-        'curso_filter':       curso_id,
-        'tema_filter':        tema_id,
-        'nivel_filter':       nivel,
+        'curso_filter': curso_id,
+        'tema_filter': tema_id,
+        'nivel_filter': nivel,
     }
     return render(request, 'Preguntas/pregunta_list.html', context)
 
@@ -202,8 +209,11 @@ def pregunta_update(request, pk):
                 except Exception as e:
                     logger.error(f"No se pudo eliminar PDF: {e}")
 
-            # Actualizar campos
+            # Actualizar campos editables
             pregunta.respuesta = form.cleaned_data['respuesta']
+            pregunta.nivel = form.cleaned_data['nivel']
+            pregunta.tiene_solucion = form.cleaned_data['tiene_solucion']
+            
             if nuevo_archivo:
                 pregunta.contenido = nuevo_archivo
                 logger.info(f"📝 Archivo actualizado para pregunta {pk}: {nuevo_archivo.name}")
@@ -223,7 +233,7 @@ def pregunta_update(request, pk):
     return render(request, 'Preguntas/pregunta_form.html', {
         'form': form,
         'pregunta': pregunta,
-        'title': 'Editar Pregunta - Solo Archivo y Respuesta',
+        'title': 'Editar Pregunta',
         'is_update': True,
         'current_file': pregunta.contenido.name if pregunta.contenido else None
     })
