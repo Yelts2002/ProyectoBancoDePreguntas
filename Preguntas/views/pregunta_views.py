@@ -92,6 +92,7 @@ def pregunta_list(request):
         'curso_filter': curso_id,
         'tema_filter': tema_id,
         'nivel_filter': nivel,
+        'now': timezone.now(),
     }
     return render(request, 'Preguntas/pregunta_list.html', context)
 
@@ -326,7 +327,6 @@ def aplicar_formato_texto(doc):
             if style.name.lower() in ["list paragraph", "lista numerada", "lista con viñetas"]:
                 style.font.name = "Arial Narrow"
                 style.font.size = Pt(9)
-
 
 def eliminar_ultimo_parrafo_si_vacio(document):
     if len(document.paragraphs) == 0:
@@ -581,6 +581,8 @@ def todas_las_preguntas(request):
         'buscar_nombre': buscar_nombre,
         'usuario_id': usuario_id,
         'modo_admin': True,
+        'now': timezone.now(),
+
     }
 
     return render(request, 'Preguntas/todas_las_preguntas.html', context)

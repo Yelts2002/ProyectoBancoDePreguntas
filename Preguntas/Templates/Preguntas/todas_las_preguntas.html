@@ -14,21 +14,21 @@
         <!-- Filtros corregidos -->
         <div class="card-body border-bottom">
             <form id="filterForm" method="get" class="row g-3 align-items-end">
-                <!-- Filtro por nombre -->
-                <div class="col-md-5">
-                    <label for="nombreFilter" class="form-label">
+            <!-- Filtro por nombre -->
+                <div class="col-md-5 col-lg-4">
+                    <label for="nombreFilter" class="form-label small fw-semibold text-muted">
                         <i class="fas fa-search me-1"></i> Nombre/Código
                     </label>
-                    <input type="text" class="form-control" id="nombreFilter" name="nombre" 
-                           placeholder="Buscar por nombre o código..." value="{{ request.GET.nombre }}">
+                    <input type="text" class="form-control form-control-sm" id="nombreFilter" name="nombre" 
+                        placeholder="Buscar por nombre o código..." value="{{ request.GET.nombre }}">
                 </div>
-                
+
                 <!-- Filtro por usuario -->
-                <div class="col-md-5">
-                    <label for="usuarioFilter" class="form-label">
+                <div class="col-md-5 col-lg-4">
+                    <label for="usuarioFilter" class="form-label small fw-semibold text-muted">
                         <i class="fas fa-user me-1"></i> Creador
                     </label>
-                    <select class="form-select" id="usuarioFilter" name="usuario">
+                    <select class="form-select form-select-sm" id="usuarioFilter" name="usuario">
                         <option value="">Todos los usuarios</option>
                         {% for user in usuarios %}
                             <option value="{{ user.id }}" {% if request.GET.usuario == user.id|stringformat:"s" %}selected{% endif %}>
@@ -37,14 +37,14 @@
                         {% endfor %}
                     </select>
                 </div>
-                
+                            
                 <!-- Botones de acción -->
-                <div class="col-md-2 col-12 d-flex justify-content-end align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm">
+                <div class="col-md-4 col-lg-2 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
                         <i class="fas fa-filter me-1"></i> Filtrar
                     </button>
-                    <a href="{% url 'todas_las_preguntas' %}" class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-times me-1"></i> Limpiar
+                    <a href="{% url 'todas_las_preguntas' %}" class="btn btn-outline-secondary btn-sm flex-grow-1">
+                        <i class="fas fa-undo-alt me-1"></i> Limpiar
                     </a>
                 </div>
             </form>
@@ -56,163 +56,230 @@
                 <table class="table table-bordered table-hover table-striped align-middle text-center shadow-sm rounded" aria-describedby="tabla-preguntas-desc">
                     <caption class="visually-hidden" id="tabla-preguntas-desc">Listado de preguntas con acciones disponibles</caption>
                     <thead class="table-dark">
-                        <tr>
-                            <th scope="col">Código Pregunta</th>
-                            <th scope="col">Creador</th>                    
-                            <th scope="col">Universidad</th>
-                            <th scope="col">Curso</th>
-                            <th scope="col">Tema</th>
-                            <th scope="col">Nivel</th>
-                            <th scope="col">Contenido</th>
-                            <th scope="col">Tiempo Restante</th>
-                            <th scope="col" width="160">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for pregunta in preguntas %}
-                        <tr>
-                            <td>{{ pregunta.nombre }}</td>
-                            <!-- Universidad -->
-                            <td>{{ pregunta.usuario.user.username }}</td>
-                            <td>
-                                {{ pregunta.universidad.nombre }}
-                                {% if user.is_staff %}
-                                <small class="text-muted d-block">ID:{{ pregunta.universidad.id }}</small>
-                                {% endif %}
-                            </td>
-                            <!-- Curso -->
-                            <td>
-                                {{ pregunta.curso.nombre }}
-                                {% if user.is_staff %}
-                                <small class="text-muted d-block">ID:{{ pregunta.curso.id }}</small>
-                                {% endif %}                                        
-                            </td>
-                            <!-- Tema -->
-                            <td>
-                                {{ pregunta.tema.nombre }}
-                                {% if user.is_staff %}
-                                <small class="text-muted d-block">ID:{{ pregunta.tema.id }}</small>
-                                {% endif %}                                        
-                            </td>
-                            <!-- Nivel -->
-                            <td>
-                                <span class="badge 
-                                    {% if pregunta.nivel == 1 %}bg-success
-                                    {% elif pregunta.nivel == 2 %}bg-warning text-dark
-                                    {% elif pregunta.nivel == 3 %}bg-danger
-                                    {% else %}bg-secondary{% endif %}">
-                                    {% if pregunta.nivel == 1 %}1 - Bajo
-                                    {% elif pregunta.nivel == 2 %}2 - Medio
-                                    {% elif pregunta.nivel == 3 %}3 - Alto
-                                    {% else %}Desconocido{% endif %}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="{{ pregunta.contenido.url }}" class="btn btn-outline-success btn-sm" aria-label="Descargar contenido de la pregunta {{ pregunta.id }}">
-                                    <i class="fas fa-download"></i> Descargar
-                                </a>
-                            </td>
-                            <td>
-                                {% with tiempo_expiracion=pregunta.fecha_creacion|add:"1 day" %}
-                                {% if tiempo_expiracion > now %}
-                                    <span class="text-success"><i class="fas fa-clock"></i> {{ tiempo_expiracion|timeuntil }} restantes</span>
-                                {% else %}
-                                    <span class="text-danger"><i class="fas fa-clock"></i> Expirada</span>
-                                {% endif %}
-                                {% endwith %}
-                            </td>
-                            <td>
-                                <div class="d-flex flex-column flex-md-row justify-content-center gap-1" aria-label="Acciones para pregunta {{ pregunta.id }}">
-                                    <button type="button"
-                                            class="btn btn-info"
-                                            data-url="{% url 'vista-previa' pregunta.id %}"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#previewModal"
-                                            onclick="loadPdfPreview(this)">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning" aria-label="Editar pregunta">
-                                        <i class="fas fa-pencil-alt"></i>
+                            <tr>
+                                <th scope="col" class="fw-semibold text-center">Código</th>
+                                <th scope="col" class="fw-semibold">Creador</th>                    
+                                <th scope="col" class="fw-semibold">Universidad</th>
+                                <th scope="col" class="fw-semibold">Curso</th>
+                                <th scope="col" class="fw-semibold">Tema</th>
+                                <th scope="col" class="fw-semibold text-center">Nivel</th>
+                                <th scope="col" class="fw-semibold text-center">Contenido</th>
+                                <th scope="col" class="fw-semibold text-center">Tiempo</th>
+                                <th scope="col" class="fw-semibold text-center" width="160">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pregunta in preguntas %}
+                            <tr>
+                                <!-- Código -->
+                                <td class="fw-bold text-center text-primary">{{ pregunta.nombre }}</td>
+                                
+                                <!-- Creador -->
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 120px;" title="{{ pregunta.usuario.user.username }}">
+                                        {{ pregunta.usuario.user.username }}
+                                    </span>
+                                </td>
+                                
+                                <!-- Universidad -->
+                                <td>
+                                    <div class="fw-semibold">{{ pregunta.universidad.nombre }}</div>
+                                    {% if user.is_staff %}
+                                    <small class="text-muted d-block fw-normal">ID:{{ pregunta.universidad.id }}</small>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Curso -->
+                                <td>
+                                    <div class="fw-semibold">{{ pregunta.curso.nombre }}</div>
+                                    {% if user.is_staff %}
+                                    <small class="text-muted d-block fw-normal">ID:{{ pregunta.curso.id }}</small>
+                                    {% endif %}                                        
+                                </td>
+                                
+                                <!-- Tema -->
+                                <td>
+                                    <div class="fw-semibold">{{ pregunta.tema.nombre }}</div>
+                                    {% if user.is_staff %}
+                                    <small class="text-muted d-block fw-normal">ID:{{ pregunta.tema.id }}</small>
+                                    {% endif %}                                        
+                                </td>
+                                
+                                <!-- Nivel -->
+                                <td class="text-center">
+                                    <span class="badge fw-semibold py-2 px-2 
+                                        {% if pregunta.nivel == 1 %}bg-success
+                                        {% elif pregunta.nivel == 2 %}bg-warning text-dark
+                                        {% elif pregunta.nivel == 3 %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {% if pregunta.nivel == 1 %}Bajo
+                                        {% elif pregunta.nivel == 2 %}Medio
+                                        {% elif pregunta.nivel == 3 %}Alto
+                                        {% else %}?{% endif %}
+                                    </span>
+                                </td>
+                                
+                                <!-- Contenido -->
+                                <td class="text-center">
+                                    <a href="{{ pregunta.contenido.url }}" 
+                                    class="btn btn-outline-success btn-sm fw-semibold" 
+                                    aria-label="Descargar contenido de la pregunta {{ pregunta.id }}"
+                                    download>
+                                        <i class="fas fa-download me-1"></i> PDF
                                     </a>
-                                    <a href="{% url 'pregunta-delete' pregunta.pk %}" class="btn btn-danger" aria-label="Eliminar pregunta">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-5">
-                                <i class="fas fa-inbox fa-2x mb-3"></i>
-                                <p>No hay preguntas con los filtros seleccionados.</p>
-                                <a href="{% url 'todas_las_preguntas' %}" class="btn btn-outline-primary mt-2">
-                                    <i class="fas fa-list me-1"></i> Ver todas las preguntas
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Pie de tabla con paginación -->
-        <div class="card-footer bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <small class="text-muted">
-                        Mostrando <strong>{{ preguntas.start_index }}</strong> a 
-                        <strong>{{ preguntas.end_index }}</strong> de 
-                        <strong>{{ total_preguntas }}</strong> preguntas
-                    </small>
+                                </td>
+                                
+                                <!-- Tiempo Restante -->
+                                <td class="text-center text-nowrap">
+                                    <span class="fw-semibold">
+                                        {% if pregunta.fecha_expiracion > now %}
+                                            <span class="countdown-timer text-success" 
+                                                data-expiration="{{ pregunta.fecha_expiracion|date:'Y-m-d H:i:s' }}"
+                                                title="Expira: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
+                                                <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                <span class="time-remaining">
+                                                    {% with tiempo_restante=pregunta.fecha_expiracion|timeuntil:now %}
+                                                        {% if "hour" in tiempo_restante %}
+                                                            {{ tiempo_restante|slice:":2"|cut:" " }}h
+                                                            {% if "minute" in tiempo_restante %}
+                                                                {{ tiempo_restante|slice:"9:11"|cut:" " }}m
+                                                            {% endif %}
+                                                        {% else %}
+                                                            {{ tiempo_restante|slice:":2"|cut:" " }}m
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                </span>
+                                            </span>
+                                        {% else %}
+                                            <span class="text-danger" title="Expirada: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
+                                                <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                Expirada
+                                            </span>
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                
+                                <!-- Acciones -->
+                                        <td>
+                                            <div class="d-flex justify-content-center gap-2" aria-label="Acciones para pregunta {{ pregunta.nombre }}">
+                                                <button type="button" class="btn btn-info btn-sm px-2 py-1"
+                                                        data-url="{% url 'vista-previa' pregunta.id %}"
+                                                        data-bs-toggle="modal" data-bs-target="#previewModal"
+                                                        onclick="loadPdfPreview(this)"
+                                                        data-bs-toggle="tooltip" data-bs-title="Vista previa">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Vista previa</span>
+                                                </button>                                              
+                                                <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning btn-sm px-2 py-1"
+                                                data-bs-toggle="tooltip" data-bs-title="Editar">
+                                                    <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Editar</span>
+                                                </a>
+                                                <a href="{% url 'pregunta-delete' pregunta.pk %}" class="btn btn-danger btn-sm px-2 py-1"
+                                                data-bs-toggle="tooltip" data-bs-title="Eliminar">
+                                                    <i class="fas fa-trash" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Eliminar</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+                                        <h3 class="h5 fw-bold mb-2">No se encontraron preguntas</h3>
+                                        <p class="mb-3">No hay registros con los filtros actuales.</p>
+                                        <a href="{% url 'todas_las_preguntas' %}" class="btn btn-primary mt-2 fw-semibold">
+                                            <i class="fas fa-list me-2"></i> Ver todas las preguntas
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                
-                <!-- Paginación que conserva los filtros -->
-                {% if preguntas.has_other_pages %}
-                <nav aria-label="Navegación de páginas">
-                    <ul class="pagination pagination-sm mb-0">
-                        {% if preguntas.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Primera">
-                                    <i class="fas fa-angle-double-left"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ preguntas.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Anterior">
-                                    <i class="fas fa-angle-left"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                        
-                        {% for i in page_range|default:preguntas.paginator.get_elided_page_range %}
-                            {% if preguntas.number == i %}
-                                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
-                            {% else %}
-                                {% if i == preguntas.paginator.ELLIPSIS %}
-                                    <li class="page-item disabled"><span class="page-link">{{ i }}</span></li>
-                                {% else %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ i }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
-                                    </li>
-                                {% endif %}
+            </div>
+
+            <!-- Pie de tabla con paginación -->
+            <div class="card-footer bg-white border-top">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center py-2">
+                    <div class="mb-2 mb-md-0">
+                        <p class="mb-0 text-muted fw-semibold">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Mostrando <span class="fw-bold">{{ preguntas.start_index }}</span> a 
+                            <span class="fw-bold">{{ preguntas.end_index }}</span> de 
+                            <span class="fw-bold">{{ total_preguntas }}</span> registros
+                        </p>
+                    </div>
+                    
+                    <!-- Paginación que conserva los filtros -->
+                    {% if preguntas.has_other_pages %}
+                    <nav aria-label="Navegación de páginas">
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if preguntas.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link fw-semibold" 
+                                    href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                    aria-label="Primera página">
+                                        <i class="fas fa-angle-double-left"></i>
+                                        <span class="visually-hidden">Primera</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link fw-semibold" 
+                                    href="?page={{ preguntas.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                    aria-label="Página anterior">
+                                        <i class="fas fa-angle-left"></i>
+                                        <span class="visually-hidden">Anterior</span>
+                                    </a>
+                                </li>
                             {% endif %}
-                        {% endfor %}
-                        
-                        {% if preguntas.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ preguntas.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Siguiente">
-                                    <i class="fas fa-angle-right"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ preguntas.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Última">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
+                            
+                            {% for i in page_range|default:preguntas.paginator.get_elided_page_range %}
+                                {% if preguntas.number == i %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link fw-bold">{{ i }}</span>
+                                    </li>
+                                {% else %}
+                                    {% if i == preguntas.paginator.ELLIPSIS %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">{{ i }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link fw-semibold" 
+                                            href="?page={{ i }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                                {{ i }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if preguntas.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link fw-semibold" 
+                                    href="?page={{ preguntas.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                    aria-label="Página siguiente">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span class="visually-hidden">Siguiente</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link fw-semibold" 
+                                    href="?page={{ preguntas.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                    aria-label="Última página">
+                                        <i class="fas fa-angle-double-right"></i>
+                                        <span class="visually-hidden">Última</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </section>
@@ -285,5 +352,51 @@ document.addEventListener('DOMContentLoaded', function() {
         debounceTimer = setTimeout(applyFilters, 500);
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    function updateCountdowns() {
+        const timers = document.querySelectorAll('.countdown-timer');
+        
+        timers.forEach(timer => {
+            const expirationDate = new Date(timer.dataset.expiration);
+            const now = new Date();
+            const diff = expirationDate - now;
+
+            if (diff <= 0) {
+                // Cambiar a estado "Expirada"
+                timer.innerHTML = '<i class="fas fa-clock me-1" aria-hidden="true"></i> Expirada';
+                timer.classList.remove('text-success');
+                timer.classList.add('text-danger');
+                timer.title = 'Expirada: ' + timer.dataset.expiration;
+                return;
+            }
+
+            // Calcular horas y minutos
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            // Formatear como "X H Y min"
+            let timeStr = '';
+            if (hours > 0) {
+                timeStr += hours + ' H ';
+                // Mostrar minutos solo si hay horas
+                if (minutes > 0) {
+                    timeStr += minutes + ' min';
+                }
+            } else {
+                // Mostrar solo minutos si no hay horas
+                timeStr += minutes + ' min';
+            }
+            
+            // Actualizar el elemento manteniendo el icono
+            timer.querySelector('.time-remaining').textContent = timeStr.trim();
+        });
+    }
+
+    // Actualizar inmediatamente y luego cada minuto
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000); // Actualizar cada minuto
+});
+
 </script>
 {% endblock %}

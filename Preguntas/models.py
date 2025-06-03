@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from datetime import timedelta
 
 class Curso(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
@@ -110,6 +111,9 @@ class Pregunta(models.Model):
     @property
     def usada(self):
         return ExamenPregunta.objects.filter(pregunta=self).exists()
+    @property
+    def fecha_expiracion(self):
+        return self.fecha_creacion + timedelta(days=1)
 
     def __str__(self):
         return self.nombre

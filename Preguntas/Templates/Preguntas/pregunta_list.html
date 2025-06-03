@@ -127,21 +127,26 @@
                             <thead class="table-dark">
                                 <tr>
                                     {% if user.is_staff %}
-                                    <th scope="col">
-                                        <div class="form-check">
-                                            <input type="checkbox" id="selectAll" class="form-check-input" aria-label="Seleccionar todas">
-                                            <label class="form-check-label visually-hidden" for="selectAll">Seleccionar todas</label>
+                                    <th scope="col" width="60">
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <div class="form-check m-0" style="transform: scale(1.3);">
+                                                <input type="checkbox" id="selectAll" class="form-check-input"
+                                                    aria-labelledby="label-selectAll">
+                                                <label id="label-selectAll" for="selectAll" class="visually-hidden">
+                                                    Seleccionar todas las preguntas
+                                                </label>
+                                            </div>
                                         </div>
                                     </th>
                                     {% endif %}
-                                    <th scope="col">Código</th>
-                                    <th scope="col">Universidad</th>
-                                    <th scope="col">Curso</th>
-                                    <th scope="col">Tema</th>
-                                    <th scope="col">Nivel</th>
-                                    {% if user.is_staff %}<th scope="col">Contenido</th>{% endif %}
-                                    <th scope="col">Tiempo Restante</th>
-                                    {% if user.is_staff %}<th scope="col">Acciones</th>{% endif %}
+                                    <th scope="col"><span class="fw-bold">Código</span></th>
+                                    <th scope="col"><span class="fw-bold">Universidad</span></th>
+                                    <th scope="col"><span class="fw-bold">Curso</span></th>
+                                    <th scope="col"><span class="fw-bold">Tema</span></th>
+                                    <th scope="col" style="width: 120px;"> <span class="fw-bold">Nivel</span></th>
+                                    {% if user.is_staff %}<th scope="col" style="width: 190px;"> <span class="fw-bold">Contenido</span></th>{% endif %}
+                                    <th scope="col" style="width: 150px;"><span class="fw-bold">Tiempo Restante</span></th>
+                                    {% if user.is_staff %}<th scope="col" style="width: 150px;"><span class="fw-bold">Acciones</span></th>{% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -149,39 +154,43 @@
                                     <tr>
                                         {% if user.is_staff %}                                    
                                         <td>
-                                            <div class="form-check">
-                                                <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas"
-                                                    value="{{ pregunta.id }}" class="form-check-input pregunta-check"
-                                                    aria-label="Seleccionar pregunta {{ pregunta.id }}">
-                                                <label class="form-check-label visually-hidden" for="pregunta-{{ pregunta.id }}">
-                                                    Seleccionar pregunta {{ pregunta.id }}
-                                                </label>
+                                            <div class="d-flex justify-content-center align-items-center">
+                                                <div class="form-check m-0" style="transform: scale(1.5);">
+                                                    <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas"
+                                                        value="{{ pregunta.id }}" class="form-check-input pregunta-check"
+                                                        aria-labelledby="label-pregunta-{{ pregunta.id }}">
+                                                    <label id="label-pregunta-{{ pregunta.id }}" for="pregunta-{{ pregunta.id }}" class="visually-hidden">
+                                                        Seleccionar pregunta {{ pregunta.nombre|default:pregunta.id }}
+                                                    </label>
+                                                </div>
                                             </div>
                                         </td>
                                         {% endif %}
-                                        
-                                        <td>{{ pregunta.nombre }}</td>
-                                        <td>
+                                        <td><span class="fw-bold">{{ pregunta.nombre }}</span></td>
+                                        <td><span class="fw-bold">
                                             {{ pregunta.universidad.nombre }}
                                             {% if user.is_staff %}<small class="text-muted d-block">ID: {{ pregunta.universidad.id }}</small>{% endif %}
+                                            </span>
                                         </td>
-                                        <td>
+                                        <td><span class="fw-bold">
                                             {{ pregunta.curso.nombre }}
                                             {% if user.is_staff %}<small class="text-muted d-block">ID: {{ pregunta.curso.id }}</small>{% endif %}
+                                            </span>
                                         </td>
-                                        <td>
+                                        <td><span class="fw-bold">
                                             {{ pregunta.tema.nombre }}
                                             {% if user.is_staff %}<small class="text-muted d-block">ID: {{ pregunta.tema.id }}</small>{% endif %}
+                                            </span>
                                         </td>
                                         <td>
-                                            <span class="badge 
-                                                {% if pregunta.nivel == 1 %}bg-success
-                                                {% elif pregunta.nivel == 2 %}bg-warning text-dark
-                                                {% elif pregunta.nivel == 3 %}bg-danger
-                                                {% else %}bg-secondary{% endif %}">
+                                            <span class="badge fs-7 fw-bold px-3 py-2
+                                                {% if pregunta.nivel == 1 %} bg-success
+                                                {% elif pregunta.nivel == 2 %} bg-warning text-dark
+                                                {% elif pregunta.nivel == 3 %} bg-danger
+                                                {% else %} bg-secondary{% endif %}">
                                                 {% if pregunta.nivel == 1 %}1 - Bajo
                                                 {% elif pregunta.nivel == 2 %}2 - Medio
-                                                {% elif pregunta.nivel == 3 %}3 - Alto
+                                                {% elif pregunta.nivel == 3 %}3 - Avanzado
                                                 {% else %}Desconocido{% endif %}
                                             </span>
                                         </td>
@@ -189,38 +198,58 @@
                                         <td>
                                             <a href="{{ pregunta.contenido.url }}" class="btn btn-outline-success btn-sm"
                                             aria-label="Descargar contenido de la pregunta {{ pregunta.id }}">
-                                                <i class="fas fa-download" aria-hidden="true"></i> Descargar
+                                                <i class="fas fa-download" aria-hidden="true"></i> <span class="fw-bold">Descargar </span>
                                             </a>
                                         </td>
                                         {% endif %}
-                                        <td>
-                                            {% with tiempo_expiracion=pregunta.fecha_creacion|add:"1 day" %}
-                                                {% if tiempo_expiracion > now %}
-                                                    <span class="text-success">
-                                                        <i class="fas fa-clock" aria-hidden="true"></i> 
-                                                        {{ tiempo_expiracion|timeuntil }} restantes
+                                        <td class="text-nowrap">
+                                            <span class="fw-semibold">
+                                                {% if pregunta.fecha_expiracion > now %}
+                                                    <span class="countdown-timer text-success" 
+                                                        data-expiration="{{ pregunta.fecha_expiracion|date:'Y-m-d H:i:s' }}"
+                                                        title="Expira: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
+                                                        <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                        <span class="time-remaining">
+                                                            {% with tiempo_restante=pregunta.fecha_expiracion|timeuntil:now %}
+                                                                {% if "hour" in tiempo_restante %}
+                                                                    {{ tiempo_restante|slice:":2"|cut:" " }} H
+                                                                    {% if "minute" in tiempo_restante %}
+                                                                        {{ tiempo_restante|slice:"9:11"|cut:" " }} min
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    {{ tiempo_restante|slice:":2"|cut:" " }} min
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                        </span>
                                                     </span>
                                                 {% else %}
-                                                    <span class="text-danger">
-                                                        <i class="fas fa-clock" aria-hidden="true"></i> Expirada
+                                                    <span class="text-danger" title="Expirada: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
+                                                        <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                        Expirada
                                                     </span>
                                                 {% endif %}
-                                            {% endwith %}
+                                            </span>
                                         </td>
                                         {% if user.is_staff %}
                                         <td>
-                                            <div class="d-flex flex-column flex-md-row justify-content-center gap-1"  aria-label="Acciones para pregunta {{ pregunta.id }}">
-                                                <button type="button" class="btn btn-info btn-sm"
+                                            <div class="d-flex justify-content-center gap-2" aria-label="Acciones para pregunta {{ pregunta.nombre }}">
+                                                <button type="button" class="btn btn-info btn-sm px-2 py-1"
                                                         data-url="{% url 'vista-previa' pregunta.id %}"
                                                         data-bs-toggle="modal" data-bs-target="#previewModal"
-                                                        onclick="loadPdfPreview(this)">
+                                                        onclick="loadPdfPreview(this)"
+                                                        data-bs-toggle="tooltip" data-bs-title="Vista previa">
                                                     <i class="fas fa-eye" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Vista previa</span>
                                                 </button>                                              
-                                                <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning btn-sm">
+                                                <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning btn-sm px-2 py-1"
+                                                data-bs-toggle="tooltip" data-bs-title="Editar">
                                                     <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Editar</span>
                                                 </a>
-                                                <a href="{% url 'pregunta-delete' pregunta.pk %}" class="btn btn-danger btn-sm">
+                                                <a href="{% url 'pregunta-delete' pregunta.pk %}" class="btn btn-danger btn-sm px-2 py-1"
+                                                data-bs-toggle="tooltip" data-bs-title="Eliminar">
                                                     <i class="fas fa-trash" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Eliminar</span>
                                                 </a>
                                             </div>
                                         </td>
@@ -238,71 +267,97 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Botón Descargar Seleccionadas para staff -->
-                    {% if user.is_staff %}
-                        <div class="mt-3 text-end">
-                            <button type="submit" class="btn btn-success" id="btnDescargar" disabled aria-label="Descargar preguntas seleccionadas">
-                                <i class="fas fa-download" aria-hidden="true"></i> Descargar Seleccionadas
-                            </button>
-                            <button type="button" class="btn btn-danger" id="btnEliminar" disabled aria-label="Eliminar preguntas seleccionadas" 
-                                    data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                                <i class="fas fa-trash" aria-hidden="true"></i> Eliminar Seleccionadas
-                            </button>        
+                    <!-- Botones de acción para staff -->
+                    {% if user.is_staff and page_obj %}
+                        <div class="card-footer bg-light d-flex flex-wrap justify-content-between align-items-center py-3">
+                            <div class="mb-2 mb-md-0">
+                                <span class="text-muted">
+                                    <span id="selectedCount">0</span> preguntas seleccionadas
+                                </span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success" id="btnDescargar" disabled 
+                                        aria-label="Descargar preguntas seleccionadas">
+                                    <i class="fas fa-download me-1" aria-hidden="true"></i> 
+                                    <span class="d-none d-md-inline">Descargar</span>
+                                </button>
+                                <button type="button" class="btn btn-danger" id="btnEliminar" disabled 
+                                        aria-label="Eliminar preguntas seleccionadas" 
+                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                    <i class="fas fa-trash me-1" aria-hidden="true"></i> 
+                                    <span class="d-none d-md-inline">Eliminar</span>
+                                </button>        
+                            </div>
                         </div>
                     {% endif %}
                 </div>
             </div>
-            <!-- Después de la tabla, antes del cierre del formulario -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div>
-                    <span class="text-muted">
-                        Mostrando preguntas {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }}
-                    </span>
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-3">
+                <div class="text-muted">
+                    Mostrando <span class="fw-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> 
+                    de <span class="fw-semibold">{{ page_obj.paginator.count }}</span> preguntas
                 </div>
                 
-                <nav aria-label="Paginación de preguntas">
-                    <ul class="pagination mb-0">
+                <nav aria-label="Navegación de páginas">
+                    <ul class="pagination mb-0 flex-wrap justify-content-center">
                         {% if page_obj.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?page=1{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}{% if nivel_filter %}&nivel={{ nivel_filter }}{% endif %}" aria-label="Primera">
+                                <a class="page-link" href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                aria-label="Primera página">
                                     <span aria-hidden="true">&laquo;&laquo;</span>
                                 </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}{% if nivel_filter %}&nivel={{ nivel_filter }}{% endif %}" aria-label="Anterior">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                aria-label="Página anterior">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
                         {% endif %}
 
                         {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <li class="page-item active" aria-current="page">
-                                    <span class="page-link">{{ num }}</span>
-                                </li>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}{% if nivel_filter %}&nivel={{ nivel_filter }}{% endif %}">{{ num }}</a>
-                                </li>
+                            {% if num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
                             {% endif %}
                         {% endfor %}
 
                         {% if page_obj.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}{% if nivel_filter %}&nivel={{ nivel_filter }}{% endif %}" aria-label="Siguiente">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                aria-label="Página siguiente">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}{% if nivel_filter %}&nivel={{ nivel_filter }}{% endif %}" aria-label="Última">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                aria-label="Última página">
                                     <span aria-hidden="true">&raquo;&raquo;</span>
                                 </a>
                             </li>
                         {% endif %}
                     </ul>
                 </nav>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted">Ir a:</span>
+                    <form class="d-flex gap-2" method="get" id="pageForm">
+                        <input type="number" name="page" min="1" max="{{ page_obj.paginator.num_pages }}" 
+                            class="form-control form-control-sm" style="width: 70px;"
+                            aria-label="Número de página" value="{{ page_obj.number }}">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Ir</button>
+                    </form>
+                </div>
             </div>
+            {% endif %}
         </form>
     </section>
 
@@ -329,14 +384,15 @@
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                ¿Estás seguro de que deseas eliminar las preguntas seleccionadas? Esta acción no se puede deshacer.
+                <p>¿Está seguro que desea eliminar las <span id="deleteCount">0</span> preguntas seleccionadas?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
             </div>
         </div>
     </div>
@@ -349,144 +405,151 @@ function loadPdfPreview(button) {
     const iframe = document.getElementById('previewFrame');
     iframe.src = url;
 }
-    document.addEventListener('DOMContentLoaded', function () {
-        // Aplicar clase form-control a todos los selects en el formulario de filtro
-        document.querySelectorAll('#filtroForm select').forEach(select => {
-            select.classList.add('form-control');
-            // Añadimos atributos de accesibilidad
-            if (!select.hasAttribute('aria-label')) {
-                select.setAttribute('aria-label', select.previousElementSibling?.textContent || 'Filtro');
-            }
-        });
-
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.pregunta-check');
-        const btnDescargar = document.getElementById('btnDescargar');
-        const form = document.getElementById("filtroForm");
-
-        // Gestión de la selección de todos los checkboxes
-        selectAll?.addEventListener('change', () => {
-            checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
-            updateDownloadButton();
-        });
-
-        // Actualiza el estado del botón de descarga cuando cambia algún checkbox
-        checkboxes.forEach(checkbox => checkbox.addEventListener('change', updateDownloadButton));
-
-        function updateDownloadButton() {
-            const haySeleccionados = document.querySelectorAll('.pregunta-check:checked').length > 0;
-            btnDescargar.disabled = !haySeleccionados;
-            // Actualizamos ARIA para mejorar accesibilidad
-            btnDescargar.setAttribute('aria-disabled', !haySeleccionados);
-        }
-
-        // Función para cargar opciones dinámicas en los selects
-        async function loadOptions(url, targetSelect, defaultText) {
-            try {
-                targetSelect.setAttribute('aria-busy', 'true');
-                const response = await fetch(url);
-
-                if (!response.ok) throw new Error('Error en la respuesta del servidor');
-
-                const data = await response.json();
-                targetSelect.innerHTML = `<option value="">${defaultText}</option>`;
-                data.forEach(item => targetSelect.add(new Option(item.nombre, item.id)));
-            } catch (error) {
-                console.error('Error cargando opciones:', error);
-                targetSelect.innerHTML = `<option value="">Error al cargar datos</option>`;
-            } finally {
-                targetSelect.setAttribute('aria-busy', 'false');
-            }
-        }
-
-
-
-        const uniSel = document.getElementById('universidad');
-        const cursoSel = document.getElementById('curso');
-        const temaSel = document.getElementById('tema');
-
-        // Al cambiar Universidad → cargar cursos
-        uniSel.addEventListener('change', () => {
-            const id = uniSel.value;
-            cursoSel.disabled = true;
-            temaSel.disabled = true;
-            cursoSel.innerHTML = '<option>Cargando…</option>';
-            temaSel.innerHTML = '<option>Seleccione curso primero</option>';
-
-            if (!id) {
-                cursoSel.innerHTML = '<option>Primero seleccione Universidad</option>';
-                return;
-            }
-            fetch(`{% url 'load_cursos' %}?universidad_id=${id}`)
-                .then(r => r.ok ? r.json() : Promise.reject(r.status))
-                .then(data => {
-                    cursoSel.disabled = false;
-                    cursoSel.innerHTML = '<option value="">Todos los cursos</option>';
-                    data.forEach(c => cursoSel.add(new Option(c.nombre, c.id)));
-                })
-                .catch(() => {
-                    cursoSel.disabled = false;
-                    cursoSel.innerHTML = '<option>Error al cargar</option>';
-                });
-        });
-
-        // Al cambiar Curso → cargar temas
-        cursoSel.addEventListener('change', () => {
-            const id = cursoSel.value;
-            temaSel.disabled = true;
-            temaSel.innerHTML = '<option>Cargando…</option>';
-
-            if (!id) {
-                temaSel.innerHTML = '<option>Primero seleccione Curso</option>';
-                return;
-            }
-            fetch(`{% url 'load_temas' %}?curso_id=${id}`)
-                .then(r => r.ok ? r.json() : Promise.reject(r.status))
-                .then(data => {
-                    temaSel.disabled = false;
-                    temaSel.innerHTML = '<option value="">Todos los temas</option>';
-                    data.forEach(t => temaSel.add(new Option(t.nombre, t.id)));
-                })
-                .catch(() => {
-                    temaSel.disabled = false;
-                    temaSel.innerHTML = '<option>Error al cargar</option>';
-                });
-        });
-
-        // Auto‐submit solo al elegir Tema
-        temaSel.addEventListener('change', () => form.submit());
-
-        const btnEliminar = document.getElementById('btnEliminar');
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-
-        // Actualiza ambos botones cuando cambia la selección
-        function updateActionButtons() {
-            const haySeleccionados = document.querySelectorAll('.pregunta-check:checked').length > 0;
-            btnDescargar.disabled = !haySeleccionados;
-            btnEliminar.disabled = !haySeleccionados;
-            btnDescargar.setAttribute('aria-disabled', !haySeleccionados);
-            btnEliminar.setAttribute('aria-disabled', !haySeleccionados);
-        }
-
-        // Reemplaza tu función updateDownloadButton por esta
-        function updateDownloadButton() {
-            updateActionButtons();
-        }
-
-        // Manejar el clic en el botón de eliminar
-        btnEliminar.addEventListener('click', function() {
-            // El modal se abre automáticamente por data-bs-toggle
-        });
-
-        // Confirmar eliminación
-        confirmDeleteBtn.addEventListener('click', function() {
-            const form = document.getElementById('preguntasForm');
-            form.action = "{% url 'eliminar-preguntas' %}";  // Cambia la acción del formulario
-            form.submit();
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.pregunta-check');
+    const btnDescargar = document.getElementById('btnDescargar');
+    const btnEliminar = document.getElementById('btnEliminar');
+    const selectedCount = document.getElementById('selectedCount');
+    const deleteCount = document.getElementById('deleteCount');
     
+    // Actualizar contador de seleccionados
+    function updateSelectedCount() {
+        const selected = document.querySelectorAll('.pregunta-check:checked').length;
+        selectedCount.textContent = selected;
+        deleteCount.textContent = selected;
+        btnDescargar.disabled = selected === 0;
+        btnEliminar.disabled = selected === 0;
+    }
     
+    // Seleccionar/deseleccionar todos
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+            updateSelectedCount();
+        });
+    }
+    
+    // Manejar cambios en checkboxes individuales
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (!this.checked && selectAll) {
+                selectAll.checked = false;
+            }
+            updateSelectedCount();
+        });
     });
+    
+    // Confirmar eliminación
+    const confirmDelete = document.getElementById('confirmDelete');
+    if (confirmDelete) {
+        confirmDelete.addEventListener('click', function() {
+            document.getElementById('preguntasForm').action = "{% url 'eliminar-preguntas' %}";
+            document.getElementById('preguntasForm').submit();
+        });
+    }
+    
+    // Actualizar contadores de tiempo en tiempo real
+    function updateCountdowns() {
+        document.querySelectorAll('[data-countdown]').forEach(element => {
+            const endDate = new Date(element.getAttribute('data-countdown'));
+            const now = new Date();
+            const diff = endDate - now;
+            
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                let text = '';
+                if (days > 0) text += `${days}d `;
+                if (hours > 0 || days > 0) text += `${hours}h `;
+                if (minutes > 0 || hours > 0 || days > 0) text += `${minutes}m `;
+                text += `${seconds}s`;
+                
+                element.querySelector('.countdown-text').textContent = text;
+            }
+        });
+    }
+    
+    // Actualizar cada segundo
+    setInterval(updateCountdowns, 1000);
+    updateCountdowns();
+    
+    // Inicializar tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Ordenamiento de columnas
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', function() {
+            const sortField = this.getAttribute('data-sort');
+            const currentUrl = new URL(window.location.href);
+            const currentSort = currentUrl.searchParams.get('sort');
+            const currentOrder = currentUrl.searchParams.get('order');
+            
+            let newOrder = 'asc';
+            if (currentSort === sortField && currentOrder === 'asc') {
+                newOrder = 'desc';
+            }
+            
+            currentUrl.searchParams.set('sort', sortField);
+            currentUrl.searchParams.set('order', newOrder);
+            window.location.href = currentUrl.toString();
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    function updateCountdowns() {
+        const timers = document.querySelectorAll('.countdown-timer');
+        
+        timers.forEach(timer => {
+            const expirationDate = new Date(timer.dataset.expiration);
+            const now = new Date();
+            const diff = expirationDate - now;
+
+            if (diff <= 0) {
+                // Cambiar a estado "Expirada"
+                timer.innerHTML = '<i class="fas fa-clock me-1" aria-hidden="true"></i> Expirada';
+                timer.classList.remove('text-success');
+                timer.classList.add('text-danger');
+                timer.title = 'Expirada: ' + timer.dataset.expiration;
+                return;
+            }
+
+            // Calcular horas y minutos
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            // Formatear como "X H Y min"
+            let timeStr = '';
+            if (hours > 0) {
+                timeStr += hours + ' H ';
+                // Mostrar minutos solo si hay horas
+                if (minutes > 0) {
+                    timeStr += minutes + ' min';
+                }
+            } else {
+                // Mostrar solo minutos si no hay horas
+                timeStr += minutes + ' min';
+            }
+            
+            // Actualizar el elemento manteniendo el icono
+            timer.querySelector('.time-remaining').textContent = timeStr.trim();
+        });
+    }
+
+    // Actualizar inmediatamente y luego cada minuto
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000); // Actualizar cada minuto
+});
+
 </script>
 {% endblock %}
 

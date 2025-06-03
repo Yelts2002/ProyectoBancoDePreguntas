@@ -47,9 +47,9 @@ class PreguntaForm(forms.ModelForm):
         model = Pregunta
         fields = ['universidad', 'curso', 'tema', 'nivel', 'respuesta', 'contenido', 'nombre', 'tiene_solucion']
         widgets = {
-            'universidad': forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
-            'curso': forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
-            'tema': forms.Select(attrs={'class': 'form-control', 'disabled': 'disabled'}),
+            'universidad': forms.Select(attrs={'class': 'form-control'}),
+            'curso': forms.Select(attrs={'class': 'form-control'}),
+            'tema': forms.Select(attrs={'class': 'form-control'}),
             'nivel': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 3}),
             'respuesta': forms.Select(attrs={'class': 'form-control'}),
             'contenido': forms.FileInput(attrs={'class': 'form-control', 'accept': '.doc,.docx'}),

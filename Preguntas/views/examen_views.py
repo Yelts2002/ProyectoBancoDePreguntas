@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.utils import timezone
 
 from ..models import Examen, Pregunta, ExamenPregunta, Tema, Universidad, Curso
 from .pregunta_views import combinar_documentos
@@ -146,6 +147,8 @@ def generar_examen(request):
         'tema_filter': request.GET.get('tema'),
         'universidad_filter': request.GET.get('universidad'),
         'curso_filter': request.GET.get('curso'),
+        'now': timezone.now(),
+
     }
 
     return render(request, 'Preguntas/generar_examen.html', context)
