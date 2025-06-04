@@ -45,6 +45,7 @@ urlpatterns = [
     path('admin/toggle-user-status/<str:username>/', views.toggle_user_status, name='toggle-user-status'),
     path('preguntas/supervisor/', views.pregunta_list_supervisor, name='pregunta_list_supervisor'),
     path('admin/users/<str:username>/change-role/', views.change_user_role, name='change-user-role'),
+    path('usuarios/<str:username>/eliminar/', views.delete_user, name='delete-user'),
 
     # URL para AJAX
     path('ajax/load-cursos/', views.load_cursos, name='load_cursos'),

@@ -7,26 +7,30 @@
 <main class="container py-4">
     <!-- Sección de Filtros y Listado de Preguntas -->
     <section class="card mb-4 shadow-sm border rounded" aria-labelledby="filter-section">
-        <header class="card-header d-flex justify-content-between align-items-center text-white py-3 px-4">
-            <div class="d-flex align-items-center">
+        <header class="card-header d-flex flex-wrap justify-content-between align-items-center text-white py-3 px-4">
+            <div class="d-flex align-items-center mb-2 mb-md-0">
                 <i class="fas fa-question-circle fa-lg me-3" aria-hidden="true"></i>
-                <h1 class="h2 mb-0 text-black" id="preguntas-title">
+                <h1 class="h4 mb-0 text-white" id="preguntas-title">
                     Mis Preguntas
                     {% if total_preguntas %}
-                    <span 
-                        class="badge ms-2 fs-6 fw-normal" 
-                        style="background-color: #4CAF50; color: white;" 
-                        aria-label="Total de preguntas: {{ total_preguntas }}">
+                    <span class="badge bg-success ms-2 fs-6 fw-normal" aria-label="Total de preguntas: {{ total_preguntas }}">
                         {{ total_preguntas }}
                     </span>
                     {% endif %}
                 </h1>
             </div>
-            <a href="{% url 'pregunta-create' %}" class="btn btn-light btn-sm px-3" aria-label="Crear nueva pregunta">
-                <i class="fas fa-plus me-2" aria-hidden="true"></i>
-                <span>Nueva Pregunta</span>
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{% url 'masivo_pregunta_create' %}" class="btn btn-light btn-sm d-flex align-items-center" aria-label="Cargar preguntas de forma masiva">
+                    <i class="fas fa-upload me-2" aria-hidden="true"></i>
+                    <span>Carga Masiva</span>
+                </a>
+                <a href="{% url 'pregunta-create' %}" class="btn btn-light btn-sm d-flex align-items-center" aria-label="Crear nueva pregunta manualmente">
+                    <i class="fas fa-plus me-2" aria-hidden="true"></i>
+                    <span>Nueva Pregunta</span>
+                </a>
+            </div>
         </header>
+
 
 
         <!-- Encabezado -->
@@ -146,7 +150,7 @@
                                     <th scope="col" style="width: 120px;"> <span class="fw-bold">Nivel</span></th>
                                     {% if user.is_staff %}<th scope="col" style="width: 190px;"> <span class="fw-bold">Contenido</span></th>{% endif %}
                                     <th scope="col" style="width: 150px;"><span class="fw-bold">Tiempo Restante</span></th>
-                                    {% if user.is_staff %}<th scope="col" style="width: 150px;"><span class="fw-bold">Acciones</span></th>{% endif %}
+                                    <th scope="col" style="width: 150px;"><span class="fw-bold">Acciones</span></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -230,7 +234,6 @@
                                                 {% endif %}
                                             </span>
                                         </td>
-                                        {% if user.is_staff %}
                                         <td>
                                             <div class="d-flex justify-content-center gap-2" aria-label="Acciones para pregunta {{ pregunta.nombre }}">
                                                 <button type="button" class="btn btn-info btn-sm px-2 py-1"
@@ -240,7 +243,7 @@
                                                         data-bs-toggle="tooltip" data-bs-title="Vista previa">
                                                     <i class="fas fa-eye" aria-hidden="true"></i>
                                                     <span class="visually-hidden">Vista previa</span>
-                                                </button>                                              
+                                                </button>                                                                                              
                                                 <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning btn-sm px-2 py-1"
                                                 data-bs-toggle="tooltip" data-bs-title="Editar">
                                                     <i class="fas fa-pencil-alt" aria-hidden="true"></i>
@@ -253,8 +256,6 @@
                                                 </a>
                                             </div>
                                         </td>
-                                        {% endif %}
-                                        
                                     </tr>
                                 {% empty %}
                                     <tr>

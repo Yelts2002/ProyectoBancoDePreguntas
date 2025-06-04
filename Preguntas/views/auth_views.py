@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from ..models import UserProfile
 from django.contrib import admin
@@ -7,20 +7,34 @@ from django.contrib.auth.decorators import user_passes_test
 from ..forms import CustomUserCreationForm
 from functools import wraps
 from django.http import HttpResponseForbidden
+from django.contrib.auth.models import User
 
-# Autenticación
 @user_passes_test(lambda u: u.is_superuser)
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            messages.success(request, 'Registro exitoso. ¡Bienvenido!')
-            return redirect('pregunta-list')
+            password = form.cleaned_data.get('password1')
+            messages.success(
+                request,
+                f"✅ Usuario '{user.username}' creado exitosamente. Contraseña: {password}"
+            )
+            return redirect('register') 
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_superuser)
+def delete_user(request, username):
+    if request.method == 'POST':
+        user = get_object_or_404(User, username=username)
+        if user != request.user:  # Evitar que se elimine a sí mismo
+            user.delete()
+            messages.success(request, f"Usuario '{username}' eliminado correctamente.")
+        else:
+            messages.error(request, "No puedes eliminar tu propio usuario.")
+    return redirect('admin-dashboard')
 
 def user_login(request):
     if request.method == 'POST':

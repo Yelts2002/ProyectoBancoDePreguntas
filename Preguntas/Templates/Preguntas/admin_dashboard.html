@@ -56,19 +56,21 @@
 
     <!-- Preguntas por Usuario -->
     <div class="card mb-4 shadow-sm animate__animated animate__fadeInLeft">
-        <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Preguntas por Usuario</h5>
+        <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-users me-2"></i>Preguntas por Usuario
+            </h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
+                <table class="table table-striped align-middle table-hover">
                     <thead class="table-light">
                         <tr>
                             <th>Usuario</th>
-                            <th>Cantidad de Preguntas</th>
+                            <th>Cantidad</th>
                             <th>Estado</th>
-                            <th>Acciones</th> <!-- Nueva columna para acciones -->
-                            <th>Roles</th>                            
+                            <th>Acciones</th>
+                            <th>Rol</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -84,32 +86,41 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <form method="post" action="{% url 'toggle-user-status' usuario %}">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <!-- Activar / Desactivar -->
+                                    <form method="post" action="{% url 'toggle-user-status' usuario %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm {% if info.is_active %}btn-warning{% else %}btn-success{% endif %}" title="{% if info.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                            <i class="fas {% if info.is_active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Eliminar -->
+                                    <form method="post" action="{% url 'delete-user' usuario %}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Eliminar usuario">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'change-user-role' usuario %}" class="d-flex align-items-center gap-2">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-warning btn-sm">
-                                        {% if info.is_active %}
-                                            Desactivar
-                                        {% else %}
-                                            Activar
-                                        {% endif %}
+                                    <select name="role" class="form-select form-select-sm" style="max-width: 160px;">
+                                        {% for value, display in roles %}
+                                            <option value="{{ value }}" {% if info.role == value %}selected{% endif %}>{{ display }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm" title="Guardar rol">
+                                        <i class="fas fa-save"></i>
                                     </button>
                                 </form>
                             </td>
-                            <td>
-                            <form method="post" action="{% url 'change-user-role' usuario %}" class="d-flex gap-2 align-items-center">
-                                {% csrf_token %}
-                                <select name="role" class="form-select form-select-sm" style="max-width: 150px;">
-                                {% for value, display in roles %}
-                                    <option value="{{ value }}" {% if info.role == value %}selected{% endif %}>{{ display }}</option>
-                                {% endfor %}
-                                </select>
-                                <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
-                            </form>
-                            </td>                            
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="text-center">No hay usuarios registrados.</td>
+                            <td colspan="5" class="text-center text-muted">No hay usuarios registrados.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -117,6 +128,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- Filtros -->
     <div class="card mb-4 shadow-sm animate__animated animate__fadeIn">
