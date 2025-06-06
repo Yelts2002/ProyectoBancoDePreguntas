@@ -8,18 +8,25 @@ from django.utils import timezone
 from ..models import Examen, Pregunta, ExamenPregunta, Tema, Universidad, Curso
 from .pregunta_views import combinar_documentos
 from django.db.models import OuterRef, Exists, Subquery
+from ..forms import FiltroPreguntaForm
 
 @staff_member_required
 def generar_examen(request):
     # Obtener filtros desde GET
+    form = FiltroPreguntaForm(request.GET or None)
+
     filtros = {}
-    for campo in ['tema', 'universidad', 'curso']:
-        valor = request.GET.get(campo)
-        if valor:
-            filtros[campo + '__id'] = valor
+    if form.is_valid():
+        if form.cleaned_data['universidad']:
+            filtros['universidad__id'] = form.cleaned_data['universidad'].id
+        if form.cleaned_data['curso']:
+            filtros['curso__id'] = form.cleaned_data['curso'].id
+        if form.cleaned_data['tema']:
+            filtros['tema__id'] = form.cleaned_data['tema'].id
 
     # Cargar carrito desde sesión
-    carrito_ids = request.session.get('carrito', [])
+    carrito_ids_raw = request.session.get('carrito', [])
+    carrito_ids = [int(pid) for pid in carrito_ids_raw if str(pid).isdigit()]
     carrito = Pregunta.objects.filter(id__in=carrito_ids).select_related('universidad', 'curso', 'tema')
 
     if request.method == 'POST':
@@ -140,13 +147,8 @@ def generar_examen(request):
 
     context = {
         'page_obj': page_obj,  # Usar page_obj en lugar de preguntas
-        'temas': Tema.objects.all(),
-        'universidades': Universidad.objects.all(),
-        'cursos': Curso.objects.all(),
+        'form': form,
         'carrito': carrito_preguntas,
-        'tema_filter': request.GET.get('tema'),
-        'universidad_filter': request.GET.get('universidad'),
-        'curso_filter': request.GET.get('curso'),
         'now': timezone.now(),
 
     }

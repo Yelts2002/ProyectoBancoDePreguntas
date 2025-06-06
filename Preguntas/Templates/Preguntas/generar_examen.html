@@ -11,405 +11,408 @@
             </h1>
         </header>
         <div class="card-body">
-            <!-- Filtros -->
             {% if error %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
                 <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
             </div>
             {% endif %}
-            <div class="card-header text-black">
-                <h2 class="h5 mb-0 d-flex align-items-center" id="filter-section">
-                    <i class="fas fa-filter me-2"></i>Filtros de búsqueda
-                </h2>
-            </div>
-            <div class="card-body bg-light">
-                <form method="get" id="filtroForm" class="row g-3">
-                    <!-- Universidad -->
-                    <div class="col-lg-3 col-md-4">
-                        <label for="universidad" class="form-label fw-bold">
-                            <i class="fas fa-university me-1 text-primary"></i>Universidad
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-primary text-white">
-                                <i class="fas fa-university"></i>
-                            </span>
-                            <select name="universidad" id="universidad" class="form-select"
-                                aria-label="Filtrar por universidad">
-                                <option value="">Todas las universidades</option>
-                                {% for uni in universidades %}
-                                <option value="{{ uni.id }}" {% if universidad_filter == uni.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ uni.nombre }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
 
-                    <!-- Curso -->
-                    <div class="col-lg-3 col-md-4">
-                        <label for="curso" class="form-label fw-bold">
-                            <i class="fas fa-book me-1 text-primary"></i>Curso
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-primary text-white">
-                                <i class="fas fa-book"></i>
-                            </span>
-                            <select name="curso" id="curso" class="form-select" aria-label="Filtrar por curso">
-                                <option value="">Todos los cursos</option>
-                                {% for curso in cursos %}
-                                <option value="{{ curso.id }}" {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ curso.nombre }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
+            <!-- CARD DE FILTROS -->
+            <div class="card mb-4">
+                <div class="card-header bg-gradient">
+                    <h2 class="h5 mb-0 d-flex align-items-center">
+                        <i class="fas fa-filter me-2"></i>Filtros de búsqueda
+                    </h2>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="get" id="filtroForm">
+                        <div class="row gy-3 gx-3">
+                            <!-- UNIVERSIDAD -->
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <label for="id_universidad" class="form-label fw-bold mb-1">
+                                    <i class="fas fa-university me-1 text-primary"></i>Universidad
+                                </label>
+                                <select name="universidad" id="id_universidad" class="form-select form-select-lx">
+                                    <option value="">Todas</option>
+                                    {% for uni in form.fields.universidad.queryset %}
+                                    <option value="{{ uni.id }}" {% if form.data.universidad|stringformat:"s" == uni.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ uni.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
-                    <!-- Tema -->
-                    <div class="col-lg-3 col-md-4">
-                        <label for="tema" class="form-label fw-bold">
-                            <i class="fas fa-question-circle me-1 text-primary"></i>Tema
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-primary text-white">
-                                <i class="fas fa-question-circle"></i>
-                            </span>
-                            <select name="tema" id="tema" class="form-select" aria-label="Filtrar por tema">
-                                <option value="">Todos los temas</option>
-                                {% for tema in temas %}
-                                <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ tema.nombre }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
+                            <!-- CURSO -->
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <label for="id_curso" class="form-label fw-bold mb-1">
+                                    <i class="fas fa-book me-1 text-primary"></i>Curso
+                                </label>
+                                <select name="curso" id="id_curso" class="form-select form-select-lx" {% if form.fields.curso.queryset.count == 0 %}disabled{% endif %}>
+                                    <option value="">Todos</option>
+                                    {% for curso in form.fields.curso.queryset %}
+                                    <option value="{{ curso.id }}" {% if form.data.curso|stringformat:"s" == curso.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ curso.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
-                    <!-- Botones de Filtros -->
-                    <div class="col-lg-3">
-                        <label class="form-label fw-bold text-transparent">Acciones</label>
-                        <div class="btn-group" role="group" aria-label="Filtros">
-                            <button type="submit" form="filtroForm" class="btn btn-primary btn-sm"
-                                title="Aplicar filtros seleccionados">
-                                <i class="fas fa-filter me-1"></i> Aplicar
+                            <!-- TEMA -->
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <label for="id_tema" class="form-label fw-bold mb-1">
+                                    <i class="fas fa-question-circle me-1 text-primary"></i>Tema
+                                </label>
+                                <select name="tema" id="id_tema" class="form-select form-select-lx" {% if form.fields.tema.queryset.count == 0 %}disabled{% endif %}>
+                                    <option value="">Todos</option>
+                                    {% for tema in form.fields.tema.queryset %}
+                                    <option value="{{ tema.id }}" {% if form.data.tema|stringformat:"s" == tema.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ tema.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- BOTONES DE FILTROS -->
+                            <div class="col-sm-6 col-md-4 col-lg-3 d-flex align-items-end">
+                                <div class="w-100 d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary flex-fill py-2">
+                                        <i class="fas fa-filter me-1"></i>Aplicar
+                                    </button>
+                                    <a href="{% url 'generar-examen' %}"
+                                        class="btn btn-outline-secondary flex-fill py-2">
+                                        <i class="fas fa-undo me-1"></i>Limpiar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row gy-2 gx-2 mt-3">
+                            <!-- Añadir al Carrito -->
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <button type="submit" name="add_to_cart" class="btn btn-outline-secondary w-100 py-2 align-items-center" form="examenForm">
+                                    <i class="fas fa-cart-plus fs-5 mb-1"></i>
+                                    <span class="fw-semibold">Añadir al Carrito</span>
+                                </button>
+                            </div>
+                        
+                            <!-- Ver Carrito -->
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                            <button
+                                type="button" class="btn btn-outline-info w-100 py-2 d-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#carritoModal">
+                                <i class="fas fa-shopping-cart fs-5"></i>
+                                <span class="badge bg-warning text-dark ms-2">{{ carrito.count }}</span>
+                                <span class="fw-semibold ms-3">Ver Carrito</span>
                             </button>
-                            <a href="{% url 'generar-examen' %}" class="btn btn-outline-secondary btn-sm"
-                                title="Limpiar todos los filtros">
-                                <i class="fas fa-undo me-1"></i> Limpiar
-                            </a>
+                            </div>
+                            <!-- Descargar Examen -->
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <button type="submit" name="download" class="btn btn-outline-success w-100 py-2 align-items-center" form="examenForm">
+                                    <i class="fas fa-download fs-5 mb-1"></i>
+                                    <span class="fw-semibold">Descargar Examen</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
+                </div>
 
-                    <!-- Botones de acción del examen -->
-                    <div class="col-12 mt-4">
-                        <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-start">
-                            <button type="submit" name="add_to_cart" class="btn btn-secondary" form="examenForm"
-                                title="Añadir preguntas seleccionadas al carrito">
-                                <i class="fas fa-cart-plus me-1"></i> Añadir al Carrito
-                            </button>
-                            <button type="button" class="btn btn-info" data-bs-toggle="modal"
-                                data-bs-target="#carritoModal" title="Ver preguntas en el carrito">
-                                <i class="fas fa-shopping-cart me-1"></i> Ver Carrito
-                                <span class="badge bg-light text-dark ms-1">{{ carrito.count }}</span>
-                            </button>
-                            <button type="submit" name="download" class="btn btn-success" form="examenForm"
-                                title="Descargar examen con preguntas del carrito">
-                                <i class="fas fa-download me-1"></i> Descargar Examen
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Listado de Preguntas -->
-            <form method="post" id="examenForm">
-                {% csrf_token %}
-                <div class="table-responsive mt-4" style="overflow-x: auto;">
-                    <table class="table table-striped table-bordered table-hover align-middle" style="width: 100%;">
-                        <caption class="visually-hidden">
-                            Listado de {{ preguntas.count }} preguntas disponibles
-                        </caption>
-                        <thead class="table-dark sticky-top">
-                            <tr>
-                                <th scope="col" class="text-center" style="width: 40px;">
-                                    <div class="form-check">
-                                        <input type="checkbox" id="selectAll" class="form-check-input"
-                                            aria-label="Seleccionar todas las preguntas">
-                                        <label class="form-check-label visually-hidden" for="selectAll">Seleccionar
-                                            todo</label>
-                                    </div>
-                                </th>
-                                <th scope="col" style="width: 100px;" class="ps-3">
-                                    <span class="fw-bold"><i class="fas fa-hashtag me-1"></i> Código</span>
-                                </th>
-                                <th scope="col" style="width: 100px;" class="ps-3">
-                                    <span class="fw-bold"><i class="fas fa-clock me-1"></i> Estado</span>
-                                </th>
-                                <th scope="col" style="width: 150px;" class="ps-3">
-                                    <span class="fw-bold"><i class="fas fa-university me-1"></i> Universidad</span>
-                                </th>
-                                <th scope="col" style="width: 100px;" class="ps-3">
-                                    <span class="fw-bold"><i class="fas fa-book me-1"></i> Curso</span>
-                                </th>
-                                <th scope="col" style="width: 150px;" class="ps-3">
-                                    <span class="fw-bold"><i class="fas fa-question-circle me-1"></i> Tema</span>
-                                </th>
-                                <th scope="col" style="width: 100px;" class="ps-3">
-                                    <span class="fw-bold"><i class="fas fa-layer-group me-1"></i> Nivel</span>
-                                </th>
-                                <th scope="col" style="width: 110px;" class="text-center">
-                                    <span class="fw-bold"><i class="fas fa-calendar me-1"></i> Fecha</span>
-                                </th>
-                                <th scope="col" style="width: 120px;" class="text-center">
-                                    <span class="fw-bold"><i class="fas fa-cogs me-1"></i> Acciones</span>
-                                </th>
-                                <th scope="col" style="width: 120px;" class="text-center">
-                                    <span class="fw-bold"><i class="fas fa-check-circle me-1"></i> Solución</span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pregunta in page_obj.object_list %}
-                            <tr class="{% if pregunta.is_usada %}table-warning{% endif %}">
-                                <!-- Checkbox -->
-                                <td class="text-center align-middle">
-                                    <div class="form-check">
-                                        <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas"
-                                            value="{{ pregunta.id }}" class="pregunta-checkbox form-check-input"
-                                            aria-label="Seleccionar pregunta {{ pregunta.nombre }}">
-                                        <label class="form-check-label visually-hidden"
-                                            for="pregunta-{{ pregunta.id }}">
-                                            Seleccionar {{ pregunta.nombre }}
-                                        </label>
-                                    </div>
-                                </td>
-
-                                <!-- Código -->
-                                <td class="align-middle ps-3">
-                                    <strong class="text-primary fw-bold">{{ pregunta.nombre }}</strong>
-                                </td>
-
-                                <!-- Estado -->
-                                <td class="align-middle">
-                                    {% if pregunta.is_usada %}
-                                    <span
-                                        class="badge bg-warning text-dark d-inline-flex align-items-center fw-semibold"
-                                        title="Pregunta usada en examen previo el {{ pregunta.fecha_ultimo_uso|date:'d/m/Y H:i' }}">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>
-                                        <div class="text-start">
-                                            <div>Usada el:</div>
-                                            <small class="fw-normal">{{ pregunta.fecha_ultimo_uso|date:'d/m/Y H:i'}}</small>
+                <!-- Listado de Preguntas -->
+                <form method="post" id="examenForm">
+                    {% csrf_token %}
+                    <div class="table-responsive mt-4" style="overflow-x: auto;">
+                        <table class="table table-striped table-bordered table-hover align-middle" style="width: 100%;">
+                            <caption class="visually-hidden">
+                                Listado de {{ preguntas.count }} preguntas disponibles
+                            </caption>
+                            <thead class="table-dark sticky-top">
+                                <tr>
+                                    <th scope="col" class="text-center" style="width: 40px;">
+                                        <div class="form-check">
+                                            <input type="checkbox" id="selectAll" class="form-check-input"
+                                                aria-label="Seleccionar todas las preguntas">
+                                            <label class="form-check-label visually-hidden" for="selectAll">Seleccionar
+                                                todo</label>
                                         </div>
-                                    </span>
-                                    {% else %}
-                                    <span
-                                        class="badge bg-success text-white d-inline-flex align-items-center fw-semibold"
-                                        title="Pregunta no usada en ningún examen">
-                                        <i class="fas fa-check-circle me-1"></i>
-                                        Sin Uso
-                                    </span>
-                                    {% endif %}
-                                </td>
+                                    </th>
+                                    <th scope="col" style="width: 100px;" class="ps-3">
+                                        <span class="fw-bold"><i class="fas fa-hashtag me-1"></i> Código</span>
+                                    </th>
+                                    <th scope="col" style="width: 100px;" class="ps-3">
+                                        <span class="fw-bold"><i class="fas fa-clock me-1"></i> Estado</span>
+                                    </th>
+                                    <th scope="col" style="width: 150px;" class="ps-3">
+                                        <span class="fw-bold"><i class="fas fa-university me-1"></i> Universidad</span>
+                                    </th>
+                                    <th scope="col" style="width: 100px;" class="ps-3">
+                                        <span class="fw-bold"><i class="fas fa-book me-1"></i> Curso</span>
+                                    </th>
+                                    <th scope="col" style="width: 150px;" class="ps-3">
+                                        <span class="fw-bold"><i class="fas fa-question-circle me-1"></i> Tema</span>
+                                    </th>
+                                    <th scope="col" style="width: 100px;" class="ps-3">
+                                        <span class="fw-bold"><i class="fas fa-layer-group me-1"></i> Nivel</span>
+                                    </th>
+                                    <th scope="col" style="width: 110px;" class="text-center">
+                                        <span class="fw-bold"><i class="fas fa-calendar me-1"></i> Fecha</span>
+                                    </th>
+                                    <th scope="col" style="width: 120px;" class="text-center">
+                                        <span class="fw-bold"><i class="fas fa-cogs me-1"></i> Acciones</span>
+                                    </th>
+                                    <th scope="col" style="width: 120px;" class="text-center">
+                                        <span class="fw-bold"><i class="fas fa-check-circle me-1"></i> Solución</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pregunta in page_obj.object_list %}
+                                <tr class="{% if pregunta.is_usada %}table-warning{% endif %}">
+                                    <!-- Checkbox -->
+                                    <td class="text-center align-middle">
+                                        <div class="form-check">
+                                            <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas"
+                                                value="{{ pregunta.id }}" class="pregunta-checkbox form-check-input"
+                                                aria-label="Seleccionar pregunta {{ pregunta.nombre }}">
+                                            <label class="form-check-label visually-hidden"
+                                                for="pregunta-{{ pregunta.id }}">
+                                                Seleccionar {{ pregunta.nombre }}
+                                            </label>
+                                        </div>
+                                    </td>
 
-                                <!-- Universidad -->
-                                <td class="align-middle ps-3">
-                                    <div class="fw-bold text-truncate" title="{{ pregunta.universidad.nombre }}">
-                                        {{ pregunta.universidad.nombre }}
-                                    </div>
-                                    <small class="text-muted fw-normal">ID: {{ pregunta.universidad.id }}</small>
-                                </td>
+                                    <!-- Código -->
+                                    <td class="align-middle ps-3">
+                                        <strong class="text-primary fw-bold">{{ pregunta.nombre }}</strong>
+                                    </td>
 
-                                <!-- Curso -->
-                                <td class="align-middle ps-3">
-                                    <div class="fw-bold text-truncate" title="{{ pregunta.curso.nombre }}">
-                                        {{ pregunta.curso.nombre }}
-                                    </div>
-                                    <small class="text-muted fw-normal">ID: {{ pregunta.curso.id }}</small>
-                                </td>
+                                    <!-- Estado -->
+                                    <td class="align-middle">
+                                        {% if pregunta.is_usada %}
+                                        <span
+                                            class="badge bg-warning text-dark d-inline-flex align-items-center fw-semibold"
+                                            title="Pregunta usada en examen previo el {{ pregunta.fecha_ultimo_uso|date:'d/m/Y H:i' }}">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            <div class="text-start">
+                                                <div>Usada el:</div>
+                                                <small class="fw-normal">{{ pregunta.fecha_ultimo_uso|date:'d/m/Y H:i'}}</small>
+                                            </div>
+                                        </span>
+                                        {% else %}
+                                        <span
+                                            class="badge bg-success text-white d-inline-flex align-items-center fw-semibold"
+                                            title="Pregunta no usada en ningún examen">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            Sin Uso
+                                        </span>
+                                        {% endif %}
+                                    </td>
 
-                                <!-- Tema -->
-                                <td class="align-middle ps-3">
-                                    <div class="fw-bold text-truncate" title="{{ pregunta.tema.nombre }}">
-                                        {{ pregunta.tema.nombre }}
-                                    </div>
-                                    <small class="text-muted fw-normal">ID: {{ pregunta.tema.id }}</small>
-                                </td>
+                                    <!-- Universidad -->
+                                    <td class="align-middle ps-3">
+                                        <div class="fw-bold text-truncate" title="{{ pregunta.universidad.nombre }}">
+                                            {{ pregunta.universidad.nombre }}
+                                        </div>
+                                        <small class="text-muted fw-normal">ID: {{ pregunta.universidad.id }}</small>
+                                    </td>
 
-                                <!-- Nivel -->
-                                <td class="align-middle ps-3">
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge fw-bold
+                                    <!-- Curso -->
+                                    <td class="align-middle ps-3">
+                                        <div class="fw-bold text-truncate" title="{{ pregunta.curso.nombre }}">
+                                            {{ pregunta.curso.nombre }}
+                                        </div>
+                                        <small class="text-muted fw-normal">ID: {{ pregunta.curso.id }}</small>
+                                    </td>
+
+                                    <!-- Tema -->
+                                    <td class="align-middle ps-3">
+                                        <div class="fw-bold text-truncate" title="{{ pregunta.tema.nombre }}">
+                                            {{ pregunta.tema.nombre }}
+                                        </div>
+                                        <small class="text-muted fw-normal">ID: {{ pregunta.tema.id }}</small>
+                                    </td>
+
+                                    <!-- Nivel -->
+                                    <td class="align-middle ps-3">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge fw-bold
                                                 {% if pregunta.nivel == 1 %}bg-success
                                                 {% elif pregunta.nivel == 2 %}bg-warning text-dark
                                                 {% elif pregunta.nivel == 3 %}bg-danger
                                                 {% else %}bg-secondary{% endif %}">
-                                            {% if pregunta.nivel == 1 %}1 - Bajo
-                                            {% elif pregunta.nivel == 2 %}2 - Medio
-                                            {% elif pregunta.nivel == 3 %}3 - Alto
-                                            {% else %}Desconocido{% endif %}
-                                        </span>
-                                    </div>
-                                </td>
-
-                                <!-- Fecha -->
-                                <td class="align-middle text-center">
-                                    <div class="fw-bold">
-                                        {{ pregunta.fecha_creacion|date:"d/m/Y" }}
-                                    </div>
-                                    <span class="fw-semibold">
-                                        {% if pregunta.fecha_expiracion > now %}
-                                        <span class="countdown-timer text-success"
-                                            data-expiration="{{ pregunta.fecha_expiracion|date:'Y-m-d H:i:s' }}"
-                                            title="Expira: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
-                                            <i class="fas fa-clock me-1" aria-hidden="true"></i>
-                                            <span class="time-remaining">
-                                                {% with tiempo_restante=pregunta.fecha_expiracion|timeuntil:now %}
-                                                {% if "hour" in tiempo_restante %}
-                                                {{ tiempo_restante|slice:":2"|cut:" " }} H
-                                                {% if "minute" in tiempo_restante %}
-                                                {{ tiempo_restante|slice:"9:11"|cut:" " }} m
-                                                {% endif %}
-                                                {% else %}
-                                                {{ tiempo_restante|slice:":2"|cut:" " }} m
-                                                {% endif %}
-                                                {% endwith %}
+                                                {% if pregunta.nivel == 1 %}1 - Bajo
+                                                {% elif pregunta.nivel == 2 %}2 - Medio
+                                                {% elif pregunta.nivel == 3 %}3 - Alto
+                                                {% else %}Desconocido{% endif %}
                                             </span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Fecha -->
+                                    <td class="align-middle text-center">
+                                        <div class="fw-bold">
+                                            {{ pregunta.fecha_creacion|date:"d/m/Y" }}
+                                        </div>
+                                        <span class="fw-semibold">
+                                            {% if pregunta.fecha_expiracion > now %}
+                                            <span class="countdown-timer text-success"
+                                                data-expiration="{{ pregunta.fecha_expiracion|date:'Y-m-d H:i:s' }}"
+                                                title="Expira: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
+                                                <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                <span class="time-remaining">
+                                                    {% with tiempo_restante=pregunta.fecha_expiracion|timeuntil:now %}
+                                                    {% if "hour" in tiempo_restante %}
+                                                    {{ tiempo_restante|slice:":2"|cut:" " }} H
+                                                    {% if "minute" in tiempo_restante %}
+                                                    {{ tiempo_restante|slice:"9:11"|cut:" " }} m
+                                                    {% endif %}
+                                                    {% else %}
+                                                    {{ tiempo_restante|slice:":2"|cut:" " }} m
+                                                    {% endif %}
+                                                    {% endwith %}
+                                                </span>
+                                            </span>
+                                            {% else %}
+                                            <span class="text-danger"
+                                                title="Expirada: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
+                                                <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                Expirada
+                                            </span>
+                                            {% endif %}
+                                        </span>
+                                    </td>
+
+                                    <!-- Acciones -->
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2"
+                                            aria-label="Acciones para pregunta {{ pregunta.nombre }}">
+                                            <button type="button" class="btn btn-info btn-sm px-2 py-1"
+                                                data-url="{% url 'vista-previa' pregunta.id %}" data-bs-toggle="modal"
+                                                data-bs-target="#previewModal" onclick="loadPdfPreview(this)"
+                                                data-bs-toggle="tooltip" data-bs-title="Vista previa">
+                                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Vista previa</span>
+                                            </button>
+                                            <a href="{% url 'pregunta-update' pregunta.id %}"
+                                                class="btn btn-warning btn-sm px-2 py-1" data-bs-toggle="tooltip"
+                                                data-bs-title="Editar">
+                                                <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Editar</span>
+                                            </a>
+                                        </div>
+                                    </td>
+
+                                    <!-- Solución -->
+                                    <td class="align-middle text-center">
+                                        {% if pregunta.tiene_solucion %}
+                                        <span class="badge bg-success px-3 py-1 fw-semibold">
+                                            <i class="fas fa-check me-1"></i> Sí
                                         </span>
                                         {% else %}
-                                        <span class="text-danger"
-                                            title="Expirada: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
-                                            <i class="fas fa-clock me-1" aria-hidden="true"></i>
-                                            Expirada
+                                        <span class="badge bg-danger px-3 py-1 fw-semibold">
+                                            <i class="fas fa-times me-1"></i> No
                                         </span>
                                         {% endif %}
-                                    </span>
-                                </td>
-
-                                <!-- Acciones -->
-                                <td>
-                                    <div class="d-flex justify-content-center gap-2"
-                                        aria-label="Acciones para pregunta {{ pregunta.nombre }}">
-                                        <button type="button" class="btn btn-info btn-sm px-2 py-1"
-                                            data-url="{% url 'vista-previa' pregunta.id %}" data-bs-toggle="modal"
-                                            data-bs-target="#previewModal" onclick="loadPdfPreview(this)"
-                                            data-bs-toggle="tooltip" data-bs-title="Vista previa">
-                                            <i class="fas fa-eye" aria-hidden="true"></i>
-                                            <span class="visually-hidden">Vista previa</span>
-                                        </button>
-                                        <a href="{% url 'pregunta-update' pregunta.id %}"
-                                            class="btn btn-warning btn-sm px-2 py-1" data-bs-toggle="tooltip"
-                                            data-bs-title="Editar">
-                                            <i class="fas fa-pencil-alt" aria-hidden="true"></i>
-                                            <span class="visually-hidden">Editar</span>
-                                        </a>
-                                    </div>
-                                </td>
-
-                                <!-- Solución -->
-                                <td class="align-middle text-center">
-                                    {% if pregunta.tiene_solucion %}
-                                    <span class="badge bg-success px-3 py-1 fw-semibold">
-                                        <i class="fas fa-check me-1"></i> Sí
-                                    </span>
-                                    {% else %}
-                                    <span class="badge bg-danger px-3 py-1 fw-semibold">
-                                        <i class="fas fa-times me-1"></i> No
-                                    </span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="10" class="text-center py-5">
-                                    <div class="text-muted">
-                                        <i class="fas fa-search fa-3x mb-3 d-block"></i>
-                                        <h3 class="h5 fw-bold">No se encontraron preguntas</h3>
-                                        <p class="mb-0 fw-normal">Prueba ajustando los filtros de búsqueda o <a
-                                                href="{% url 'generar-examen' %}"
-                                                class="text-decoration-none fw-semibold">limpia los filtros</a> para ver todas las preguntas.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                {% if preguntas %}
-                <div
-                    class="d-flex flex-column flex-lg-row justify-content-between align-items-center p-3 bg-light rounded gap-3">
-                    <div class="text-muted text-center text-lg-start fw-semibold">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Mostrando <span class="fw-bold">{{ preguntas.count }}</span> pregunta{{ preguntas.count|pluralize }}
-                        {% if carrito.count > 0 %}
-                        | <span class="fw-bold">{{ carrito.count }}</span> en el carrito
-                        {% endif %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div>
-                        <span class="text-muted fw-semibold">
-                            Mostrando preguntas {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }}
-                        </span>
-                    </div>
-
-                    <nav aria-label="Paginación de preguntas">
-                        <ul class="pagination mb-0">
-                            {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link fw-semibold"
-                                    href="?page=1{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
-                                    aria-label="Primera">
-                                    <span aria-hidden="true">&laquo;&laquo;</span>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link fw-semibold"
-                                    href="?page={{ page_obj.previous_page_number }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
-                                    aria-label="Anterior">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                            {% endif %}
-
-                            {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                            <li class="page-item active" aria-current="page">
-                                <span class="page-link fw-bold">{{ num }}</span>
-                            </li>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li
-                                class="page-item">
-                                <a class="page-link fw-semibold"
-                                    href="?page={{ num }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}">{{ num }}</a>
-                                </li>
-                                {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="fas fa-search fa-3x mb-3 d-block"></i>
+                                            <h3 class="h5 fw-bold">No se encontraron preguntas</h3>
+                                            <p class="mb-0 fw-normal">Prueba ajustando los filtros de búsqueda o <a
+                                                    href="{% url 'generar-examen' %}"
+                                                    class="text-decoration-none fw-semibold">limpia los filtros</a> para ver todas las preguntas.</p>
+                                        </div>
+                                    </td>
+                                </tr>
                                 {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
-                                {% if page_obj.has_next %}
+                    {% if preguntas %}
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center p-3 bg-light rounded gap-3">
+                        <div class="text-muted text-center text-lg-start fw-semibold">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Mostrando <span class="fw-bold">{{ preguntas.count }}</span> pregunta{{ preguntas.count|pluralize }}
+                            {% if carrito.count > 0 %}
+                            | <span class="fw-bold">{{ carrito.count }}</span> en el carrito
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span class="text-muted fw-semibold">
+                                Mostrando preguntas {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+                            </span>
+                        </div>
+
+                        <nav aria-label="Paginación de preguntas">
+                            <ul class="pagination mb-0">
+                                {% if page_obj.has_previous %}
                                 <li class="page-item">
                                     <a class="page-link fw-semibold"
-                                        href="?page={{ page_obj.next_page_number }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
-                                        aria-label="Siguiente">
-                                        <span aria-hidden="true">&raquo;</span>
+                                        href="?page=1{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
+                                        aria-label="Primera">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item">
                                     <a class="page-link fw-semibold"
-                                        href="?page={{ page_obj.paginator.num_pages }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
-                                        aria-label="Última">
-                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                        href="?page={{ page_obj.previous_page_number }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
+                                        aria-label="Anterior">
+                                        <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 {% endif %}
-                        </ul>
-                    </nav>
-                </div>
-            </form>
-        </div>
+
+                                {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link fw-bold">{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li class="page-item">
+                                    <a class="page-link fw-semibold"
+                                        href="?page={{ num }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}">
+                                        {{ num }}
+                                    </a>
+                                    </li>
+                                    {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link fw-semibold"
+                                            href="?page={{ page_obj.next_page_number }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
+                                            aria-label="Siguiente">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link fw-semibold"
+                                            href="?page={{ page_obj.paginator.num_pages }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
+                                            aria-label="Última">
+                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </form>
+            </div>
     </section>
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <strong class="me-auto">Notificación</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
 </main>
 
 <!-- Modal de la vista previa en pdf-->
@@ -425,10 +428,11 @@
                 <iframe id="previewFrame" src="" width="100%" height="700px" frameborder="0"></iframe>
             </div>
             <div class="modal-footer">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 <button id="btnAgregarCarrito" class="btn btn-success">
                     <i class="fas fa-cart-plus me-1"></i>Añadir al Carrito
                 </button>
-                <button type="button" class="btn btn-secondary" id="cerrarVistaPreviaBtn">Cerrar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -555,9 +559,6 @@
 
         preguntaIdActual = button.getAttribute('data-pregunta-id');
 
-        // 👉 Nuevo: detectar si se abrió desde el carrito
-        vistaPreviaDesdeCarrito = button.closest('#carritoModal') !== null;
-
         const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
         if (preguntaEnCarrito(preguntaIdActual)) {
             btnAgregarCarrito.disabled = true;
@@ -572,42 +573,62 @@
         }
     }
 
-
     // Función para verificar si una pregunta está en el carrito
     function preguntaEnCarrito(preguntaId) {
-        return document.getElementById(`pregunta-cart-${preguntaId}`) !== null;
+        return document.querySelector(`#pregunta-cart-${preguntaId}`) !== null;
     }
 
-    // Función para añadir pregunta al carrito desde la vista previa
-    function agregarAlCarritoDesdeVistaPrevia() {
-        if (!preguntaIdActual) return;
+// Función para añadir pregunta al carrito desde la vista previa
+async function agregarAlCarritoDesdeVistaPrevia() {
+    if (!preguntaIdActual) return;
 
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = window.location.href;
+    try {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        const csrfInput = document.createElement("input");
-        csrfInput.type = "hidden";
-        csrfInput.name = "csrfmiddlewaretoken";
-        csrfInput.value = "{{ csrf_token }}";
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({
+                'csrfmiddlewaretoken': csrftoken,
+                'pregunta_id': preguntaIdActual,
+                'add_preview': 'true'
+            })
+        });
 
-        const preguntaInput = document.createElement("input");
-        preguntaInput.type = "hidden";
-        preguntaInput.name = "preguntas";
-        preguntaInput.value = preguntaIdActual;
+        const data = await response.json();
 
-        const addToCartInput = document.createElement("input");
-        addToCartInput.type = "hidden";
-        addToCartInput.name = "add_to_cart";
+        if (data.success) {
+            // Actualizar UI del botón
+            const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
+            btnAgregarCarrito.disabled = true;
+            btnAgregarCarrito.innerHTML = '<i class="fas fa-check me-1"></i> Ya en el carrito';
+            btnAgregarCarrito.classList.remove('btn-success');
+            btnAgregarCarrito.classList.add('btn-secondary');
 
-        form.appendChild(csrfInput);
-        form.appendChild(preguntaInput);
-        form.appendChild(addToCartInput);
+            // Actualizar contador del carrito
+            const badge = document.querySelector('.badge.bg-warning.text-dark');
+            if (badge) {
+                const currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = currentCount + 1;
+            }
 
-        document.body.appendChild(form);
-        form.submit();
+            // Mostrar notificación con Toast de Bootstrap
+            const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+            document.getElementById('toastMessage').textContent = 'Pregunta añadida al carrito correctamente';
+            toast.show();
+        } else {
+            alert('Error al añadir la pregunta: ' + (data.error || 'Error desconocido'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión al servidor');
     }
-
+}
+    
     // Función para eliminar pregunta del carrito
     function eliminarPregunta(preguntaId) {
         if (!confirm("¿Estás seguro de que deseas eliminar esta pregunta del carrito?")) {
@@ -729,83 +750,7 @@
             }
         });
 
-        const universidadSelect = document.getElementById("universidad");
-        const cursoSelect = document.getElementById("curso");
-        const temaSelect = document.getElementById("tema");
 
-        universidadSelect.addEventListener("change", () => {
-            const universidadId = universidadSelect.value;
-
-            // Reset curso y tema
-            cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
-            temaSelect.innerHTML = '<option value="">Todos los temas</option>';
-            temaSelect.disabled = true;
-
-            if (!universidadId) {
-                cursoSelect.disabled = true;
-                return;
-            }
-
-            cursoSelect.disabled = true;
-            cursoSelect.innerHTML = '<option>Cargando cursos...</option>';
-
-            fetch(`/preguntas/ajax/load-cursos/?universidad_id=${universidadId}`)
-                .then(response => response.json())
-                .then(data => {
-                    cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
-                    data.forEach(curso => {
-                        const option = document.createElement("option");
-                        option.value = curso.id;
-                        option.textContent = curso.nombre;
-                        cursoSelect.appendChild(option);
-                    });
-                    cursoSelect.disabled = false;
-                })
-                .catch(() => {
-                    cursoSelect.innerHTML = '<option>Error al cargar cursos</option>';
-                    cursoSelect.disabled = false;
-                });
-        });
-
-        cursoSelect.addEventListener("change", () => {
-            const cursoId = cursoSelect.value;
-
-            temaSelect.innerHTML = '<option value="">Todos los temas</option>';
-
-            if (!cursoId) {
-                temaSelect.disabled = true;
-                return;
-            }
-
-            temaSelect.disabled = true;
-            temaSelect.innerHTML = '<option>Cargando temas...</option>';
-
-            fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
-                .then(response => response.json())
-                .then(data => {
-                    temaSelect.innerHTML = '<option value="">Todos los temas</option>';
-                    data.forEach(tema => {
-                        const option = document.createElement("option");
-                        option.value = tema.id;
-                        option.textContent = tema.nombre;
-                        temaSelect.appendChild(option);
-                    });
-                    temaSelect.disabled = false;
-                })
-                .catch(() => {
-                    temaSelect.innerHTML = '<option>Error al cargar temas</option>';
-                    temaSelect.disabled = false;
-                });
-        });
-
-        // Opcional: deshabilitar curso y tema si no hay universidad/cursos seleccionados al cargar
-        if (!universidadSelect.value) {
-            cursoSelect.disabled = true;
-            temaSelect.disabled = true;
-        }
-        if (!cursoSelect.value) {
-            temaSelect.disabled = true;
-        }
 
         // Configurar botón de añadir al carrito desde vista previa
         document.getElementById("btnAgregarCarrito").addEventListener("click", agregarAlCarritoDesdeVistaPrevia);
@@ -922,5 +867,84 @@
         setInterval(updateCountdowns, 60000); // Actualizar cada minuto
     });
 
+    document.addEventListener("DOMContentLoaded", function () {
+        const universidadSelect = document.getElementById("id_universidad");
+        const cursoSelect = document.getElementById("id_curso");
+        const temaSelect = document.getElementById("id_tema");
+
+        // Cuando cambia la universidad, cargar cursos
+        universidadSelect.addEventListener("change", function () {
+            const universidadId = this.value;
+
+            cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
+            temaSelect.innerHTML = '<option value="">Todos los temas</option>';
+            temaSelect.disabled = true;
+
+            if (!universidadId) {
+                cursoSelect.disabled = true;
+                return;
+            }
+
+            cursoSelect.disabled = true;
+            cursoSelect.innerHTML = '<option>Cargando cursos...</option>';
+
+            fetch(`/preguntas/ajax/load-cursos/?universidad_id=${universidadId}`)
+                .then(response => response.json())
+                .then(data => {
+                    cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
+                    data.forEach(curso => {
+                        const option = document.createElement("option");
+                        option.value = curso.id;
+                        option.textContent = curso.nombre;
+                        cursoSelect.appendChild(option);
+                    });
+                    cursoSelect.disabled = false;
+                })
+                .catch(() => {
+                    cursoSelect.innerHTML = '<option>Error al cargar cursos</option>';
+                    cursoSelect.disabled = false;
+                });
+        });
+
+        // Cuando cambia el curso, cargar temas
+        cursoSelect.addEventListener("change", function () {
+            const cursoId = this.value;
+
+            temaSelect.innerHTML = '<option value="">Todos los temas</option>';
+
+            if (!cursoId) {
+                temaSelect.disabled = true;
+                return;
+            }
+
+            temaSelect.disabled = true;
+            temaSelect.innerHTML = '<option>Cargando temas...</option>';
+
+            fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    temaSelect.innerHTML = '<option value="">Todos los temas</option>';
+                    data.forEach(tema => {
+                        const option = document.createElement("option");
+                        option.value = tema.id;
+                        option.textContent = tema.nombre;
+                        temaSelect.appendChild(option);
+                    });
+                    temaSelect.disabled = false;
+                })
+                .catch(() => {
+                    temaSelect.innerHTML = '<option>Error al cargar temas</option>';
+                    temaSelect.disabled = false;
+                });
+        });
+
+        // Al cargar, deshabilitar si no hay valores
+        if (!universidadSelect.value) {
+            cursoSelect.disabled = true;
+            temaSelect.disabled = true;
+        } else if (!cursoSelect.value) {
+            temaSelect.disabled = true;
+        }
+    });
 </script>
 {% endblock %}

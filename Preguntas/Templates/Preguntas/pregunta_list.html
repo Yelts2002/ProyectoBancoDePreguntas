@@ -7,7 +7,7 @@
 <main class="container py-4">
     <!-- Sección de Filtros y Listado de Preguntas -->
     <section class="card mb-4 shadow-sm border rounded" aria-labelledby="filter-section">
-        <header class="card-header d-flex flex-wrap justify-content-between align-items-center text-white py-3 px-4">
+        <header class="card-header d-flex flex-wrap justify-content-between align-items-center text-black py-3 px-4">
             <div class="d-flex align-items-center mb-2 mb-md-0">
                 <i class="fas fa-question-circle fa-lg me-3" aria-hidden="true"></i>
                 <h1 class="h4 mb-0 text-white" id="preguntas-title">
@@ -30,8 +30,6 @@
                 </a>
             </div>
         </header>
-
-
 
         <!-- Encabezado -->
         <div class="card-header bg-primary text-white d-flex align-items-center">
@@ -143,12 +141,12 @@
                                         </div>
                                     </th>
                                     {% endif %}
-                                    <th scope="col"><span class="fw-bold">Código</span></th>
+                                    <th scope="col" style="width: 80px;"><span class="fw-bold">Código</span></th>
                                     <th scope="col"><span class="fw-bold">Universidad</span></th>
                                     <th scope="col"><span class="fw-bold">Curso</span></th>
                                     <th scope="col"><span class="fw-bold">Tema</span></th>
                                     <th scope="col" style="width: 120px;"> <span class="fw-bold">Nivel</span></th>
-                                    {% if user.is_staff %}<th scope="col" style="width: 190px;"> <span class="fw-bold">Contenido</span></th>{% endif %}
+                                    {% if user.is_staff %}<th scope="col" style="width: 145px;"> <span class="fw-bold">Contenido</span></th>{% endif %}
                                     <th scope="col" style="width: 150px;"><span class="fw-bold">Tiempo Restante</span></th>
                                     <th scope="col" style="width: 150px;"><span class="fw-bold">Acciones</span></th>
                                 </tr>
@@ -192,17 +190,19 @@
                                                 {% elif pregunta.nivel == 2 %} bg-warning text-dark
                                                 {% elif pregunta.nivel == 3 %} bg-danger
                                                 {% else %} bg-secondary{% endif %}">
-                                                {% if pregunta.nivel == 1 %}1 - Bajo
-                                                {% elif pregunta.nivel == 2 %}2 - Medio
-                                                {% elif pregunta.nivel == 3 %}3 - Avanzado
+                                                {% if pregunta.nivel == 1 %}1-Bajo
+                                                {% elif pregunta.nivel == 2 %}2-Medio
+                                                {% elif pregunta.nivel == 3 %}3-Avanzado
                                                 {% else %}Desconocido{% endif %}
                                             </span>
                                         </td>
                                         {% if user.is_staff %}
-                                        <td>
-                                            <a href="{{ pregunta.contenido.url }}" class="btn btn-outline-success btn-sm"
-                                            aria-label="Descargar contenido de la pregunta {{ pregunta.id }}">
-                                                <i class="fas fa-download" aria-hidden="true"></i> <span class="fw-bold">Descargar </span>
+                                        <td class="text-center">
+                                            <a href="{{ pregunta.contenido.url }}" 
+                                            class="btn btn-outline-success btn-sm fw-semibold" 
+                                            aria-label="Descargar contenido de la pregunta {{ pregunta.id }}"
+                                            download>
+                                                <i class="fas fa-download me-1"></i> PDF
                                             </a>
                                         </td>
                                         {% endif %}

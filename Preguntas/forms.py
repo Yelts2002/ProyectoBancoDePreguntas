@@ -156,38 +156,45 @@ class PreguntaForm(forms.ModelForm):
         
         return cleaned_data
 
-#filtrar 
 class FiltroPreguntaForm(forms.Form):
-    universidad = forms.ModelChoiceField(queryset=Universidad.objects.all(), required=False)
-    curso = forms.ModelChoiceField(queryset=Curso.objects.none(), required=False)
-    tema = forms.ModelChoiceField(queryset=Tema.objects.none(), required=False)
+    universidad = forms.ModelChoiceField(
+        queryset=Universidad.objects.all(),
+        required=False,
+        label="Universidad"
+    )
+    curso = forms.ModelChoiceField(
+        queryset=Curso.objects.none(),
+        required=False,
+        label="Curso"
+    )
+    tema = forms.ModelChoiceField(
+        queryset=Tema.objects.none(),
+        required=False,
+        label="Tema"
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Cargar cursos si se seleccionó universidad
         if 'universidad' in self.data:
-            self._filtrar_cursos_por_universidad()
+            try:
+                universidad_id = int(self.data.get('universidad'))
+                self.fields['curso'].queryset = Curso.objects.filter(
+                    universidades__id=universidad_id
+                ).order_by('nombre')
+            except (ValueError, TypeError):
+                pass
 
+        # Cargar temas si se seleccionó curso
         if 'curso' in self.data:
-            self._filtrar_temas_por_curso()
-
-    def _filtrar_cursos_por_universidad(self):
-        try:
-            universidad_id = int(self.data.get('universidad'))
-            self.fields['curso'].queryset = Curso.objects.filter(
-                universidades=universidad_id
-            ).order_by('nombre')
-        except (ValueError, TypeError):
-            pass
-
-    def _filtrar_temas_por_curso(self):
-        try:
-            curso_id = int(self.data.get('curso'))
-            self.fields['tema'].queryset = Tema.objects.filter(
-                curso_id=curso_id
-            ).order_by('nombre')
-        except (ValueError, TypeError):
-            pass
+            try:
+                curso_id = int(self.data.get('curso'))
+                self.fields['tema'].queryset = Tema.objects.filter(
+                    curso_id=curso_id
+                ).order_by('nombre')
+            except (ValueError, TypeError):
+                pass
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(
