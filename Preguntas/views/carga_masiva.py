@@ -13,6 +13,7 @@ from ..forms import CargaMasivaPreguntaForm
 from ..models import Pregunta, UserProfile
 from .auth_views import exclude_supervisor
 from contextlib import contextmanager
+from django.contrib.admin.views.decorators import staff_member_required
 
 @contextmanager
 def temp_docx_file(content_bytes, suffix='.docx'):
@@ -28,6 +29,7 @@ def temp_docx_file(content_bytes, suffix='.docx'):
             os.unlink(temp_path)
 
 @login_required
+@staff_member_required
 @exclude_supervisor
 def masivo_pregunta_create(request):
     if request.method == 'POST':

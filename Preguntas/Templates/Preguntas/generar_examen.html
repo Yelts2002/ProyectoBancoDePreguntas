@@ -285,9 +285,13 @@
                                         <div class="d-flex justify-content-center gap-2"
                                             aria-label="Acciones para pregunta {{ pregunta.nombre }}">
                                             <button type="button" class="btn btn-info btn-sm px-2 py-1"
-                                                data-url="{% url 'vista-previa' pregunta.id %}" data-bs-toggle="modal"
-                                                data-bs-target="#previewModal" onclick="loadPdfPreview(this)"
-                                                data-bs-toggle="tooltip" data-bs-title="Vista previa">
+                                                data-url="{% url 'vista-previa' pregunta.id %}" 
+                                                data-pregunta-id="{{ pregunta.id }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#previewModal" 
+                                                onclick="loadPdfPreview(this)"
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-title="Vista previa">
                                                 <i class="fas fa-eye" aria-hidden="true"></i>
                                                 <span class="visually-hidden">Vista previa</span>
                                             </button>
@@ -404,15 +408,15 @@
                 </form>
             </div>
     </section>
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header bg-success text-white">
-            <strong class="me-auto">Notificación</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">Notificación</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage"></div>
         </div>
-        <div class="toast-body" id="toastMessage"></div>
     </div>
-</div>
 </main>
 
 <!-- Modal de la vista previa en pdf-->
@@ -546,7 +550,6 @@
     </div>
 </div>
 
-<!-- JavaScript -->
 <script>
     // Variable global para almacenar el ID de la pregunta actual en vista previa
     let preguntaIdActual = null;
@@ -578,57 +581,57 @@
         return document.querySelector(`#pregunta-cart-${preguntaId}`) !== null;
     }
 
-// Función para añadir pregunta al carrito desde la vista previa
-async function agregarAlCarritoDesdeVistaPrevia() {
-    if (!preguntaIdActual) return;
+    // Función para añadir pregunta al carrito desde la vista previa
+    async function agregarAlCarritoDesdeVistaPrevia() {
+        if (!preguntaIdActual) return;
 
-    try {
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        try {
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        const response = await fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': csrftoken,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: new URLSearchParams({
-                'csrfmiddlewaretoken': csrftoken,
-                'pregunta_id': preguntaIdActual,
-                'add_preview': 'true'
-            })
-        });
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({
+                    'csrfmiddlewaretoken': csrftoken,
+                    'pregunta_id': preguntaIdActual,
+                    'add_preview': 'true'
+                })
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (data.success) {
-            // Actualizar UI del botón
-            const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
-            btnAgregarCarrito.disabled = true;
-            btnAgregarCarrito.innerHTML = '<i class="fas fa-check me-1"></i> Ya en el carrito';
-            btnAgregarCarrito.classList.remove('btn-success');
-            btnAgregarCarrito.classList.add('btn-secondary');
+            if (data.success) {
+                // Actualizar UI del botón
+                const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
+                btnAgregarCarrito.disabled = true;
+                btnAgregarCarrito.innerHTML = '<i class="fas fa-check me-1"></i> Ya en el carrito';
+                btnAgregarCarrito.classList.remove('btn-success');
+                btnAgregarCarrito.classList.add('btn-secondary');
 
-            // Actualizar contador del carrito
-            const badge = document.querySelector('.badge.bg-warning.text-dark');
-            if (badge) {
-                const currentCount = parseInt(badge.textContent) || 0;
-                badge.textContent = currentCount + 1;
+                // Actualizar contador del carrito
+                const badge = document.querySelector('.badge.bg-warning.text-dark');
+                if (badge) {
+                    const currentCount = parseInt(badge.textContent) || 0;
+                    badge.textContent = currentCount + 1;
+                }
+
+                // Mostrar notificación con Toast de Bootstrap
+                const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+                document.getElementById('toastMessage').textContent = 'Pregunta añadida al carrito correctamente';
+                toast.show();
+            } else {
+                alert('Error al añadir la pregunta: ' + (data.error || 'Error desconocido'));
             }
-
-            // Mostrar notificación con Toast de Bootstrap
-            const toast = new bootstrap.Toast(document.getElementById('liveToast'));
-            document.getElementById('toastMessage').textContent = 'Pregunta añadida al carrito correctamente';
-            toast.show();
-        } else {
-            alert('Error al añadir la pregunta: ' + (data.error || 'Error desconocido'));
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión al servidor');
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error de conexión al servidor');
     }
-}
-    
+
     // Función para eliminar pregunta del carrito
     function eliminarPregunta(preguntaId) {
         if (!confirm("¿Estás seguro de que deseas eliminar esta pregunta del carrito?")) {
@@ -647,35 +650,35 @@ async function agregarAlCarritoDesdeVistaPrevia() {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const elemento = document.getElementById(`pregunta-cart-${preguntaId}`);
-                    if (elemento) {
-                        elemento.remove();
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const elemento = document.getElementById(`pregunta-cart-${preguntaId}`);
+                if (elemento) {
+                    elemento.remove();
 
-                        // Actualizar lista si el carrito queda vacío
-                        const listaCarrito = document.getElementById('listaCarrito');
-                        if (listaCarrito.children.length === 0) {
-                            listaCarrito.innerHTML = `
-                        <li class="list-group-item text-center py-4">
-                            <div class="empty-cart-message">
-                                <i class="fas fa-shopping-cart text-muted mb-2" style="font-size: 2rem;"></i>
-                                <p class="text-muted mb-0">El carrito está vacío.</p>
-                                <small class="text-muted">Agrega algunas preguntas para comenzar.</small>
-                            </div>
-                        </li>
-                    `;
-                        }
+                    // Actualizar lista si el carrito queda vacío
+                    const listaCarrito = document.getElementById('listaCarrito');
+                    if (listaCarrito.children.length === 0) {
+                        listaCarrito.innerHTML = `
+                            <li class="list-group-item text-center py-4">
+                                <div class="empty-cart-message">
+                                    <i class="fas fa-shopping-cart text-muted mb-2" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mb-0">El carrito está vacío.</p>
+                                    <small class="text-muted">Agrega algunas preguntas para comenzar.</small>
+                                </div>
+                            </li>
+                        `;
                     }
-                } else {
-                    alert("Error al eliminar la pregunta: " + (data.error || "Error desconocido"));
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Error al comunicarse con el servidor. Por favor intenta nuevamente.");
-            });
+            } else {
+                alert("Error al eliminar la pregunta: " + (data.error || "Error desconocido"));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error al comunicarse con el servidor. Por favor intenta nuevamente.");
+        });
     }
 
     // Función para vaciar el carrito
@@ -695,26 +698,26 @@ async function agregarAlCarritoDesdeVistaPrevia() {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById("listaCarrito").innerHTML = `
-                <li class="list-group-item text-center py-4">
-                    <div class="empty-cart-message">
-                        <i class="fas fa-shopping-cart text-muted mb-2" style="font-size: 2rem;"></i>
-                        <p class="text-muted mb-0">El carrito está vacío.</p>
-                        <small class="text-muted">Agrega algunas preguntas para comenzar.</small>
-                    </div>
-                </li>
-            `;
-                } else {
-                    alert("Error al vaciar el carrito: " + (data.error || "Error desconocido"));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Error al comunicarse con el servidor. Por favor intenta nuevamente.");
-            });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("listaCarrito").innerHTML = `
+                    <li class="list-group-item text-center py-4">
+                        <div class="empty-cart-message">
+                            <i class="fas fa-shopping-cart text-muted mb-2" style="font-size: 2rem;"></i>
+                            <p class="text-muted mb-0">El carrito está vacío.</p>
+                            <small class="text-muted">Agrega algunas preguntas para comenzar.</small>
+                        </div>
+                    </li>
+                `;
+            } else {
+                alert("Error al vaciar el carrito: " + (data.error || "Error desconocido"));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error al comunicarse con el servidor. Por favor intenta nuevamente.");
+        });
     }
 
     // Inicialización cuando el DOM está listo
@@ -750,19 +753,24 @@ async function agregarAlCarritoDesdeVistaPrevia() {
             }
         });
 
-
-
-        // Configurar botón de añadir al carrito desde vista previa
-        document.getElementById("btnAgregarCarrito").addEventListener("click", agregarAlCarritoDesdeVistaPrevia);
+        // Configurar botón de añadir al carrito desde vista previa (versión corregida)
+        const botonAgregar = document.getElementById("btnAgregarCarrito");
+        if (botonAgregar) {
+            botonAgregar.addEventListener("click", agregarAlCarritoDesdeVistaPrevia);
+        }
 
         // Configurar botón de vaciar carrito
-        document.getElementById("vaciarCarrito").addEventListener("click", vaciarCarrito);
+        const vaciarBtn = document.getElementById("vaciarCarrito");
+        if (vaciarBtn) {
+            vaciarBtn.addEventListener("click", vaciarCarrito);
+        }
 
         // Configurar formularios de descarga
         const formCarritoDownload = document.getElementById("formCarritoDownload");
         const formRespuestasDownload = document.getElementById("formRespuestasDownload");
 
         [formCarritoDownload, formRespuestasDownload].forEach(form => {
+            if (!form) return;
             form.addEventListener("submit", function (event) {
                 // Limpiar inputs anteriores
                 this.querySelectorAll("input[name='preguntas']").forEach(e => e.remove());
@@ -790,38 +798,41 @@ async function agregarAlCarritoDesdeVistaPrevia() {
             });
         });
 
-        document.getElementById("cerrarVistaPreviaBtn").addEventListener("click", function () {
-            const previewModalEl = document.getElementById("previewModal");
-            const previewModal = bootstrap.Modal.getInstance(previewModalEl);
-            previewModal.hide();
+        // Botón de cerrar vista previa (asegura volver a mostrar carrito si viene de éste)
+        const cerrarVistaPreviaBtn = document.getElementById("cerrarVistaPreviaBtn");
+        if (cerrarVistaPreviaBtn) {
+            cerrarVistaPreviaBtn.addEventListener("click", function () {
+                const previewModalEl = document.getElementById("previewModal");
+                const previewModal = bootstrap.Modal.getInstance(previewModalEl);
+                previewModal.hide();
 
-            // Si se abrió desde el listado y ya está en el carrito → mostrar carrito
-            if (!vistaPreviaDesdeCarrito && preguntaEnCarrito(preguntaIdActual)) {
-                const carritoModalEl = document.getElementById("carritoModal");
-                const carritoModal = new bootstrap.Modal(carritoModalEl);
-                carritoModal.show();
-            }
-        });
-
-        const previewModalEl = document.getElementById("previewModal");
-        previewModalEl.addEventListener("hidden.bs.modal", function () {
-            if (vistaPreviaDesdeCarrito) {
-                const carritoModalEl = document.getElementById("carritoModal");
-
-                // Bootstrap 5: Si ya está visible, no es necesario volver a abrir
-                const isCarritoVisible = carritoModalEl.classList.contains("show");
-
-                if (!isCarritoVisible) {
+                // Si se abrió desde el listado y ya está en el carrito → mostrar carrito
+                if (!vistaPreviaDesdeCarrito && preguntaEnCarrito(preguntaIdActual)) {
+                    const carritoModalEl = document.getElementById("carritoModal");
                     const carritoModal = new bootstrap.Modal(carritoModalEl);
                     carritoModal.show();
                 }
+            });
+        }
 
-                // Restaurar el flag para futuras aperturas
-                vistaPreviaDesdeCarrito = false;
-            }
-        });
+        // Al cerrar el modal de vista previa, si venía desde carrito, reabrir carrito
+        const previewModalEl = document.getElementById("previewModal");
+        if (previewModalEl) {
+            previewModalEl.addEventListener("hidden.bs.modal", function () {
+                if (vistaPreviaDesdeCarrito) {
+                    const carritoModalEl = document.getElementById("carritoModal");
+                    const isCarritoVisible = carritoModalEl.classList.contains("show");
+                    if (!isCarritoVisible) {
+                        const carritoModal = new bootstrap.Modal(carritoModalEl);
+                        carritoModal.show();
+                    }
+                    vistaPreviaDesdeCarrito = false;
+                }
+            });
+        }
     });
 
+    // Actualiza los contadores de expiración cada minuto
     document.addEventListener('DOMContentLoaded', function () {
         function updateCountdowns() {
             const timers = document.querySelectorAll('.countdown-timer');
@@ -848,12 +859,10 @@ async function agregarAlCarritoDesdeVistaPrevia() {
                 let timeStr = '';
                 if (hours > 0) {
                     timeStr += hours + ' H ';
-                    // Mostrar minutos solo si hay horas
                     if (minutes > 0) {
                         timeStr += minutes + ' m';
                     }
                 } else {
-                    // Mostrar solo minutos si no hay horas
                     timeStr += minutes + ' m';
                 }
 
@@ -862,20 +871,18 @@ async function agregarAlCarritoDesdeVistaPrevia() {
             });
         }
 
-        // Actualizar inmediatamente y luego cada minuto
         updateCountdowns();
-        setInterval(updateCountdowns, 60000); // Actualizar cada minuto
+        setInterval(updateCountdowns, 60000);
     });
 
+    // Filtros jerárquicos: cargar cursos y temas dinámicamente
     document.addEventListener("DOMContentLoaded", function () {
         const universidadSelect = document.getElementById("id_universidad");
         const cursoSelect = document.getElementById("id_curso");
         const temaSelect = document.getElementById("id_tema");
 
-        // Cuando cambia la universidad, cargar cursos
         universidadSelect.addEventListener("change", function () {
             const universidadId = this.value;
-
             cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
             temaSelect.innerHTML = '<option value="">Todos los temas</option>';
             temaSelect.disabled = true;
@@ -906,10 +913,8 @@ async function agregarAlCarritoDesdeVistaPrevia() {
                 });
         });
 
-        // Cuando cambia el curso, cargar temas
         cursoSelect.addEventListener("change", function () {
             const cursoId = this.value;
-
             temaSelect.innerHTML = '<option value="">Todos los temas</option>';
 
             if (!cursoId) {
@@ -938,7 +943,6 @@ async function agregarAlCarritoDesdeVistaPrevia() {
                 });
         });
 
-        // Al cargar, deshabilitar si no hay valores
         if (!universidadSelect.value) {
             cursoSelect.disabled = true;
             temaSelect.disabled = true;

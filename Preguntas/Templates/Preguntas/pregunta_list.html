@@ -7,10 +7,10 @@
 <main class="container py-4">
     <!-- Sección de Filtros y Listado de Preguntas -->
     <section class="card mb-4 shadow-sm border rounded" aria-labelledby="filter-section">
-        <header class="card-header d-flex flex-wrap justify-content-between align-items-center text-black py-3 px-4">
+        <header class="card-header d-flex justify-content-between align-items-center text-white py-3">
             <div class="d-flex align-items-center mb-2 mb-md-0">
-                <i class="fas fa-question-circle fa-lg me-3" aria-hidden="true"></i>
-                <h1 class="h4 mb-0 text-white" id="preguntas-title">
+                <h1 class="h4 mb-0 text-black" id="preguntas-title">
+                   <i class="fas fa-question-circle fa-lg me-3" aria-hidden="true"></i>
                     Mis Preguntas
                     {% if total_preguntas %}
                     <span class="badge bg-success ms-2 fs-6 fw-normal" aria-label="Total de preguntas: {{ total_preguntas }}">
@@ -20,10 +20,12 @@
                 </h1>
             </div>
             <div class="d-flex gap-2">
+                {% if user.is_staff %}
                 <a href="{% url 'masivo_pregunta_create' %}" class="btn btn-light btn-sm d-flex align-items-center" aria-label="Cargar preguntas de forma masiva">
                     <i class="fas fa-upload me-2" aria-hidden="true"></i>
                     <span>Carga Masiva</span>
                 </a>
+                {% endif %}
                 <a href="{% url 'pregunta-create' %}" class="btn btn-light btn-sm d-flex align-items-center" aria-label="Crear nueva pregunta manualmente">
                     <i class="fas fa-plus me-2" aria-hidden="true"></i>
                     <span>Nueva Pregunta</span>
@@ -31,88 +33,88 @@
             </div>
         </header>
 
-        <!-- Encabezado -->
-        <div class="card-header bg-primary text-white d-flex align-items-center">
-            <h2 class="h5 mb-0" id="filter-section">
-                <i class="fas fa-search me-2"></i> Filtros de Búsqueda
-            </h2>
-        </div>
-
         <!-- Filtros -->
-        <div class="card-body">
-            <form method="get" id="filtroForm" class="row g-3">
-                <!-- Universidad -->
-                <div class="col-md-4">
-                    <label for="universidad" class="form-label fw-bold">Universidad</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-primary text-white">
-                            <i class="fas fa-university"></i>
-                        </span>
-                        <select name="universidad" id="universidad" class="form-select">
-                            <option value="">Todas</option>
-                            {% for uni in universidades %}
-                                <option value="{{ uni.id }}" {% if universidad_filter == uni.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ uni.nombre }}
+        <div class="card-body mb-4">
+            <div class="card-header bg-gradient">
+                <h2 class="h5 mb-0" id="filter-section">
+                    <i class="fas fa-search me-2"></i> Filtros de Búsqueda
+                </h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="get" id="filtroForm" class="row g-3">
+                    <!-- Universidad -->
+                    <div class="col-md-4">
+                        <label for="universidad" class="form-label fw-bold">Universidad</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-primary text-white">
+                                <i class="fas fa-university"></i>
+                            </span>
+                            <select name="universidad" id="universidad" class="form-select">
+                                <option value="">Todas</option>
+                                {% for uni in universidades %}
+                                    <option value="{{ uni.id }}" {% if universidad_filter == uni.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ uni.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Curso -->
+                    <div class="col-md-4">
+                        <label for="curso" class="form-label fw-bold">Curso</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-primary text-white">
+                                <i class="fas fa-book"></i>
+                            </span>
+                            <select name="curso" id="curso" class="form-select" {% if not universidad_filter %}disabled{% endif %}>
+                                <option value="">
+                                    {% if universidad_filter %}Todos los cursos{% else %}Seleccione Universidad{% endif %}
                                 </option>
-                            {% endfor %}
-                        </select>
+                                {% if universidad_filter %}
+                                    {% for curso in cursos_para_uni %}
+                                        <option value="{{ curso.id }}" {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ curso.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Curso -->
-                <div class="col-md-4">
-                    <label for="curso" class="form-label fw-bold">Curso</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-primary text-white">
-                            <i class="fas fa-book"></i>
-                        </span>
-                        <select name="curso" id="curso" class="form-select" {% if not universidad_filter %}disabled{% endif %}>
-                            <option value="">
-                                {% if universidad_filter %}Todos los cursos{% else %}Seleccione Universidad{% endif %}
-                            </option>
-                            {% if universidad_filter %}
-                                {% for curso in cursos_para_uni %}
-                                    <option value="{{ curso.id }}" {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ curso.nombre }}
-                                    </option>
-                                {% endfor %}
-                            {% endif %}
-                        </select>
+                    <!-- Tema -->
+                    <div class="col-md-4">
+                        <label for="tema" class="form-label fw-bold">Tema</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-primary text-white">
+                                <i class="fas fa-question-circle"></i>
+                            </span>
+                            <select name="tema" id="tema" class="form-select" {% if not curso_filter %}disabled{% endif %}>
+                                <option value="">
+                                    {% if curso_filter %}Todos los temas{% else %}Seleccione Curso{% endif %}
+                                </option>
+                                {% if curso_filter %}
+                                    {% for tema in temas_para_curso %}
+                                        <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ tema.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Tema -->
-                <div class="col-md-4">
-                    <label for="tema" class="form-label fw-bold">Tema</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-primary text-white">
-                            <i class="fas fa-question-circle"></i>
-                        </span>
-                        <select name="tema" id="tema" class="form-select" {% if not curso_filter %}disabled{% endif %}>
-                            <option value="">
-                                {% if curso_filter %}Todos los temas{% else %}Seleccione Curso{% endif %}
-                            </option>
-                            {% if curso_filter %}
-                                {% for tema in temas_para_curso %}
-                                    <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ tema.nombre }}
-                                    </option>
-                                {% endfor %}
-                            {% endif %}
-                        </select>
+                    <!-- Botones -->
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i> Aplicar Filtros
+                        </button>
+                        <a href="{% url 'pregunta-list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo me-1"></i> Restablecer
+                        </a>
                     </div>
-                </div>
-
-                <!-- Botones -->
-                <div class="col-12 text-end">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-filter me-1"></i> Aplicar Filtros
-                    </button>
-                    <a href="{% url 'pregunta-list' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-undo me-1"></i> Restablecer
-                    </a>
-                </div>
-            </form>
+                </form>
+            </div>  
         </div>
 
         <!-- Tabla de Preguntas -->
