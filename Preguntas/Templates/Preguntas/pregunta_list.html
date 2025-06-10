@@ -10,10 +10,11 @@
         <header class="card-header d-flex justify-content-between align-items-center text-white py-3">
             <div class="d-flex align-items-center mb-2 mb-md-0">
                 <h1 class="h4 mb-0 text-black" id="preguntas-title">
-                   <i class="fas fa-question-circle fa-lg me-3" aria-hidden="true"></i>
+                    <i class="fas fa-question-circle fa-lg me-3" aria-hidden="true"></i>
                     Mis Preguntas
                     {% if total_preguntas %}
-                    <span class="badge bg-success ms-2 fs-6 fw-normal" aria-label="Total de preguntas: {{ total_preguntas }}">
+                    <span class="badge bg-success ms-2 fs-6 fw-normal"
+                        aria-label="Total de preguntas: {{ total_preguntas }}">
                         {{ total_preguntas }}
                     </span>
                     {% endif %}
@@ -21,12 +22,14 @@
             </div>
             <div class="d-flex gap-2">
                 {% if user.is_staff %}
-                <a href="{% url 'masivo_pregunta_create' %}" class="btn btn-light btn-sm d-flex align-items-center" aria-label="Cargar preguntas de forma masiva">
+                <a href="{% url 'masivo_pregunta_create' %}" class="btn btn-light btn-sm d-flex align-items-center"
+                    aria-label="Cargar preguntas de forma masiva">
                     <i class="fas fa-upload me-2" aria-hidden="true"></i>
                     <span>Carga Masiva</span>
                 </a>
                 {% endif %}
-                <a href="{% url 'pregunta-create' %}" class="btn btn-light btn-sm d-flex align-items-center" aria-label="Crear nueva pregunta manualmente">
+                <a href="{% url 'pregunta-create' %}" class="btn btn-light btn-sm d-flex align-items-center"
+                    aria-label="Crear nueva pregunta manualmente">
                     <i class="fas fa-plus me-2" aria-hidden="true"></i>
                     <span>Nueva Pregunta</span>
                 </a>
@@ -52,9 +55,9 @@
                             <select name="universidad" id="universidad" class="form-select">
                                 <option value="">Todas</option>
                                 {% for uni in universidades %}
-                                    <option value="{{ uni.id }}" {% if universidad_filter == uni.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ uni.nombre }}
-                                    </option>
+                                <option value="{{ uni.id }}" {% if universidad_filter == uni.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ uni.nombre }}
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -73,9 +76,9 @@
                                 </option>
                                 {% if universidad_filter %}
                                     {% for curso in cursos_para_uni %}
-                                        <option value="{{ curso.id }}" {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
-                                            {{ curso.nombre }}
-                                        </option>
+                                    <option value="{{ curso.id }}" {% if curso_filter == curso.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ curso.nombre }}
+                                    </option>
                                     {% endfor %}
                                 {% endif %}
                             </select>
@@ -94,11 +97,11 @@
                                     {% if curso_filter %}Todos los temas{% else %}Seleccione Curso{% endif %}
                                 </option>
                                 {% if curso_filter %}
-                                    {% for tema in temas_para_curso %}
-                                        <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
-                                            {{ tema.nombre }}
-                                        </option>
-                                    {% endfor %}
+                                {% for tema in temas_para_curso %}
+                                <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ tema.nombre }}
+                                </option>
+                                {% endfor %}
                                 {% endif %}
                             </select>
                         </div>
@@ -114,7 +117,7 @@
                         </a>
                     </div>
                 </form>
-            </div>  
+            </div>
         </div>
 
         <!-- Tabla de Preguntas -->
@@ -123,7 +126,8 @@
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover table-striped align-middle text-center shadow-sm rounded"
+                        <table
+                            class="table table-bordered table-hover table-striped align-middle text-center shadow-sm rounded"
                             aria-describedby="tabla-preguntas-desc">
                             <caption class="visually-hidden" id="tabla-preguntas-desc">
                                 Listado de preguntas con acciones disponibles
@@ -148,186 +152,195 @@
                                     <th scope="col"><span class="fw-bold">Curso</span></th>
                                     <th scope="col"><span class="fw-bold">Tema</span></th>
                                     <th scope="col" style="width: 120px;"> <span class="fw-bold">Nivel</span></th>
-                                    {% if user.is_staff %}<th scope="col" style="width: 145px;"> <span class="fw-bold">Contenido</span></th>{% endif %}
-                                    <th scope="col" style="width: 150px;"><span class="fw-bold">Tiempo Restante</span></th>
+                                    {% if user.is_staff %}
+                                    <th scope="col" style="width: 145px;">
+                                        <span class="fw-bold">Contenido</span>
+                                    </th>
+                                    {% endif %}
+                                    <th scope="col" style="width: 150px;">
+                                        <span class="fw-bold">Tiempo Restante</span>
+                                    </th>
                                     <th scope="col" style="width: 150px;"><span class="fw-bold">Acciones</span></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for pregunta in page_obj %}
-                                    <tr>
-                                        {% if user.is_staff %}                                    
-                                        <td>
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="form-check m-0" style="transform: scale(1.5);">
-                                                    <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas"
-                                                        value="{{ pregunta.id }}" class="form-check-input pregunta-check"
-                                                        aria-labelledby="label-pregunta-{{ pregunta.id }}">
-                                                    <label id="label-pregunta-{{ pregunta.id }}" for="pregunta-{{ pregunta.id }}" class="visually-hidden">
-                                                        Seleccionar pregunta {{ pregunta.nombre|default:pregunta.id }}
-                                                    </label>
-                                                </div>
+                                <tr>
+                                    {% if user.is_staff %}
+                                    <td>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <div class="form-check m-0" style="transform: scale(1.5);">
+                                                <input type="checkbox" id="pregunta-{{ pregunta.id }}" name="preguntas"
+                                                    value="{{ pregunta.id }}" class="form-check-input pregunta-check"
+                                                    aria-labelledby="label-pregunta-{{ pregunta.id }}">
+                                                <label id="label-pregunta-{{ pregunta.id }}"
+                                                    for="pregunta-{{ pregunta.id }}" class="visually-hidden">
+                                                    Seleccionar pregunta {{ pregunta.nombre|default:pregunta.id }}
+                                                </label>
                                             </div>
-                                        </td>
-                                        {% endif %}
-                                        <td><span class="fw-bold">{{ pregunta.nombre }}</span></td>
-                                        <td><span class="fw-bold">
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                    <td><span class="fw-bold">{{ pregunta.nombre }}</span></td>
+                                    <td><span class="fw-bold">
                                             {{ pregunta.universidad.nombre }}
                                             {% if user.is_staff %}<small class="text-muted d-block">ID: {{ pregunta.universidad.id }}</small>{% endif %}
-                                            </span>
-                                        </td>
-                                        <td><span class="fw-bold">
+                                        </span>
+                                    </td>
+                                    <td><span class="fw-bold">
                                             {{ pregunta.curso.nombre }}
                                             {% if user.is_staff %}<small class="text-muted d-block">ID: {{ pregunta.curso.id }}</small>{% endif %}
-                                            </span>
-                                        </td>
-                                        <td><span class="fw-bold">
+                                        </span>
+                                    </td>
+                                    <td><span class="fw-bold">
                                             {{ pregunta.tema.nombre }}
                                             {% if user.is_staff %}<small class="text-muted d-block">ID: {{ pregunta.tema.id }}</small>{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge fs-7 fw-bold px-3 py-2
+                                            {% if pregunta.nivel == 1 %} bg-success
+                                            {% elif pregunta.nivel == 2 %} bg-warning text-dark
+                                            {% elif pregunta.nivel == 3 %} bg-danger
+                                            {% else %} bg-secondary{% endif %}">
+                                            {% if pregunta.nivel == 1 %}1-Bajo
+                                            {% elif pregunta.nivel == 2 %}2-Medio
+                                            {% elif pregunta.nivel == 3 %}3-Avanzado
+                                            {% else %}Desconocido{% endif %}
+                                        </span>
+                                    </td>
+                                    {% if user.is_staff %}
+                                    <td class="text-center">
+                                        <a href="{{ pregunta.contenido.url }}"
+                                            class="btn btn-outline-success btn-sm fw-semibold"
+                                            aria-label="Descargar contenido de la pregunta {{ pregunta.id }}" download>
+                                            <i class="fas fa-download me-1"></i> PDF
+                                        </a>
+                                    </td>
+                                    {% endif %}
+                                    <td class="text-nowrap">
+                                        <span class="fw-semibold">
+                                            {% if pregunta.fecha_expiracion > now %}
+                                            <span class="countdown-timer text-success"
+                                                data-expiration="{{ pregunta.fecha_expiracion|date:'Y-m-d H:i:s' }}"
+                                                title="Expira: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
+                                                <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                                                <span class="time-remaining">
+                                                    {% with tiempo_restante=pregunta.fecha_expiracion|timeuntil:now %}
+                                                    {% if "hour" in tiempo_restante %}
+                                                    {{ tiempo_restante|slice:":2"|cut:" " }} H
+                                                    {% if "minute" in tiempo_restante %}
+                                                    {{ tiempo_restante|slice:"9:11"|cut:" " }} min
+                                                    {% endif %}
+                                                    {% else %}
+                                                    {{ tiempo_restante|slice:":2"|cut:" " }} min
+                                                    {% endif %}
+                                                    {% endwith %}
+                                                </span>
                                             </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge fs-7 fw-bold px-3 py-2
-                                                {% if pregunta.nivel == 1 %} bg-success
-                                                {% elif pregunta.nivel == 2 %} bg-warning text-dark
-                                                {% elif pregunta.nivel == 3 %} bg-danger
-                                                {% else %} bg-secondary{% endif %}">
-                                                {% if pregunta.nivel == 1 %}1-Bajo
-                                                {% elif pregunta.nivel == 2 %}2-Medio
-                                                {% elif pregunta.nivel == 3 %}3-Avanzado
-                                                {% else %}Desconocido{% endif %}
+                                            {% else %}
+                                            <span class="text-danger"
+                                                title="Expirada: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
+                                                <i class="fas fa-clock me-1" aria-hidden="true"></i> Expirada
                                             </span>
-                                        </td>
-                                        {% if user.is_staff %}
-                                        <td class="text-center">
-                                            <a href="{{ pregunta.contenido.url }}" 
-                                            class="btn btn-outline-success btn-sm fw-semibold" 
-                                            aria-label="Descargar contenido de la pregunta {{ pregunta.id }}"
-                                            download>
-                                                <i class="fas fa-download me-1"></i> PDF
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2"
+                                            aria-label="Acciones para pregunta {{ pregunta.nombre }}">
+                                            <button type="button" class="btn btn-info btn-sm px-2 py-1"
+                                                data-url="{% url 'vista-previa' pregunta.id %}" data-bs-toggle="modal"
+                                                data-bs-target="#previewModal" onclick="loadPdfPreview(this)"
+                                                data-bs-toggle="tooltip" data-bs-title="Vista previa">
+                                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Vista previa</span>
+                                            </button>
+                                            <a href="{% url 'pregunta-update' pregunta.id %}"
+                                                class="btn btn-warning btn-sm px-2 py-1" data-bs-toggle="tooltip"
+                                                data-bs-title="Editar">
+                                                <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Editar</span>
                                             </a>
-                                        </td>
-                                        {% endif %}
-                                        <td class="text-nowrap">
-                                            <span class="fw-semibold">
-                                                {% if pregunta.fecha_expiracion > now %}
-                                                    <span class="countdown-timer text-success" 
-                                                        data-expiration="{{ pregunta.fecha_expiracion|date:'Y-m-d H:i:s' }}"
-                                                        title="Expira: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
-                                                        <i class="fas fa-clock me-1" aria-hidden="true"></i>
-                                                        <span class="time-remaining">
-                                                            {% with tiempo_restante=pregunta.fecha_expiracion|timeuntil:now %}
-                                                                {% if "hour" in tiempo_restante %}
-                                                                    {{ tiempo_restante|slice:":2"|cut:" " }} H
-                                                                    {% if "minute" in tiempo_restante %}
-                                                                        {{ tiempo_restante|slice:"9:11"|cut:" " }} min
-                                                                    {% endif %}
-                                                                {% else %}
-                                                                    {{ tiempo_restante|slice:":2"|cut:" " }} min
-                                                                {% endif %}
-                                                            {% endwith %}
-                                                        </span>
-                                                    </span>
-                                                {% else %}
-                                                    <span class="text-danger" title="Expirada: {{ pregunta.fecha_expiracion|date:'d M Y H:i' }}">
-                                                        <i class="fas fa-clock me-1" aria-hidden="true"></i>
-                                                        Expirada
-                                                    </span>
-                                                {% endif %}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex justify-content-center gap-2" aria-label="Acciones para pregunta {{ pregunta.nombre }}">
-                                                <button type="button" class="btn btn-info btn-sm px-2 py-1"
-                                                        data-url="{% url 'vista-previa' pregunta.id %}"
-                                                        data-bs-toggle="modal" data-bs-target="#previewModal"
-                                                        onclick="loadPdfPreview(this)"
-                                                        data-bs-toggle="tooltip" data-bs-title="Vista previa">
-                                                    <i class="fas fa-eye" aria-hidden="true"></i>
-                                                    <span class="visually-hidden">Vista previa</span>
-                                                </button>                                                                                              
-                                                <a href="{% url 'pregunta-update' pregunta.id %}" class="btn btn-warning btn-sm px-2 py-1"
-                                                data-bs-toggle="tooltip" data-bs-title="Editar">
-                                                    <i class="fas fa-pencil-alt" aria-hidden="true"></i>
-                                                    <span class="visually-hidden">Editar</span>
-                                                </a>
-                                                <a href="{% url 'pregunta-delete' pregunta.pk %}" class="btn btn-danger btn-sm px-2 py-1"
-                                                data-bs-toggle="tooltip" data-bs-title="Eliminar">
-                                                    <i class="fas fa-trash" aria-hidden="true"></i>
-                                                    <span class="visually-hidden">Eliminar</span>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                            <a href="{% url 'pregunta-delete' pregunta.pk %}"
+                                                class="btn btn-danger btn-sm px-2 py-1" data-bs-toggle="tooltip"
+                                                data-bs-title="Eliminar">
+                                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Eliminar</span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
                                 {% empty %}
-                                    <tr>
-                                        <td colspan="9" class="text-center text-muted py-5">
-                                            <i class="fas fa-inbox fa-2x mb-3" aria-hidden="true"></i>
-                                            <p>No hay preguntas registradas.</p>
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-5">
+                                        <i class="fas fa-inbox fa-2x mb-3" aria-hidden="true"></i>
+                                        <p>No hay preguntas registradas.</p>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                     <!-- Botones de acción para staff -->
                     {% if user.is_staff and page_obj %}
-                        <div class="card-footer bg-light d-flex flex-wrap justify-content-between align-items-center py-3">
-                            <div class="mb-2 mb-md-0">
-                                <span class="text-muted">
-                                    <span id="selectedCount">0</span> preguntas seleccionadas
-                                </span>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-success" id="btnDescargar" disabled 
-                                        aria-label="Descargar preguntas seleccionadas">
-                                    <i class="fas fa-download me-1" aria-hidden="true"></i> 
-                                    <span class="d-none d-md-inline">Descargar</span>
-                                </button>
-                                <button type="button" class="btn btn-danger" id="btnEliminar" disabled 
-                                        aria-label="Eliminar preguntas seleccionadas" 
-                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                                    <i class="fas fa-trash me-1" aria-hidden="true"></i> 
-                                    <span class="d-none d-md-inline">Eliminar</span>
-                                </button>        
-                            </div>
+                    <div class="card-footer bg-light d-flex flex-wrap justify-content-between align-items-center py-3">
+                        <div class="mb-2 mb-md-0">
+                            <span class="text-muted">
+                                <span id="selectedCount">0</span> preguntas seleccionadas
+                            </span>
                         </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success" id="btnDescargar" disabled
+                                aria-label="Descargar preguntas seleccionadas">
+                                <i class="fas fa-download me-1" aria-hidden="true"></i>
+                                <span class="d-none d-md-inline">Descargar</span>
+                            </button>
+                            <button type="button" class="btn btn-danger" id="btnEliminar" disabled
+                                aria-label="Eliminar preguntas seleccionadas" data-bs-toggle="modal"
+                                data-bs-target="#confirmDeleteModal">
+                                <i class="fas fa-trash me-1" aria-hidden="true"></i>
+                                <span class="d-none d-md-inline">Eliminar</span>
+                            </button>
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
             {% if page_obj.paginator.num_pages > 1 %}
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-3">
                 <div class="text-muted">
-                    Mostrando <span class="fw-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> 
-                    de <span class="fw-semibold">{{ page_obj.paginator.count }}</span> preguntas
+                    Mostrando <span class="fw-semibold">{{ page_obj.start_index }}-{{ page_obj.end_index }}</span> de
+                    <span class="fw-semibold">{{ page_obj.paginator.count }}</span> preguntas
                 </div>
-                
+
                 <nav aria-label="Navegación de páginas">
                     <ul class="pagination mb-0 flex-wrap justify-content-center">
                         {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{{ request.GET.urlencode|cut:'page='|yesno:',,' }}"
                                 aria-label="Primera página">
-                                    <span aria-hidden="true">&laquo;&laquo;</span>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link"
+                                href="?page={{ page_obj.previous_page_number }}{{ request.GET.urlencode|cut:'page='|yesno:',,' }}"
                                 aria-label="Página anterior">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
                         {% endif %}
 
                         {% for num in page_obj.paginator.page_range %}
-                            {% if num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
+                            {% if num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
                                 {% if page_obj.number == num %}
                                     <li class="page-item active" aria-current="page">
                                         <span class="page-link">{{ num }}</span>
                                     </li>
                                 {% else %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                        <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&' }}{% endif %}">{{ num }}</a>
                                     </li>
                                 {% endif %}
                             {% endif %}
@@ -335,36 +348,40 @@
 
                         {% if page_obj.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                                aria-label="Página siguiente">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&' }}{% endif %}" aria-label="Página siguiente">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                                aria-label="Última página">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&' }}{% endif %}" aria-label="Última página">
                                     <span aria-hidden="true">&raquo;&raquo;</span>
                                 </a>
                             </li>
                         {% endif %}
                     </ul>
                 </nav>
-                
+
                 <div class="d-flex align-items-center gap-2">
                     <span class="text-muted">Ir a:</span>
                     <form class="d-flex gap-2" method="get" id="pageForm">
-                        <input type="number" name="page" min="1" max="{{ page_obj.paginator.num_pages }}" 
-                            class="form-control form-control-sm" style="width: 70px;"
-                            aria-label="Número de página" value="{{ page_obj.number }}">
+                        {% for key, value in request.GET.items %}
+                        {% if key != 'page' %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                        {% endfor %}
+                        <input type="number" name="page" min="1" max="{{ page_obj.paginator.num_pages }}"
+                            class="form-control form-control-sm" style="width: 70px;" aria-label="Número de página"
+                            value="{{ page_obj.number }}">
                         <button type="submit" class="btn btn-sm btn-outline-primary">Ir</button>
                     </form>
                 </div>
             </div>
             {% endif %}
+
         </form>
     </section>
 
-<!-- Modal para vista previa PDF -->
+    <!-- Modal para vista previa PDF -->
 
     <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -382,16 +399,19 @@
 </main>
 
 <!-- Agrega este modal al final del archivo, antes del cierre del main -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
                 <p>¿Está seguro que desea eliminar las <span id="deleteCount">0</span> preguntas seleccionadas?</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.
+                </p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -403,156 +423,193 @@
 
 {% block extra_js %}
 <script>
-function loadPdfPreview(button) {
-    const url = button.getAttribute('data-url');
-    const iframe = document.getElementById('previewFrame');
-    iframe.src = url;
-}
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.pregunta-check');
-    const btnDescargar = document.getElementById('btnDescargar');
-    const btnEliminar = document.getElementById('btnEliminar');
-    const selectedCount = document.getElementById('selectedCount');
-    const deleteCount = document.getElementById('deleteCount');
-    
-    // Actualizar contador de seleccionados
-    function updateSelectedCount() {
-        const selected = document.querySelectorAll('.pregunta-check:checked').length;
-        selectedCount.textContent = selected;
-        deleteCount.textContent = selected;
-        btnDescargar.disabled = selected === 0;
-        btnEliminar.disabled = selected === 0;
+    function loadPdfPreview(button) {
+        const url = button.getAttribute('data-url');
+        const iframe = document.getElementById('previewFrame');
+        iframe.src = url;
     }
-    
-    // Seleccionar/deseleccionar todos
-    if (selectAll) {
-        selectAll.addEventListener('change', function() {
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll.checked;
-            });
-            updateSelectedCount();
-        });
-    }
-    
-    // Manejar cambios en checkboxes individuales
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (!this.checked && selectAll) {
-                selectAll.checked = false;
-            }
-            updateSelectedCount();
-        });
-    });
-    
-    // Confirmar eliminación
-    const confirmDelete = document.getElementById('confirmDelete');
-    if (confirmDelete) {
-        confirmDelete.addEventListener('click', function() {
-            document.getElementById('preguntasForm').action = "{% url 'eliminar-preguntas' %}";
-            document.getElementById('preguntasForm').submit();
-        });
-    }
-    
-    // Actualizar contadores de tiempo en tiempo real
-    function updateCountdowns() {
-        document.querySelectorAll('[data-countdown]').forEach(element => {
-            const endDate = new Date(element.getAttribute('data-countdown'));
-            const now = new Date();
-            const diff = endDate - now;
-            
-            if (diff > 0) {
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                let text = '';
-                if (days > 0) text += `${days}d `;
-                if (hours > 0 || days > 0) text += `${hours}h `;
-                if (minutes > 0 || hours > 0 || days > 0) text += `${minutes}m `;
-                text += `${seconds}s`;
-                
-                element.querySelector('.countdown-text').textContent = text;
-            }
-        });
-    }
-    
-    // Actualizar cada segundo
-    setInterval(updateCountdowns, 1000);
-    updateCountdowns();
-    
-    // Inicializar tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-    
-    // Ordenamiento de columnas
-    document.querySelectorAll('.sortable').forEach(header => {
-        header.addEventListener('click', function() {
-            const sortField = this.getAttribute('data-sort');
-            const currentUrl = new URL(window.location.href);
-            const currentSort = currentUrl.searchParams.get('sort');
-            const currentOrder = currentUrl.searchParams.get('order');
-            
-            let newOrder = 'asc';
-            if (currentSort === sortField && currentOrder === 'asc') {
-                newOrder = 'desc';
-            }
-            
-            currentUrl.searchParams.set('sort', sortField);
-            currentUrl.searchParams.set('order', newOrder);
-            window.location.href = currentUrl.toString();
-        });
-    });
-});
 
-document.addEventListener('DOMContentLoaded', function() {
-    function updateCountdowns() {
-        const timers = document.querySelectorAll('.countdown-timer');
-        
-        timers.forEach(timer => {
-            const expirationDate = new Date(timer.dataset.expiration);
-            const now = new Date();
-            const diff = expirationDate - now;
+    document.addEventListener('DOMContentLoaded', function () {
+        // Elementos de filtros
+        const universidadSelect = document.getElementById('universidad');
+        const cursoSelect = document.getElementById('curso');
+        const temaSelect = document.getElementById('tema');
 
-            if (diff <= 0) {
-                // Cambiar a estado "Expirada"
-                timer.innerHTML = '<i class="fas fa-clock me-1" aria-hidden="true"></i> Expirada';
-                timer.classList.remove('text-success');
-                timer.classList.add('text-danger');
-                timer.title = 'Expirada: ' + timer.dataset.expiration;
+        // URLs AJAX desde Django
+        const urlLoadCursos = "{% url 'load_cursos' %}";
+        const urlLoadTemas = "{% url 'load_temas' %}";
+
+        // Filtros seleccionados desde el backend
+        const universidadFilter = "{{ universidad_filter|default_if_none:'' }}";
+        const cursoFilter = "{{ curso_filter|default_if_none:'' }}";
+        const temaFilter = "{{ tema_filter|default_if_none:'' }}";
+
+        // Función para cargar cursos
+        function loadCursos(universidadId) {
+            cursoSelect.innerHTML = '<option value="">Cargando cursos...</option>';
+            cursoSelect.disabled = true;
+
+            temaSelect.innerHTML = '<option value="">Seleccione Curso</option>';
+            temaSelect.disabled = true;
+
+            if (!universidadId) {
+                cursoSelect.innerHTML = '<option value="">Seleccione Universidad</option>';
                 return;
             }
 
-            // Calcular horas y minutos
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            
-            // Formatear como "X H Y min"
-            let timeStr = '';
-            if (hours > 0) {
-                timeStr += hours + ' H ';
-                // Mostrar minutos solo si hay horas
-                if (minutes > 0) {
+            fetch(`${urlLoadCursos}?universidad_id=${universidadId}`)
+                .then(response => response.json())
+                .then(data => {
+                    cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
+                    data.forEach(curso => {
+                        const option = document.createElement('option');
+                        option.value = curso.id;
+                        option.textContent = curso.nombre;
+                        cursoSelect.appendChild(option);
+                    });
+                    cursoSelect.disabled = false;
+
+                    if (cursoFilter) {
+                        cursoSelect.value = cursoFilter;
+                        cursoSelect.dispatchEvent(new Event('change'));  // carga temas
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar cursos:', error);
+                    cursoSelect.innerHTML = '<option value="">Error al cargar cursos</option>';
+                });
+        }
+
+        // Función para cargar temas
+        function loadTemas(cursoId) {
+            temaSelect.innerHTML = '<option value="">Cargando temas...</option>';
+            temaSelect.disabled = true;
+
+            if (!cursoId) {
+                temaSelect.innerHTML = '<option value="">Seleccione Curso</option>';
+                return;
+            }
+
+            fetch(`${urlLoadTemas}?curso_id=${cursoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    temaSelect.innerHTML = '<option value="">Todos los temas</option>';
+                    data.forEach(tema => {
+                        const option = document.createElement('option');
+                        option.value = tema.id;
+                        option.textContent = tema.nombre;
+                        temaSelect.appendChild(option);
+                    });
+                    temaSelect.disabled = false;
+
+                    if (temaFilter) {
+                        temaSelect.value = temaFilter;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar temas:', error);
+                    temaSelect.innerHTML = '<option value="">Error al cargar temas</option>';
+                });
+        }
+
+        // Eventos
+        universidadSelect.addEventListener('change', function () {
+            loadCursos(this.value);
+        });
+
+        cursoSelect.addEventListener('change', function () {
+            loadTemas(this.value);
+        });
+
+        // Inicialización de filtros si hay valores preseleccionados
+        if (universidadFilter) {
+            universidadSelect.value = universidadFilter;
+            loadCursos(universidadFilter);
+        }
+
+        // Selección múltiple de preguntas
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.pregunta-check');
+        const btnDescargar = document.getElementById('btnDescargar');
+        const btnEliminar = document.getElementById('btnEliminar');
+        const selectedCount = document.getElementById('selectedCount');
+        const deleteCount = document.getElementById('deleteCount');
+
+        function updateSelectedCount() {
+            const selected = document.querySelectorAll('.pregunta-check:checked').length;
+            selectedCount.textContent = selected;
+            deleteCount.textContent = selected;
+            btnDescargar.disabled = selected === 0;
+            btnEliminar.disabled = selected === 0;
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAll.checked;
+                });
+                updateSelectedCount();
+            });
+        }
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                if (!this.checked && selectAll) {
+                    selectAll.checked = false;
+                }
+                updateSelectedCount();
+            });
+        });
+
+        const confirmDelete = document.getElementById('confirmDelete');
+        if (confirmDelete) {
+            confirmDelete.addEventListener('click', function () {
+                document.getElementById('preguntasForm').action = "{% url 'eliminar-preguntas' %}";
+                document.getElementById('preguntasForm').submit();
+            });
+        }
+
+        // Temporizador en vivo
+        function updateCountdowns() {
+            document.querySelectorAll('.countdown-timer').forEach(timer => {
+                const expirationDate = new Date(timer.dataset.expiration);
+                const now = new Date();
+                const diff = expirationDate - now;
+
+                if (diff <= 0) {
+                    timer.innerHTML = '<i class="fas fa-clock me-1" aria-hidden="true"></i> Expirada';
+                    timer.classList.remove('text-success');
+                    timer.classList.add('text-danger');
+                    timer.title = 'Expirada: ' + timer.dataset.expiration;
+                    return;
+                }
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+                let timeStr = '';
+                if (hours > 0) {
+                    timeStr += hours + ' H ';
+                    if (minutes > 0) {
+                        timeStr += minutes + ' min';
+                    }
+                } else {
                     timeStr += minutes + ' min';
                 }
-            } else {
-                // Mostrar solo minutos si no hay horas
-                timeStr += minutes + ' min';
-            }
-            
-            // Actualizar el elemento manteniendo el icono
-            timer.querySelector('.time-remaining').textContent = timeStr.trim();
+
+                timer.querySelector('.time-remaining').textContent = timeStr.trim();
+            });
+        }
+
+        setInterval(updateCountdowns, 60000);
+        updateCountdowns();
+
+        // Tooltips Bootstrap
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    }
-
-    // Actualizar inmediatamente y luego cada minuto
-    updateCountdowns();
-    setInterval(updateCountdowns, 60000); // Actualizar cada minuto
-});
-
+    });
 </script>
 {% endblock %}
 
