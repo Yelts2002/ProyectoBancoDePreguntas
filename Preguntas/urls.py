@@ -31,6 +31,7 @@ urlpatterns = [
     path('preguntas/todas/', views.todas_las_preguntas, name='todas_las_preguntas'),
     path('preguntas/masivo/', views.masivo_pregunta_create, name='masivo_pregunta_create'),
     path('preguntas/eliminar-multiples/', views.eliminar_preguntas, name='eliminar-preguntas'),
+    path('ajax/actualizar-pregunta/', views.actualizar_rapido_pregunta, name='actualizar-rapido-pregunta'),
 
     # URL para Generar Examen (solo administrador)
     path('examen/generar/', views.generar_examen, name='generar-examen'),

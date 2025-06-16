@@ -97,11 +97,11 @@
                                     {% if curso_filter %}Todos los temas{% else %}Seleccione Curso{% endif %}
                                 </option>
                                 {% if curso_filter %}
-                                {% for tema in temas_para_curso %}
-                                <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ tema.nombre }}
-                                </option>
-                                {% endfor %}
+                                    {% for tema in temas_para_curso %}
+                                    <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ tema.nombre }}
+                                    </option>
+                                    {% endfor %}
                                 {% endif %}
                             </select>
                         </div>

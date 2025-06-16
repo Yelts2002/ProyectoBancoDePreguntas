@@ -5,10 +5,11 @@ from ..forms import Pregunta, FiltroPreguntaForm, PreguntaForm
 # Django - shortcuts y decoradores
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.http import HttpResponse, FileResponse, Http404
+from django.http import HttpResponse, FileResponse, Http404, JsonResponse
 from django.conf import settings
 from django.utils import timezone
 from django.utils.text import slugify
@@ -156,7 +157,7 @@ def pregunta_create(request):
             data = request.POST.copy()
             data['nombre'] = ''
             nuevo_formulario = PreguntaForm(data, is_update=False)
-            nuevo_formulario.fields['contenido'].required = False  # << Recomendado
+            nuevo_formulario.fields['contenido'].required = False
 
             return render(request, 'Preguntas/pregunta_form.html', {
                 'form': nuevo_formulario,
@@ -168,7 +169,6 @@ def pregunta_create(request):
                 'form': form,
                 'title': 'Nueva Pregunta'
             })
-
     else:
         form = PreguntaForm()
 
@@ -239,6 +239,45 @@ def pregunta_update(request, pk):
         'current_file': pregunta.contenido.name if pregunta.contenido else None
     })
 
+@require_POST
+@login_required
+def actualizar_rapido_pregunta(request):
+    try:
+        pregunta_id = request.POST.get('id')
+        tiene_solucion = request.POST.get('tiene_solucion') == 'true'
+        alternativa = request.POST.get('alternativa')
+
+        logger.info(f"Intento de actualización rápida - ID: {pregunta_id}, Sol: {tiene_solucion}, Alt: {alternativa}")
+
+        if not pregunta_id:
+            return JsonResponse({'success': False, 'error': 'ID de pregunta no proporcionado'})
+
+        if alternativa not in ['A', 'B', 'C', 'D', 'E']:
+            return JsonResponse({'success': False, 'error': 'Alternativa inválida'})
+
+        try:
+            pregunta = Pregunta.objects.get(id=pregunta_id)
+            
+            # Verificar permisos (solo el dueño o superuser puede editar)
+            if not (request.user.is_superuser or (pregunta.usuario and pregunta.usuario.user == request.user)):
+                return JsonResponse({'success': False, 'error': 'No tienes permisos para editar esta pregunta'})
+
+            # Actualizar los campos sin restricciones
+            pregunta.tiene_solucion = tiene_solucion
+            pregunta.respuesta = alternativa
+            pregunta.save()
+
+            logger.info(f"Pregunta {pregunta_id} actualizada correctamente")
+            return JsonResponse({'success': True})
+            
+        except Pregunta.DoesNotExist:
+            logger.error(f"Pregunta no encontrada: {pregunta_id}")
+            return JsonResponse({'success': False, 'error': 'Pregunta no encontrada'})
+            
+    except Exception as e:
+        logger.error(f"Error en actualización rápida: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)})
+    
 @login_required
 @exclude_supervisor
 def pregunta_delete(request, pk):
