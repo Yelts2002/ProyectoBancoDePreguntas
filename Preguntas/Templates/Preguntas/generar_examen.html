@@ -293,23 +293,26 @@
                                         </div>
                                     </td>
                                     <!-- Edición rápida de Solución y Alternativa -->
-                                    <td class="align-middle text-center">
-                                        <form class="form-update-rapida d-flex flex-column align-items-center" data-id="{{ pregunta.id }}">
-                                            <div class="form-check form-switch mb-1">
-                                                <input class="form-check-input tiene-solucion-checkbox" type="checkbox" 
-                                                    {% if pregunta.tiene_solucion %}checked{% endif %}>
-                                                <label class="form-check-label small">¿Sol?</label>
-                                            </div>
-                                            <select class="form-select form-select-sm alternativa-select mb-1" style="width: 80px;">
-                                                {% for letra in "ABCDE" %}
-                                                <option value="{{ letra }}" {% if pregunta.respuesta == letra %}selected{% endif %}>{{ letra }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <button type="button" class="btn btn-sm btn-success guardar-cambios-btn">
-                                                <i class="fas fa-save"></i>
-                                            </button>
-                                        </form>
-                                    </td>
+                                        <td class="align-middle text-center">
+                                            <form class="form-update-rapida d-flex flex-column align-items-center" data-id="{{ pregunta.id }}">
+                                                <div class="form-check form-switch mb-1">
+                                                    <input class="form-check-input tiene-solucion-checkbox" type="checkbox" 
+                                                        {% if pregunta.tiene_solucion %}checked{% endif %}
+                                                        id="solucion-{{ pregunta.id }}">
+                                                    <label class="form-check-label small" for="solucion-{{ pregunta.id }}">¿Sol?</label>
+                                                </div>
+                                                <select class="form-select form-select-sm alternativa-select mb-1" style="width: 80px;"
+                                                    id="alternativa-{{ pregunta.id }}">
+                                                    {% for letra in "ABCDE" %}
+                                                    <option value="{{ letra }}" {% if pregunta.respuesta == letra %}selected{% endif %}>{{ letra }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <button type="button" class="btn btn-sm btn-success guardar-cambios-btn" 
+                                                    id="guardar-{{ pregunta.id }}">
+                                                    <i class="fas fa-save"></i>
+                                                </button>
+                                            </form>
+                                        </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -541,181 +544,358 @@
     </div>
 </div>
 <script>
-    // Variable global para almacenar el ID de la pregunta actual en vista previa
-    let preguntaIdActual = null;
+// Variables globales
+let preguntaIdActual = null;
+let vistaPreviaDesdeCarrito = false;
 
-    // Función para cargar la vista previa del PDF
-    function loadPdfPreview(button) {
-        const url = button.getAttribute('data-url');
-        const iframe = document.getElementById('previewFrame');
-        iframe.src = url;
+// Función para cargar la vista previa del PDF
+function loadPdfPreview(button) {
+    const url = button.getAttribute('data-url');
+    const iframe = document.getElementById('previewFrame');
+    iframe.src = url;
 
-        preguntaIdActual = button.getAttribute('data-pregunta-id');
+    preguntaIdActual = button.getAttribute('data-pregunta-id');
 
-        const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
-        if (preguntaEnCarrito(preguntaIdActual)) {
+    const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
+    if (preguntaEnCarrito(preguntaIdActual)) {
+        btnAgregarCarrito.disabled = true;
+        btnAgregarCarrito.innerHTML = '<i class="fas fa-check me-1"></i> Ya en el carrito';
+        btnAgregarCarrito.classList.remove('btn-success');
+        btnAgregarCarrito.classList.add('btn-secondary');
+    } else {
+        btnAgregarCarrito.disabled = false;
+        btnAgregarCarrito.innerHTML = '<i class="fas fa-cart-plus me-1"></i> Añadir al Carrito';
+        btnAgregarCarrito.classList.remove('btn-secondary');
+        btnAgregarCarrito.classList.add('btn-success');
+    }
+}
+
+// Función para verificar si una pregunta está en el carrito
+function preguntaEnCarrito(preguntaId) {
+    return document.querySelector(`#pregunta-cart-${preguntaId}`) !== null;
+}
+
+// Función para añadir pregunta al carrito desde la vista previa
+async function agregarAlCarritoDesdeVistaPrevia() {
+    if (!preguntaIdActual) return;
+
+    try {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({
+                'csrfmiddlewaretoken': csrftoken,
+                'pregunta_id': preguntaIdActual,
+                'add_preview': 'true'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Actualizar UI del botón
+            const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
             btnAgregarCarrito.disabled = true;
             btnAgregarCarrito.innerHTML = '<i class="fas fa-check me-1"></i> Ya en el carrito';
             btnAgregarCarrito.classList.remove('btn-success');
             btnAgregarCarrito.classList.add('btn-secondary');
+
+            // Actualizar contador del carrito
+            const badge = document.querySelector('.badge.bg-warning.text-dark');
+            if (badge) {
+                const currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = currentCount + 1;
+            }
+
+            // Mostrar notificación con Toast de Bootstrap
+            const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+            document.getElementById('toastMessage').textContent = 'Pregunta añadida al carrito correctamente';
+            toast.show();
         } else {
-            btnAgregarCarrito.disabled = false;
-            btnAgregarCarrito.innerHTML = '<i class="fas fa-cart-plus me-1"></i> Añadir al Carrito';
-            btnAgregarCarrito.classList.remove('btn-secondary');
-            btnAgregarCarrito.classList.add('btn-success');
+            alert('Error al añadir la pregunta: ' + (data.error || 'Error desconocido'));
         }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión al servidor');
+    }
+}
+
+// Función para eliminar pregunta del carrito
+function eliminarPregunta(preguntaId) {
+    if (!confirm("¿Estás seguro de que deseas eliminar esta pregunta del carrito?")) {
+        return;
     }
 
-    // Función para verificar si una pregunta está en el carrito
-    function preguntaEnCarrito(preguntaId) {
-        return document.querySelector(`#pregunta-cart-${preguntaId}`) !== null;
-    }
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('preguntas', preguntaId);
+    formData.append('remove_from_cart', 'true');
 
-    // Función para añadir pregunta al carrito desde la vista previa
-    async function agregarAlCarritoDesdeVistaPrevia() {
-        if (!preguntaIdActual) return;
-
-        try {
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-            const response = await fetch(window.location.href, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrftoken,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: new URLSearchParams({
-                    'csrfmiddlewaretoken': csrftoken,
-                    'pregunta_id': preguntaIdActual,
-                    'add_preview': 'true'
-                })
-            });
-
-            const data = await response.json();
-
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
             if (data.success) {
-                // Actualizar UI del botón
-                const btnAgregarCarrito = document.getElementById("btnAgregarCarrito");
-                btnAgregarCarrito.disabled = true;
-                btnAgregarCarrito.innerHTML = '<i class="fas fa-check me-1"></i> Ya en el carrito';
-                btnAgregarCarrito.classList.remove('btn-success');
-                btnAgregarCarrito.classList.add('btn-secondary');
+                const elemento = document.getElementById(`pregunta-cart-${preguntaId}`);
+                if (elemento) {
+                    elemento.remove();
 
-                // Actualizar contador del carrito
-                const badge = document.querySelector('.badge.bg-warning.text-dark');
-                if (badge) {
-                    const currentCount = parseInt(badge.textContent) || 0;
-                    badge.textContent = currentCount + 1;
-                }
-
-                // Mostrar notificación con Toast de Bootstrap
-                const toast = new bootstrap.Toast(document.getElementById('liveToast'));
-                document.getElementById('toastMessage').textContent = 'Pregunta añadida al carrito correctamente';
-                toast.show();
-            } else {
-                alert('Error al añadir la pregunta: ' + (data.error || 'Error desconocido'));
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error de conexión al servidor');
-        }
-    }
-
-    // Función para eliminar pregunta del carrito
-    function eliminarPregunta(preguntaId) {
-        if (!confirm("¿Estás seguro de que deseas eliminar esta pregunta del carrito?")) {
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-        formData.append('preguntas', preguntaId);
-        formData.append('remove_from_cart', 'true');
-
-        fetch(window.location.href, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const elemento = document.getElementById(`pregunta-cart-${preguntaId}`);
-                    if (elemento) {
-                        elemento.remove();
-
-                        // Actualizar lista si el carrito queda vacío
-                        const listaCarrito = document.getElementById('listaCarrito');
-                        if (listaCarrito.children.length === 0) {
-                            listaCarrito.innerHTML = `
-                            <li class="list-group-item text-center py-4">
+                    // Actualizar lista si el carrito queda vacío
+                    const listaCarrito = document.getElementById('listaCarrito');
+                    if (listaCarrito.children.length === 0) {
+                        listaCarrito.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
                                 <div class="empty-cart-message">
-                                    <i class="fas fa-shopping-cart text-muted mb-2" style="font-size: 2rem;"></i>
-                                    <p class="text-muted mb-0">El carrito está vacío.</p>
-                                    <small class="text-muted">Agrega algunas preguntas para comenzar.</small>
+                                    <i class="fas fa-shopping-cart text-muted mb-3" style="font-size: 3rem;"></i>
+                                    <h4 class="text-muted mb-2">El carrito está vacío</h4>
+                                    <p class="text-muted mb-0">Agrega algunas preguntas para comenzar a crear tu examen.</p>
                                 </div>
-                            </li>
-                        `;
-                        }
+                            </td>
+                        </tr>
+                    `;
                     }
-                } else {
-                    alert("Error al eliminar la pregunta: " + (data.error || "Error desconocido"));
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Error al comunicarse con el servidor. Por favor intenta nuevamente.");
-            });
+            } else {
+                alert("Error al eliminar la pregunta: " + (data.error || "Error desconocido"));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error al comunicarse con el servidor. Por favor intenta nuevamente.");
+        });
+}
+
+// Función para vaciar el carrito
+function vaciarCarrito() {
+    if (!confirm("¿Estás seguro de que deseas vaciar todo el carrito?")) {
+        return;
     }
 
-    // Función para vaciar el carrito
-    function vaciarCarrito() {
-        if (!confirm("¿Estás seguro de que deseas vaciar todo el carrito?")) {
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('vaciar_carrito', 'true');
+
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("listaCarrito").innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="empty-cart-message">
+                            <i class="fas fa-shopping-cart text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h4 class="text-muted mb-2">El carrito está vacío</h4>
+                            <p class="text-muted mb-0">Agrega algunas preguntas para comenzar a crear tu examen.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            } else {
+                alert("Error al vaciar el carrito: " + (data.error || "Error desconocido"));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error al comunicarse con el servidor. Por favor intenta nuevamente.");
+        });
+}
+
+// Función para configurar los listeners de un formulario
+function setupFormListener(form) {
+    const boton = form.querySelector('.guardar-cambios-btn');
+    if (!boton) {
+        console.error('No se encontró el botón en el formulario:', form);
+        return;
+    }
+
+    // Remover cualquier listener previo para evitar duplicados
+    boton.removeEventListener('click', handleGuardarCambios);
+    
+    // Agregar el nuevo listener
+    boton.addEventListener('click', handleGuardarCambios);
+
+    function handleGuardarCambios() {
+        const formData = new FormData();
+        formData.append('id', form.dataset.id);
+        formData.append('tiene_solucion', form.querySelector('.tiene-solucion-checkbox').checked);
+        formData.append('alternativa', form.querySelector('.alternativa-select').value);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        // Mostrar loading
+        const originalHTML = boton.innerHTML;
+        boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        boton.disabled = true;
+
+        fetch("{% url 'actualizar-rapido-pregunta' %}", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Cambios guardados correctamente');
+            } else {
+                alert('Error: ' + (data.error || 'Error desconocido'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión');
+        })
+        .finally(() => {
+            boton.innerHTML = originalHTML;
+            boton.disabled = false;
+        });
+    }
+}
+
+function showToast(message) {
+    const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+    document.getElementById('toastMessage').textContent = message;
+    toast.show();
+}
+
+// Función para actualizar los contadores de tiempo
+function updateCountdowns() {
+    const timers = document.querySelectorAll('.countdown-timer');
+
+    timers.forEach(timer => {
+        const expirationDate = new Date(timer.dataset.expiration);
+        const now = new Date();
+        const diff = expirationDate - now;
+
+        if (diff <= 0) {
+            // Cambiar a estado "Expirada"
+            timer.innerHTML = '<i class="fas fa-clock me-1" aria-hidden="true"></i> Expirada';
+            timer.classList.remove('text-success');
+            timer.classList.add('text-danger');
+            timer.title = 'Expirada: ' + timer.dataset.expiration;
             return;
         }
 
-        const formData = new FormData();
-        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-        formData.append('vaciar_carrito', 'true');
+        // Calcular horas y minutos
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-        fetch(window.location.href, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+        // Formatear como "X H Y min"
+        let timeStr = '';
+        if (hours > 0) {
+            timeStr += hours + ' H ';
+            if (minutes > 0) {
+                timeStr += minutes + ' m';
             }
-        })
+        } else {
+            timeStr += minutes + ' m';
+        }
+
+        // Actualizar el elemento manteniendo el icono
+        timer.querySelector('.time-remaining').textContent = timeStr.trim();
+    });
+}
+
+// Filtros jerárquicos: cargar cursos y temas dinámicamente
+function setupHierarchicalFilters() {
+    const universidadSelect = document.getElementById("id_universidad");
+    const cursoSelect = document.getElementById("id_curso");
+    const temaSelect = document.getElementById("id_tema");
+
+    if (!universidadSelect || !cursoSelect || !temaSelect) return;
+
+    universidadSelect.addEventListener("change", function () {
+        const universidadId = this.value;
+        cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
+        temaSelect.innerHTML = '<option value="">Todos los temas</option>';
+        temaSelect.disabled = true;
+
+        if (!universidadId) {
+            cursoSelect.disabled = true;
+            return;
+        }
+
+        cursoSelect.disabled = true;
+        cursoSelect.innerHTML = '<option>Cargando cursos...</option>';
+
+        fetch(`/preguntas/ajax/load-cursos/?universidad_id=${universidadId}`)
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    document.getElementById("listaCarrito").innerHTML = `
-                    <li class="list-group-item text-center py-4">
-                        <div class="empty-cart-message">
-                            <i class="fas fa-shopping-cart text-muted mb-2" style="font-size: 2rem;"></i>
-                            <p class="text-muted mb-0">El carrito está vacío.</p>
-                            <small class="text-muted">Agrega algunas preguntas para comenzar.</small>
-                        </div>
-                    </li>
-                `;
-                } else {
-                    alert("Error al vaciar el carrito: " + (data.error || "Error desconocido"));
-                }
+                cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
+                data.forEach(curso => {
+                    const option = document.createElement("option");
+                    option.value = curso.id;
+                    option.textContent = curso.nombre;
+                    cursoSelect.appendChild(option);
+                });
+                cursoSelect.disabled = false;
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Error al comunicarse con el servidor. Por favor intenta nuevamente.");
+            .catch(() => {
+                cursoSelect.innerHTML = '<option>Error al cargar cursos</option>';
+                cursoSelect.disabled = false;
             });
+    });
+
+    cursoSelect.addEventListener("change", function () {
+        const cursoId = this.value;
+        temaSelect.innerHTML = '<option value="">Todos los temas</option>';
+
+        if (!cursoId) {
+            temaSelect.disabled = true;
+            return;
+        }
+
+        temaSelect.disabled = true;
+        temaSelect.innerHTML = '<option>Cargando temas...</option>';
+
+        fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
+            .then(response => response.json())
+            .then(data => {
+                temaSelect.innerHTML = '<option value="">Todos los temas</option>';
+                data.forEach(tema => {
+                    const option = document.createElement("option");
+                    option.value = tema.id;
+                    option.textContent = tema.nombre;
+                    temaSelect.appendChild(option);
+                });
+                temaSelect.disabled = false;
+            })
+            .catch(() => {
+                temaSelect.innerHTML = '<option>Error al cargar temas</option>';
+                temaSelect.disabled = false;
+            });
+    });
+
+    if (!universidadSelect.value) {
+        cursoSelect.disabled = true;
+        temaSelect.disabled = true;
+    } else if (!cursoSelect.value) {
+        temaSelect.disabled = true;
     }
+}
 
-    // Inicialización cuando el DOM está listo
-    document.addEventListener("DOMContentLoaded", function () {
-        // Selección múltiple de preguntas
-        const selectAllCheckbox = document.getElementById("selectAll");
+// Inicialización cuando el DOM está listo
+document.addEventListener("DOMContentLoaded", function () {
+    // Selección múltiple de preguntas
+    const selectAllCheckbox = document.getElementById("selectAll");
+    if (selectAllCheckbox) {
         const checkboxes = document.querySelectorAll(".pregunta-checkbox");
-
+        
         // Evento para seleccionar/deseleccionar todas las preguntas
         selectAllCheckbox.addEventListener("change", () => {
             checkboxes.forEach(checkbox => checkbox.checked = selectAllCheckbox.checked);
@@ -728,268 +908,107 @@
                 selectAllCheckbox.checked = allChecked;
             });
         });
+    }
 
-        // Evento para el formulario de examen
-        const examenForm = document.getElementById("examenForm");
-        examenForm.addEventListener("submit", function (event) {
-            const selectedQuestions = Array.from(checkboxes)
-                .filter(checkbox => checkbox.checked)
-                .map(checkbox => checkbox.value);
+    // Configurar botón de añadir al carrito desde vista previa
+    const botonAgregar = document.getElementById("btnAgregarCarrito");
+    if (botonAgregar) {
+        botonAgregar.addEventListener("click", agregarAlCarritoDesdeVistaPrevia);
+    }
 
-            // Validar si se están añadiendo preguntas al carrito
-            if (event.submitter.name === "add_to_cart" && selectedQuestions.length === 0) {
+    // Configurar botón de vaciar carrito
+    const vaciarBtn = document.getElementById("vaciarCarrito");
+    if (vaciarBtn) {
+        vaciarBtn.addEventListener("click", vaciarCarrito);
+    }
+
+    // Configurar formularios de descarga
+    const formCarritoDownload = document.getElementById("formCarritoDownload");
+    const formRespuestasDownload = document.getElementById("formRespuestasDownload");
+
+    [formCarritoDownload, formRespuestasDownload].forEach(form => {
+        if (!form) return;
+        form.addEventListener("submit", function (event) {
+            // Limpiar inputs anteriores
+            this.querySelectorAll("input[name='preguntas']").forEach(e => e.remove());
+
+            // Obtener preguntas del carrito
+            const elementosCarrito = document.querySelectorAll("#listaCarrito tr[id^='pregunta-cart-']");
+
+            if (elementosCarrito.length === 0) {
                 event.preventDefault();
-                alert("Por favor, selecciona al menos una pregunta para añadir al carrito.");
+                alert("No hay preguntas en el carrito para descargar.");
+                return;
             }
-        });
 
-        // Configurar botón de añadir al carrito desde vista previa (versión corregida)
-        const botonAgregar = document.getElementById("btnAgregarCarrito");
-        if (botonAgregar) {
-            botonAgregar.addEventListener("click", agregarAlCarritoDesdeVistaPrevia);
-        }
-
-        // Configurar botón de vaciar carrito
-        const vaciarBtn = document.getElementById("vaciarCarrito");
-        if (vaciarBtn) {
-            vaciarBtn.addEventListener("click", vaciarCarrito);
-        }
-
-        // Configurar formularios de descarga
-        const formCarritoDownload = document.getElementById("formCarritoDownload");
-        const formRespuestasDownload = document.getElementById("formRespuestasDownload");
-
-        [formCarritoDownload, formRespuestasDownload].forEach(form => {
-            if (!form) return;
-            form.addEventListener("submit", function (event) {
-                // Limpiar inputs anteriores
-                this.querySelectorAll("input[name='preguntas']").forEach(e => e.remove());
-
-                // Obtener preguntas del carrito
-                const elementosCarrito = document.querySelectorAll("#listaCarrito li[id^='pregunta-cart-']");
-
-                if (elementosCarrito.length === 0) {
-                    event.preventDefault();
-                    alert("No hay preguntas en el carrito para descargar.");
-                    return;
+            // Añadir preguntas al formulario
+            elementosCarrito.forEach(item => {
+                const preguntaId = item.id.replace("pregunta-cart-", "");
+                if (preguntaId) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "preguntas";
+                    input.value = preguntaId;
+                    this.appendChild(input);
                 }
-
-                // Añadir preguntas al formulario
-                elementosCarrito.forEach(item => {
-                    const preguntaId = item.id.replace("pregunta-cart-", "");
-                    if (preguntaId) {
-                        const input = document.createElement("input");
-                        input.type = "hidden";
-                        input.name = "preguntas";
-                        input.value = preguntaId;
-                        this.appendChild(input);
-                    }
-                });
             });
         });
+    });
 
-        // Botón de cerrar vista previa (asegura volver a mostrar carrito si viene de éste)
-        const cerrarVistaPreviaBtn = document.getElementById("cerrarVistaPreviaBtn");
-        if (cerrarVistaPreviaBtn) {
-            cerrarVistaPreviaBtn.addEventListener("click", function () {
-                const previewModalEl = document.getElementById("previewModal");
-                const previewModal = bootstrap.Modal.getInstance(previewModalEl);
-                previewModal.hide();
+    // Configurar todos los formularios iniciales
+    const forms = document.querySelectorAll('.form-update-rapida');
+    console.log('Formularios encontrados:', forms.length); // Para depuración
+    
+    forms.forEach((form, index) => {
+        console.log(`Configurando formulario ${index + 1}`, form); // Para depuración
+        setupFormListener(form);
+    });
+    // Observador de mutaciones para nuevos elementos dinámicos
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) {
+                    // Buscar formularios en el nodo añadido y en sus descendientes
+                    const newForms = node.matches('.form-update-rapida') ? 
+                        [node] : 
+                        Array.from(node.querySelectorAll('.form-update-rapida'));
+                    
+                    newForms.forEach(newForm => {
+                        console.log('Nuevo formulario detectado:', newForm); // Para depuración
+                        setupFormListener(newForm);
+                    });
+                }
+            });
+        });
+    });
 
-                // Si se abrió desde el listado y ya está en el carrito → mostrar carrito
-                if (!vistaPreviaDesdeCarrito && preguntaEnCarrito(preguntaIdActual)) {
-                    const carritoModalEl = document.getElementById("carritoModal");
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    // Configurar filtros jerárquicos
+    setupHierarchicalFilters();
+
+    // Configurar contadores de tiempo
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000);
+
+    // Eventos para los modales
+    const previewModalEl = document.getElementById("previewModal");
+    if (previewModalEl) {
+        previewModalEl.addEventListener("hidden.bs.modal", function () {
+            if (vistaPreviaDesdeCarrito) {
+                const carritoModalEl = document.getElementById("carritoModal");
+                const isCarritoVisible = carritoModalEl.classList.contains("show");
+                if (!isCarritoVisible) {
                     const carritoModal = new bootstrap.Modal(carritoModalEl);
                     carritoModal.show();
                 }
-            });
-        }
-
-        // Al cerrar el modal de vista previa, si venía desde carrito, reabrir carrito
-        const previewModalEl = document.getElementById("previewModal");
-        if (previewModalEl) {
-            previewModalEl.addEventListener("hidden.bs.modal", function () {
-                if (vistaPreviaDesdeCarrito) {
-                    const carritoModalEl = document.getElementById("carritoModal");
-                    const isCarritoVisible = carritoModalEl.classList.contains("show");
-                    if (!isCarritoVisible) {
-                        const carritoModal = new bootstrap.Modal(carritoModalEl);
-                        carritoModal.show();
-                    }
-                    vistaPreviaDesdeCarrito = false;
-                }
-            });
-        }
-    });
-
-    // Actualiza los contadores de expiración cada minuto
-    document.addEventListener('DOMContentLoaded', function () {
-        function updateCountdowns() {
-            const timers = document.querySelectorAll('.countdown-timer');
-
-            timers.forEach(timer => {
-                const expirationDate = new Date(timer.dataset.expiration);
-                const now = new Date();
-                const diff = expirationDate - now;
-
-                if (diff <= 0) {
-                    // Cambiar a estado "Expirada"
-                    timer.innerHTML = '<i class="fas fa-clock me-1" aria-hidden="true"></i> Expirada';
-                    timer.classList.remove('text-success');
-                    timer.classList.add('text-danger');
-                    timer.title = 'Expirada: ' + timer.dataset.expiration;
-                    return;
-                }
-
-                // Calcular horas y minutos
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-                // Formatear como "X H Y min"
-                let timeStr = '';
-                if (hours > 0) {
-                    timeStr += hours + ' H ';
-                    if (minutes > 0) {
-                        timeStr += minutes + ' m';
-                    }
-                } else {
-                    timeStr += minutes + ' m';
-                }
-
-                // Actualizar el elemento manteniendo el icono
-                timer.querySelector('.time-remaining').textContent = timeStr.trim();
-            });
-        }
-
-        updateCountdowns();
-        setInterval(updateCountdowns, 60000);
-    });
-
-    // Filtros jerárquicos: cargar cursos y temas dinámicamente
-    document.addEventListener("DOMContentLoaded", function () {
-        const universidadSelect = document.getElementById("id_universidad");
-        const cursoSelect = document.getElementById("id_curso");
-        const temaSelect = document.getElementById("id_tema");
-
-        universidadSelect.addEventListener("change", function () {
-            const universidadId = this.value;
-            cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
-            temaSelect.innerHTML = '<option value="">Todos los temas</option>';
-            temaSelect.disabled = true;
-
-            if (!universidadId) {
-                cursoSelect.disabled = true;
-                return;
-            }
-
-            cursoSelect.disabled = true;
-            cursoSelect.innerHTML = '<option>Cargando cursos...</option>';
-
-            fetch(`/preguntas/ajax/load-cursos/?universidad_id=${universidadId}`)
-                .then(response => response.json())
-                .then(data => {
-                    cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
-                    data.forEach(curso => {
-                        const option = document.createElement("option");
-                        option.value = curso.id;
-                        option.textContent = curso.nombre;
-                        cursoSelect.appendChild(option);
-                    });
-                    cursoSelect.disabled = false;
-                })
-                .catch(() => {
-                    cursoSelect.innerHTML = '<option>Error al cargar cursos</option>';
-                    cursoSelect.disabled = false;
-                });
-        });
-
-        cursoSelect.addEventListener("change", function () {
-            const cursoId = this.value;
-            temaSelect.innerHTML = '<option value="">Todos los temas</option>';
-
-            if (!cursoId) {
-                temaSelect.disabled = true;
-                return;
-            }
-
-            temaSelect.disabled = true;
-            temaSelect.innerHTML = '<option>Cargando temas...</option>';
-
-            fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
-                .then(response => response.json())
-                .then(data => {
-                    temaSelect.innerHTML = '<option value="">Todos los temas</option>';
-                    data.forEach(tema => {
-                        const option = document.createElement("option");
-                        option.value = tema.id;
-                        option.textContent = tema.nombre;
-                        temaSelect.appendChild(option);
-                    });
-                    temaSelect.disabled = false;
-                })
-                .catch(() => {
-                    temaSelect.innerHTML = '<option>Error al cargar temas</option>';
-                    temaSelect.disabled = false;
-                });
-        });
-
-        if (!universidadSelect.value) {
-            cursoSelect.disabled = true;
-            temaSelect.disabled = true;
-        } else if (!cursoSelect.value) {
-            temaSelect.disabled = true;
-        }
-    });
-
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll('.form-update-rapida').forEach(form => {
-        const boton = form.querySelector('.guardar-cambios-btn');
-        if (!boton) return;
-
-        boton.addEventListener('click', async function () {
-            const id = form.dataset.id;
-            const tieneSolucion = form.querySelector('.tiene-solucion-checkbox').checked;
-            const alternativa = form.querySelector('.alternativa-select').value;
-            const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-            // Mostrar spinner en el botón
-            const originalHTML = boton.innerHTML;
-            boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            boton.disabled = true;
-
-            try {
-                const res = await fetch("{% url 'actualizar-rapido-pregunta' %}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "X-CSRFToken": csrf
-                    },
-                    body: new URLSearchParams({
-                        id: id,
-                        tiene_solucion: tieneSolucion,
-                        alternativa: alternativa
-                    })
-                });
-
-                const data = await res.json();
-                if (data.success) {
-                    // Mostrar notificación de éxito
-                    const toast = new bootstrap.Toast(document.getElementById('liveToast'));
-                    document.getElementById('toastMessage').textContent = 'Cambios guardados correctamente';
-                    toast.show();
-                } else {
-                    alert("Error: " + (data.error || "Error desconocido"));
-                }
-            } catch (error) {
-                console.error("Error de red:", error);
-                alert("No se pudo conectar con el servidor");
-            } finally {
-                // Restaurar botón
-                boton.innerHTML = originalHTML;
-                boton.disabled = false;
+                vistaPreviaDesdeCarrito = false;
             }
         });
-    });
+    }
 });
 </script>
 {% endblock %}

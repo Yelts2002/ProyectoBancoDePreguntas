@@ -244,39 +244,48 @@ def pregunta_update(request, pk):
 def actualizar_rapido_pregunta(request):
     try:
         pregunta_id = request.POST.get('id')
-        tiene_solucion = request.POST.get('tiene_solucion') == 'true'
-        alternativa = request.POST.get('alternativa')
+        tiene_solucion = request.POST.get('tiene_solucion', 'false') == 'true'
+        alternativa = request.POST.get('alternativa', '').upper()
 
-        logger.info(f"Intento de actualización rápida - ID: {pregunta_id}, Sol: {tiene_solucion}, Alt: {alternativa}")
+        logger.info(f"Actualización rápida solicitada - User: {request.user}, Pregunta ID: {pregunta_id}")
 
         if not pregunta_id:
-            return JsonResponse({'success': False, 'error': 'ID de pregunta no proporcionado'})
+            logger.warning("ID de pregunta no proporcionado")
+            return JsonResponse({'success': False, 'error': 'ID de pregunta no proporcionado'}, status=400)
 
         if alternativa not in ['A', 'B', 'C', 'D', 'E']:
-            return JsonResponse({'success': False, 'error': 'Alternativa inválida'})
+            logger.warning(f"Alternativa inválida recibida: {alternativa}")
+            return JsonResponse({'success': False, 'error': 'Alternativa inválida'}, status=400)
 
         try:
-            pregunta = Pregunta.objects.get(id=pregunta_id)
+            pregunta = Pregunta.objects.select_related('usuario__user').get(id=pregunta_id)
             
-            # Verificar permisos (solo el dueño o superuser puede editar)
-            if not (request.user.is_superuser or (pregunta.usuario and pregunta.usuario.user == request.user)):
-                return JsonResponse({'success': False, 'error': 'No tienes permisos para editar esta pregunta'})
+            # Verificar permisos mejorado
+            if not (request.user.is_superuser or 
+                   (hasattr(pregunta, 'usuario') and 
+                    pregunta.usuario and 
+                    pregunta.usuario.user == request.user)):
+                logger.warning(f"Intento de edición no autorizado. User: {request.user}, Pregunta: {pregunta_id}")
+                return JsonResponse(
+                    {'success': False, 'error': 'No tienes permisos para editar esta pregunta'},
+                    status=403
+                )
 
-            # Actualizar los campos sin restricciones
+            # Actualizar campos
             pregunta.tiene_solucion = tiene_solucion
             pregunta.respuesta = alternativa
-            pregunta.save()
+            pregunta.save(update_fields=['tiene_solucion', 'respuesta'])
 
-            logger.info(f"Pregunta {pregunta_id} actualizada correctamente")
+            logger.info(f"Pregunta {pregunta_id} actualizada correctamente por {request.user}")
             return JsonResponse({'success': True})
             
         except Pregunta.DoesNotExist:
             logger.error(f"Pregunta no encontrada: {pregunta_id}")
-            return JsonResponse({'success': False, 'error': 'Pregunta no encontrada'})
+            return JsonResponse({'success': False, 'error': 'Pregunta no encontrada'}, status=404)
             
     except Exception as e:
-        logger.error(f"Error en actualización rápida: {str(e)}")
-        return JsonResponse({'success': False, 'error': str(e)})
+        logger.error(f"Error en actualización rápida: {str(e)}", exc_info=True)
+        return JsonResponse({'success': False, 'error': 'Error interno del servidor'}, status=500)
     
 @login_required
 @exclude_supervisor
