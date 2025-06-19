@@ -242,20 +242,30 @@ A) Picasso  B) Van Gogh  C) Da Vinci  D) Monet  E) Dalí</pre>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const universidadSelect = document.getElementById('id_universidad');
     const cursoSelect = document.getElementById('id_curso');
     const temaSelect = document.getElementById('id_tema');
 
-    // Función para cargar cursos
+    // URLs generadas por Django
+    const urlLoadCursos = "{% url 'load_cursos' %}";
+    const urlLoadTemas = "{% url 'load_temas' %}";
+
     function cargarCursos(universidadId) {
         if (!universidadId) {
             cursoSelect.innerHTML = '<option value="">---------</option>';
             temaSelect.innerHTML = '<option value="">---------</option>';
+            cursoSelect.disabled = true;
+            temaSelect.disabled = true;
             return;
         }
 
-        fetch(`/preguntas/ajax/load-cursos/?universidad_id=${universidadId}`)
+        cursoSelect.innerHTML = '<option>Cargando cursos...</option>';
+        cursoSelect.disabled = true;
+        temaSelect.innerHTML = '<option value="">---------</option>';
+        temaSelect.disabled = true;
+
+        fetch(`${urlLoadCursos}?universidad_id=${universidadId}`)
             .then(response => response.json())
             .then(data => {
                 let options = '<option value="">---------</option>';
@@ -263,18 +273,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     options += `<option value="${curso.id}">${curso.nombre}</option>`;
                 });
                 cursoSelect.innerHTML = options;
-                temaSelect.innerHTML = '<option value="">---------</option>';
+                cursoSelect.disabled = false;
+            })
+            .catch(() => {
+                cursoSelect.innerHTML = '<option>Error al cargar cursos</option>';
+                cursoSelect.disabled = false;
             });
     }
 
-    // Función para cargar temas
     function cargarTemas(cursoId) {
         if (!cursoId) {
             temaSelect.innerHTML = '<option value="">---------</option>';
+            temaSelect.disabled = true;
             return;
         }
 
-        fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
+        temaSelect.innerHTML = '<option>Cargando temas...</option>';
+        temaSelect.disabled = true;
+
+        fetch(`${urlLoadTemas}?curso_id=${cursoId}`)
             .then(response => response.json())
             .then(data => {
                 let options = '<option value="">---------</option>';
@@ -282,19 +299,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     options += `<option value="${tema.id}">${tema.nombre}</option>`;
                 });
                 temaSelect.innerHTML = options;
+                temaSelect.disabled = false;
+            })
+            .catch(() => {
+                temaSelect.innerHTML = '<option>Error al cargar temas</option>';
+                temaSelect.disabled = false;
             });
     }
 
-    // Event listeners
-    universidadSelect.addEventListener('change', function() {
+    universidadSelect.addEventListener('change', function () {
         cargarCursos(this.value);
     });
 
-    cursoSelect.addEventListener('change', function() {
+    cursoSelect.addEventListener('change', function () {
         cargarTemas(this.value);
     });
 
-    // Cargar inicialmente si hay valor en universidad
+    // Inicialización si hay valores ya definidos
     if (universidadSelect.value) {
         cargarCursos(universidadSelect.value);
         if (cursoSelect.value) {
@@ -303,4 +324,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
 {% endblock %}

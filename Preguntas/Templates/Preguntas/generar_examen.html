@@ -817,23 +817,26 @@ function setupHierarchicalFilters() {
     const cursoSelect = document.getElementById("id_curso");
     const temaSelect = document.getElementById("id_tema");
 
+    // URLs generadas por Django
+    const urlLoadCursos = "{% url 'load_cursos' %}";
+    const urlLoadTemas = "{% url 'load_temas' %}";
+
     if (!universidadSelect || !cursoSelect || !temaSelect) return;
 
     universidadSelect.addEventListener("change", function () {
         const universidadId = this.value;
+
+        // Reiniciar cursos y temas
         cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
+        cursoSelect.disabled = true;
         temaSelect.innerHTML = '<option value="">Todos los temas</option>';
         temaSelect.disabled = true;
 
-        if (!universidadId) {
-            cursoSelect.disabled = true;
-            return;
-        }
+        if (!universidadId) return;
 
-        cursoSelect.disabled = true;
-        cursoSelect.innerHTML = '<option>Cargando cursos...</option>';
+        cursoSelect.innerHTML = '<option value="">Cargando cursos...</option>';
 
-        fetch(`/preguntas/ajax/load-cursos/?universidad_id=${universidadId}`)
+        fetch(`${urlLoadCursos}?universidad_id=${universidadId}`)
             .then(response => response.json())
             .then(data => {
                 cursoSelect.innerHTML = '<option value="">Todos los cursos</option>';
@@ -853,17 +856,15 @@ function setupHierarchicalFilters() {
 
     cursoSelect.addEventListener("change", function () {
         const cursoId = this.value;
+
         temaSelect.innerHTML = '<option value="">Todos los temas</option>';
-
-        if (!cursoId) {
-            temaSelect.disabled = true;
-            return;
-        }
-
         temaSelect.disabled = true;
-        temaSelect.innerHTML = '<option>Cargando temas...</option>';
 
-        fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
+        if (!cursoId) return;
+
+        temaSelect.innerHTML = '<option value="">Cargando temas...</option>';
+
+        fetch(`${urlLoadTemas}?curso_id=${cursoId}`)
             .then(response => response.json())
             .then(data => {
                 temaSelect.innerHTML = '<option value="">Todos los temas</option>';
@@ -881,6 +882,7 @@ function setupHierarchicalFilters() {
             });
     });
 
+    // Inicializar estado al cargar la página
     if (!universidadSelect.value) {
         cursoSelect.disabled = true;
         temaSelect.disabled = true;

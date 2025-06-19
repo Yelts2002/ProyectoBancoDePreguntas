@@ -295,80 +295,100 @@
 {% block extra_js %}
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        if (window._cascadaStarted) return;
-        window._cascadaStarted = true;
+document.addEventListener('DOMContentLoaded', function () {
+    const universidadSelect = document.getElementById('id_universidad');
+    const cursoSelect = document.getElementById('id_curso');
+    const temaSelect = document.getElementById('id_tema');
 
-        const universidadSelect = document.getElementById('id_universidad');
-        const cursoSelect = document.getElementById('id_curso');
-        const temaSelect = document.getElementById('id_tema');
+    const urlLoadCursos = "{% url 'load_cursos' %}";
+    const urlLoadTemas = "{% url 'load_temas' %}";
 
-        universidadSelect.addEventListener('change', function () {
-            resetear(cursoSelect, 'Seleccione un curso');
-            resetear(temaSelect, 'Seleccione un tema');
+    function resetear(select, placeholder) {
+        select.innerHTML = '';
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = placeholder;
+        select.appendChild(option);
+        select.disabled = true;
+    }
 
-            const uniId = this.value;
-            if (!uniId) return;
+    universidadSelect.addEventListener('change', function () {
+        resetear(cursoSelect, 'Cargando cursos...');
+        resetear(temaSelect, 'Seleccione un tema');
 
-            fetch(`/preguntas/ajax/load-cursos/?universidad_id=${uniId}`)
-                .then(r => r.json())
-                .then(data => {
-                    cursoSelect.disabled = false;
-                    // Llevar un Set para evitar duplicados
-                    const vistos = new Set();
-                    data.forEach(c => {
-                        if (!vistos.has(c.id)) {
-                            cursoSelect.add(new Option(c.nombre, c.id));
-                            vistos.add(c.id);
-                        }
-                    });
-                })
-                .catch(e => console.error('Cursos error:', e));
-        });
+        const universidadId = this.value;
+        if (!universidadId) return;
 
-        cursoSelect.addEventListener('change', function () {
-            resetear(temaSelect, 'Seleccione un tema');
-            const cursoId = this.value;
-            if (!cursoId) return;
-
-            fetch(`/preguntas/ajax/load-temas/?curso_id=${cursoId}`)
-                .then(r => r.json())
-                .then(data => {
-                    temaSelect.disabled = false;
-                    const vistos = new Set();
-                    data.forEach(t => {
-                        if (!vistos.has(t.id)) {
-                            temaSelect.add(new Option(t.nombre, t.id));
-                            vistos.add(t.id);
-                        }
-                    });
-                })
-                .catch(e => console.error('Temas error:', e));
-        });
-
-        function resetear(select, placeholder) {
-            select.options.length = 0;
-            select.add(new Option(placeholder, ''));
-            select.disabled = true;
-        }
+        fetch(`${urlLoadCursos}?universidad_id=${universidadId}`)
+            .then(r => r.json())
+            .then(data => {
+                resetear(cursoSelect, 'Seleccione un curso');
+                cursoSelect.disabled = false;
+                const vistos = new Set();
+                data.forEach(c => {
+                    if (!vistos.has(c.id)) {
+                        cursoSelect.add(new Option(c.nombre, c.id));
+                        vistos.add(c.id);
+                    }
+                });
+            })
+            .catch(e => console.error('Error cargando cursos:', e));
     });
-    document.addEventListener('DOMContentLoaded', function () {
-        const errorAlert = document.getElementById('form-error-alert');
-        if (errorAlert) {
-            setTimeout(() => {
-                errorAlert.classList.remove('animate__fadeInDown');
-                errorAlert.classList.add('animate__fadeOutUp');
-                setTimeout(() => errorAlert.remove(), 500);
-            }, 4000);
 
-            // Cerrar al hacer clic en el botón
-            errorAlert.querySelector('.btn-close').addEventListener('click', function () {
-                errorAlert.classList.remove('animate__fadeInDown');
-                errorAlert.classList.add('animate__fadeOutUp');
-                setTimeout(() => errorAlert.remove(), 500);
+    cursoSelect.addEventListener('change', function () {
+        resetear(temaSelect, 'Cargando temas...');
+        const cursoId = this.value;
+        if (!cursoId) return;
+
+        fetch(`${urlLoadTemas}?curso_id=${cursoId}`)
+            .then(r => r.json())
+            .then(data => {
+                resetear(temaSelect, 'Seleccione un tema');
+                temaSelect.disabled = false;
+                const vistos = new Set();
+                data.forEach(t => {
+                    if (!vistos.has(t.id)) {
+                        temaSelect.add(new Option(t.nombre, t.id));
+                        vistos.add(t.id);
+                    }
+                });
+            })
+            .catch(e => console.error('Error cargando temas:', e));
+    });
+
+    if (universidadSelect.value) {
+        fetch(`${urlLoadCursos}?universidad_id=${universidadSelect.value}`)
+            .then(r => r.json())
+            .then(data => {
+                resetear(cursoSelect, 'Seleccione un curso');
+                cursoSelect.disabled = false;
+                const vistos = new Set();
+                data.forEach(c => {
+                    if (!vistos.has(c.id)) {
+                        cursoSelect.add(new Option(c.nombre, c.id));
+                        vistos.add(c.id);
+                    }
+                });
+
+                if (cursoSelect.value) {
+                    fetch(`${urlLoadTemas}?curso_id=${cursoSelect.value}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            resetear(temaSelect, 'Seleccione un tema');
+                            temaSelect.disabled = false;
+                            const vistos = new Set();
+                            data.forEach(t => {
+                                if (!vistos.has(t.id)) {
+                                    temaSelect.add(new Option(t.nombre, t.id));
+                                    vistos.add(t.id);
+                                }
+                            });
+                        });
+                }
             });
-        }
-    });     
+    }
+});
 </script>
+
 {% endblock %}
 {% endblock %}
