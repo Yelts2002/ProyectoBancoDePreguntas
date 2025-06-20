@@ -97,11 +97,11 @@
                                     {% if curso_filter %}Todos los temas{% else %}Seleccione Curso{% endif %}
                                 </option>
                                 {% if curso_filter %}
-                                    {% for tema in temas_para_curso %}
-                                    <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ tema.nombre }}
-                                    </option>
-                                    {% endfor %}
+                                {% for tema in temas_para_curso %}
+                                <option value="{{ tema.id }}" {% if tema_filter == tema.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ tema.nombre }}
+                                </option>
+                                {% endfor %}
                                 {% endif %}
                             </select>
                         </div>
@@ -205,7 +205,7 @@
                                             {% else %} bg-secondary{% endif %}">
                                             {% if pregunta.nivel == 1 %}1-Bajo
                                             {% elif pregunta.nivel == 2 %}2-Medio
-                                            {% elif pregunta.nivel == 3 %}3-Avanzado
+                                            {% elif pregunta.nivel == 3 %}3-Alto
                                             {% else %}Desconocido{% endif %}
                                         </span>
                                     </td>
@@ -318,14 +318,14 @@
                     <ul class="pagination mb-0 flex-wrap justify-content-center">
                         {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page=1{{ request.GET.urlencode|cut:'page='|yesno:',,' }}"
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
                                 aria-label="Primera página">
                                 <span aria-hidden="true">&laquo;&laquo;</span>
                             </a>
                         </li>
                         <li class="page-item">
                             <a class="page-link"
-                                href="?page={{ page_obj.previous_page_number }}{{ request.GET.urlencode|cut:'page='|yesno:',,' }}"
+                                href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
                                 aria-label="Página anterior">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
@@ -340,7 +340,7 @@
                                     </li>
                                 {% else %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&' }}{% endif %}">{{ num }}</a>
+                                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
                                     </li>
                                 {% endif %}
                             {% endif %}
@@ -348,12 +348,12 @@
 
                         {% if page_obj.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&' }}{% endif %}" aria-label="Página siguiente">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Página siguiente">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode|safe|cut:'page='|cut:'&' }}{% endif %}" aria-label="Última página">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Última página">
                                     <span aria-hidden="true">&raquo;&raquo;</span>
                                 </a>
                             </li>
@@ -377,7 +377,6 @@
                 </div>
             </div>
             {% endif %}
-
         </form>
     </section>
 

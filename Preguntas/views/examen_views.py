@@ -150,7 +150,6 @@ def generar_examen(request):
         'form': form,
         'carrito': carrito_preguntas,
         'now': timezone.now(),
-
     }
 
     return render(request, 'Preguntas/generar_examen.html', context)

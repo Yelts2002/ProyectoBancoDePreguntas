@@ -352,51 +352,54 @@
                             <ul class="pagination mb-0">
                                 {% if page_obj.has_previous %}
                                 <li class="page-item">
-                                    <a class="page-link fw-semibold"
-                                        href="?page=1{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
-                                        aria-label="Primera">
+                                    <a class="page-link fw-semibold" 
+                                    href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page=1"
+                                    aria-label="Primera">
                                         <span aria-hidden="true">&laquo;&laquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item">
-                                    <a class="page-link fw-semibold"
-                                        href="?page={{ page_obj.previous_page_number }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
-                                        aria-label="Anterior">
+                                    <a class="page-link fw-semibold" 
+                                    href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ page_obj.previous_page_number }}"
+                                    aria-label="Anterior">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 {% endif %}
-                                {% for num in page_obj.paginator.page_range %}
-                                {% if page_obj.number == num %}
-                                <li class="page-item active" aria-current="page">
-                                    <span class="page-link fw-bold">{{ num }}</span>
-                                </li>
-                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li
-                                    class="page-item">
-                                    <a class="page-link fw-semibold"
-                                        href="?page={{ num }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}">
-                                        {{ num }}
-                                    </a>
-                                    </li>
-                                    {% endif %}
-                                    {% endfor %}
 
-                                    {% if page_obj.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link fw-semibold"
-                                            href="?page={{ page_obj.next_page_number }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
-                                            aria-label="Siguiente">
-                                            <span aria-hidden="true">&raquo;</span>
-                                        </a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link fw-semibold"
-                                            href="?page={{ page_obj.paginator.num_pages }}{% if universidad_filter %}&universidad={{ universidad_filter }}{% endif %}{% if curso_filter %}&curso={{ curso_filter }}{% endif %}{% if tema_filter %}&tema={{ tema_filter }}{% endif %}"
-                                            aria-label="Última">
-                                            <span aria-hidden="true">&raquo;&raquo;</span>
-                                        </a>
-                                    </li>
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        {% if page_obj.number == num %}
+                                        <li class="page-item active" aria-current="page">
+                                            <span class="page-link fw-bold">{{ num }}</span>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link fw-semibold" 
+                                            href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ num }}">
+                                                {{ num }}
+                                            </a>
+                                        </li>
+                                        {% endif %}
                                     {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link fw-semibold" 
+                                    href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ page_obj.next_page_number }}"
+                                    aria-label="Siguiente">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link fw-semibold" 
+                                    href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}page={{ page_obj.paginator.num_pages }}"
+                                    aria-label="Última">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
                             </ul>
                         </nav>
                     </div>
@@ -1009,6 +1012,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 vistaPreviaDesdeCarrito = false;
             }
+        });
+    }
+});
+document.addEventListener('DOMContentLoaded', function() {
+    const pageForm = document.getElementById('pageForm');
+    if (pageForm) {
+        pageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pageInput = this.querySelector('input[name="page"]');
+            const pageNum = parseInt(pageInput.value);
+            const maxPage = parseInt(pageInput.getAttribute('max')) || 1;
+            
+            if (isNaN(pageNum)) {
+                alert('Ingrese un número válido');
+                return;
+            }
+
+            if (pageNum < 1 || pageNum > maxPage) {
+                alert('La página debe estar entre 1 y ${maxPage}');
+                return;
+            }
+            
+            // Clona todos los parámetros actuales
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', pageNum);
+            
+            // Elimina parámetros vacíos
+            for (let [key, value] of urlParams.entries()) {
+                if (!value) urlParams.delete(key);
+            }
+            
+            // Redirección segura
+            window.location.search = urlParams.toString();
         });
     }
 });
