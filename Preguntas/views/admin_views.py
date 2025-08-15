@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from .auth_views import exclude_supervisor
 from django.views.decorators.http import require_POST
 
-
 @exclude_supervisor
 @staff_member_required
 def admin_dashboard(request):

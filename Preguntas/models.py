@@ -13,7 +13,6 @@ class Curso(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class Tema(models.Model):
     nombre = models.CharField(max_length=100)
     curso = models.ForeignKey(Curso, on_delete=models.CASCADE, related_name='temas')
@@ -29,14 +28,13 @@ class Universidad(models.Model):
     def __str__(self):
         return self.nombre
     
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)  # Campo para activar/desactivar
     ROLE_CHOICES = [
         ('supervisor', 'Supervisor'),
         ('admin', 'Admin'),
-        ('user', 'User '),
+        ('user', 'User'),
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     def __str__(self):

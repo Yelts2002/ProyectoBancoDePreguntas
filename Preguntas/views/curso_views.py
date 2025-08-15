@@ -5,7 +5,6 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .mixins import AdminRequiredMixin, SuccessMessageMixin, ExcludeSupervisorMixin
 
-# UniversidadListView, UniversidadCreateView, UniversidadUpdateView, UniversidadDeleteView
 # CRUD Cursos
 class CursoListView(LoginRequiredMixin, ListView):
     model = Curso

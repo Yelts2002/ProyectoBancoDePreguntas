@@ -293,26 +293,26 @@
                                         </div>
                                     </td>
                                     <!-- Edición rápida de Solución y Alternativa -->
-                                        <td class="align-middle text-center">
-                                            <form class="form-update-rapida d-flex flex-column align-items-center" data-id="{{ pregunta.id }}">
-                                                <div class="form-check form-switch mb-1">
-                                                    <input class="form-check-input tiene-solucion-checkbox" type="checkbox" 
-                                                        {% if pregunta.tiene_solucion %}checked{% endif %}
-                                                        id="solucion-{{ pregunta.id }}">
-                                                    <label class="form-check-label small" for="solucion-{{ pregunta.id }}">¿Sol?</label>
-                                                </div>
-                                                <select class="form-select form-select-sm alternativa-select mb-1" style="width: 80px;"
-                                                    id="alternativa-{{ pregunta.id }}">
-                                                    {% for letra in "ABCDE" %}
-                                                    <option value="{{ letra }}" {% if pregunta.respuesta == letra %}selected{% endif %}>{{ letra }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                                <button type="button" class="btn btn-sm btn-success guardar-cambios-btn" 
-                                                    id="guardar-{{ pregunta.id }}">
-                                                    <i class="fas fa-save"></i>
-                                                </button>
-                                            </form>
-                                        </td>
+                                    <td class="align-middle text-center">
+                                        <form class="form-update-rapida d-flex flex-column align-items-center" data-id="{{ pregunta.id }}">
+                                            <div class="form-check form-switch mb-1">
+                                                <input class="form-check-input tiene-solucion-checkbox" type="checkbox" 
+                                                    {% if pregunta.tiene_solucion %}checked{% endif %}
+                                                    id="solucion-{{ pregunta.id }}">
+                                                <label class="form-check-label small" for="solucion-{{ pregunta.id }}">¿Sol?</label>
+                                            </div>
+                                            <select class="form-select form-select-sm alternativa-select mb-1" style="width: 80px;"
+                                                id="alternativa-{{ pregunta.id }}">
+                                                {% for letra in "ABCDE" %}
+                                                <option value="{{ letra }}" {% if pregunta.respuesta == letra %}selected{% endif %}>{{ letra }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="button" class="btn btn-sm btn-success guardar-cambios-btn" 
+                                                id="guardar-{{ pregunta.id }}">
+                                                <i class="fas fa-save"></i>
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>

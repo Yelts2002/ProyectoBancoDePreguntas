@@ -5,46 +5,57 @@
 {% block content %}
 <main class="container-fluid py-4">
     <section class="card shadow-lg animate__animated animate__fadeIn">
-        <header class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
-            <h1 class="h2 mb-0">
-                <i class="fas fa-question-circle me-2"></i> Preguntas del Sistema
-            </h1>
+        <!-- Encabezado mejorado -->
+        <header class="card-header d-flex justify-content-between align-items-center bg-primary bg-gradient text-white py-3">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-question-circle fa-lg me-3"></i>
+                <h1 class="h4 mb-0">Preguntas del Sistema</h1>
+            </div>
+            <span class="badge bg-light text-primary fs-6">
+                Total: {{ total_preguntas }}
+            </span>
         </header>
-
-        <!-- Filtros corregidos -->
-        <div class="card-body border-bottom">
+        <!-- Filtros mejorados -->
+        <div class="card-body border-bottom bg-light-subtle">
             <form id="filterForm" method="get" class="row g-3 align-items-end">
-            <!-- Filtro por nombre -->
                 <div class="col-md-5 col-lg-4">
-                    <label for="nombreFilter" class="form-label small fw-semibold text-muted">
-                        <i class="fas fa-search me-1"></i> Nombre/Código
-                    </label>
-                    <input type="text" class="form-control form-control-sm" id="nombreFilter" name="nombre" 
-                        placeholder="Buscar por nombre o código..." value="{{ request.GET.nombre }}">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 shadow-none" 
+                            id="nombreFilter" name="nombre" placeholder="Buscar por código..."
+                            value="{{ request.GET.nombre }}">
+                    </div>
                 </div>
 
-                <!-- Filtro por usuario -->
                 <div class="col-md-5 col-lg-4">
-                    <label for="usuarioFilter" class="form-label small fw-semibold text-muted">
-                        <i class="fas fa-user me-1"></i> Creador
-                    </label>
-                    <select class="form-select form-select-sm" id="usuarioFilter" name="usuario">
-                        <option value="">Todos los usuarios</option>
+                    <select class="form-select form-select-sm shadow-sm" id="usuarioFilter" name="usuario">
+                        <option value="">Todos los creadores</option>
                         {% for user in usuarios %}
-                            <option value="{{ user.id }}" {% if request.GET.usuario == user.id|stringformat:"s" %}selected{% endif %}>
-                                {{ user.username }}
-                            </option>
+                        <option value="{{ user.id }}" {% if request.GET.usuario == user.id|stringformat:"s" %}selected{% endif %}>
+                            {{ user.get_full_name|default:user.username }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
-                            
-                <!-- Botones de acción -->
-                <div class="col-md-4 col-lg-2 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+
+                <!-- Nuevo filtro por fecha -->
+                <div class="col-md-4 col-lg-2">
+                    <select class="form-select form-select-sm shadow-sm" name="fecha">
+                        <option value="">Cualquier fecha</option>
+                        <option value="hoy" {% if request.GET.fecha == "hoy" %}selected{% endif %}>Hoy</option>
+                        <option value="semana" {% if request.GET.fecha == "semana" %}selected{% endif %}>Esta semana</option>
+                        <option value="mes" {% if request.GET.fecha == "mes" %}selected{% endif %}>Este mes</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 col-lg-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
                         <i class="fas fa-filter me-1"></i> Filtrar
                     </button>
-                    <a href="{% url 'todas_las_preguntas' %}" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="fas fa-undo-alt me-1"></i> Limpiar
+                    <a href="{% url 'todas_las_preguntas' %}" class="btn btn-sm btn-outline-secondary flex-grow-1">
+                        <i class="fas fa-sync-alt me-1"></i> Limpiar
                     </a>
                 </div>
             </form>
@@ -202,115 +213,107 @@
                 </div>
             </div>
 
-            <!-- Pie de tabla con paginación -->
-            <div class="card-footer bg-white border-top">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center py-2">
+            <!-- Paginación mejorada -->
+            <div class="card-footer bg-white border-top py-2">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
                     <div class="mb-2 mb-md-0">
-                        <p class="mb-0 text-muted fw-semibold">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Mostrando <span class="fw-bold">{{ preguntas.start_index }}</span> a 
-                            <span class="fw-bold">{{ preguntas.end_index }}</span> de 
-                            <span class="fw-bold">{{ total_preguntas }}</span> registros
+                        <p class="small text-muted mb-0">
+                            Mostrando <strong>{{ preguntas.start_index }}-{{ preguntas.end_index }}</strong> 
+                            de <strong>{{ total_preguntas }}</strong>
                         </p>
                     </div>
                     
-                    <!-- Paginación que conserva los filtros -->
-                    {% if preguntas.has_other_pages %}
-                    <nav aria-label="Navegación de páginas">
+                    <nav aria-label="Paginación">
                         <ul class="pagination pagination-sm mb-0">
                             {% if preguntas.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link fw-semibold" 
-                                    href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                                    aria-label="Primera página">
-                                        <i class="fas fa-angle-double-left"></i>
-                                        <span class="visually-hidden">Primera</span>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link fw-semibold" 
-                                    href="?page={{ preguntas.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                                    aria-label="Página anterior">
-                                        <i class="fas fa-angle-left"></i>
-                                        <span class="visually-hidden">Anterior</span>
-                                    </a>
-                                </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                aria-label="Primera">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
                             {% endif %}
                             
-                            {% for i in page_range|default:preguntas.paginator.get_elided_page_range %}
+                            <!-- Items de página mejorados -->
+                            {% for i in preguntas.paginator.get_elided_page_range %}
                                 {% if preguntas.number == i %}
-                                    <li class="page-item active" aria-current="page">
-                                        <span class="page-link fw-bold">{{ i }}</span>
-                                    </li>
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
                                 {% else %}
-                                    {% if i == preguntas.paginator.ELLIPSIS %}
-                                        <li class="page-item disabled">
-                                            <span class="page-link">{{ i }}</span>
-                                        </li>
-                                    {% else %}
-                                        <li class="page-item">
-                                            <a class="page-link fw-semibold" 
-                                            href="?page={{ i }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                                                {{ i }}
-                                            </a>
-                                        </li>
-                                    {% endif %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ i }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        {{ i }}
+                                    </a>
+                                </li>
                                 {% endif %}
                             {% endfor %}
                             
                             {% if preguntas.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link fw-semibold" 
-                                    href="?page={{ preguntas.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                                    aria-label="Página siguiente">
-                                        <i class="fas fa-angle-right"></i>
-                                        <span class="visually-hidden">Siguiente</span>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link fw-semibold" 
-                                    href="?page={{ preguntas.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                                    aria-label="Última página">
-                                        <i class="fas fa-angle-double-right"></i>
-                                        <span class="visually-hidden">Última</span>
-                                    </a>
-                                </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ preguntas.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                                aria-label="Última">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
                             {% endif %}
                         </ul>
                     </nav>
-                    {% endif %}
+                    
+                    <div class="mt-2 mt-md-0">
+                        <select class="form-select form-select-sm" id="perPageSelect">
+                            <option value="20" {% if request.GET.per_page == "20" %}selected{% endif %}>20 por página</option>
+                            <option value="50" {% if request.GET.per_page == "50" %}selected{% endif %}>50 por página</option>
+                            <option value="100" {% if request.GET.per_page == "100" %}selected{% endif %}>100 por página</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
+            </div>            
+            
         </div>
     </section>
 </main>
 
-<!-- Modal para vista previa -->
-<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
+<!-- Modal mejorado -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-md-down">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="previewModalLabel">Vista previa de la pregunta</h5>
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                    Vista previa: <span id="previewTitle"></span>
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body">
-                <div id="pdf-preview-container" class="ratio ratio-16x9">
-                    <iframe id="pdf-preview" class="w-100 h-100" frameborder="0"></iframe>
+            <div class="modal-body p-0">
+                <div class="ratio ratio-1x1">
+                    <iframe 
+                        id="pdf-preview" 
+                        class="w-100 h-100" 
+                        frameborder="0"
+                        src=""
+                        allow="fullscreen"
+                    ></iframe>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <div class="modal-footer bg-light">
+                <small class="text-muted me-auto" id="previewInfo"></small>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Cerrar
+                </button>
             </div>
         </div>
     </div>
 </div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Función para cargar la vista previa del PDF
     window.loadPdfPreview = function(button) {
         const url = button.getAttribute('data-url');
-        document.getElementById('pdf-preview').src = url;
+        document.getElementById("pdf-preview").src = url + "#toolbar=0&navpanes=0&scrollbar=0";
+
     };
 
     // Filtros en tiempo real con debounce

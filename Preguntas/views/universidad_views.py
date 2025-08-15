@@ -10,7 +10,6 @@ class UniversidadListView(LoginRequiredMixin, ListView):
     template_name = 'Preguntas/universidad_list.html'
     context_object_name = 'universidades'
 
-
 class UniversidadCreateView(
     ExcludeSupervisorMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView
 ):
@@ -20,7 +19,6 @@ class UniversidadCreateView(
     success_url = reverse_lazy('universidad-list')
     success_message = 'Universidad creada exitosamente.'
 
-
 class UniversidadUpdateView(
     ExcludeSupervisorMixin, AdminRequiredMixin, SuccessMessageMixin, UpdateView
 ):
@@ -29,7 +27,6 @@ class UniversidadUpdateView(
     template_name = 'Preguntas/universidad_form.html'
     success_url = reverse_lazy('universidad-list')
     success_message = 'Universidad actualizada exitosamente.'
-
 
 class UniversidadDeleteView(
     ExcludeSupervisorMixin, AdminRequiredMixin, SuccessMessageMixin, DeleteView

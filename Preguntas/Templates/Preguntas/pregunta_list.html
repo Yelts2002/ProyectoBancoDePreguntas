@@ -36,24 +36,30 @@
             </div>
         </header>
 
-        <!-- Filtros -->
-        <div class="card-body mb-4">
-            <div class="card-header bg-gradient">
-                <h2 class="h5 mb-0" id="filter-section">
-                    <i class="fas fa-search me-2"></i> Filtros de Búsqueda
-                </h2>
+        <!-- Filtros - Versión mejorada -->
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-header bg-primary bg-gradient text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0" id="filter-section">
+                        <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+                    </h2>
+                    <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" 
+                            data-bs-target="#filtersCollapse" aria-expanded="true" aria-controls="filtersCollapse">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                </div>
             </div>
-            <div class="card-body bg-light">
-                <form method="get" id="filtroForm" class="row g-3">
-                    <!-- Universidad -->
-                    <div class="col-md-4">
-                        <label for="universidad" class="form-label fw-bold">Universidad</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-primary text-white">
-                                <i class="fas fa-university"></i>
-                            </span>
-                            <select name="universidad" id="universidad" class="form-select">
-                                <option value="">Todas</option>
+            
+            <div class="collapse show" id="filtersCollapse">
+                <div class="card-body bg-light-subtle">
+                    <form method="get" id="filtroForm" class="row g-3 align-items-end">
+                        <!-- Universidad -->
+                        <div class="col-md-4 col-lg-3">
+                            <label for="universidad" class="form-label fw-semibold small mb-1">
+                                <i class="fas fa-university me-1 text-primary"></i> Universidad
+                            </label>
+                            <select name="universidad" id="universidad" class="form-select form-select-sm shadow-sm">
+                                <option value="">Todas las universidades</option>
                                 {% for uni in universidades %}
                                 <option value="{{ uni.id }}" {% if universidad_filter == uni.id|stringformat:"s" %}selected{% endif %}>
                                     {{ uni.nombre }}
@@ -61,18 +67,17 @@
                                 {% endfor %}
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Curso -->
-                    <div class="col-md-4">
-                        <label for="curso" class="form-label fw-bold">Curso</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-primary text-white">
-                                <i class="fas fa-book"></i>
-                            </span>
-                            <select name="curso" id="curso" class="form-select" {% if not universidad_filter %}disabled{% endif %}>
+                        <!-- Curso -->
+                        <div class="col-md-4 col-lg-3">
+                            <label for="curso" id="cursoLabel" class="form-label fw-semibold small mb-1">
+                                <i class="fas fa-book me-1 text-primary"></i> Curso
+                            </label>
+                            <select name="curso" id="curso" class="form-select form-select-sm shadow-sm" 
+                                    {% if not universidad_filter %}disabled{% endif %}
+                                    aria-labelledby="cursoLabel {% if not universidad_filter %}- disabled{% endif %}">
                                 <option value="">
-                                    {% if universidad_filter %}Todos los cursos{% else %}Seleccione Universidad{% endif %}
+                                    {% if universidad_filter %}Todos los cursos{% else %}Seleccione universidad{% endif %}
                                 </option>
                                 {% if universidad_filter %}
                                     {% for curso in cursos_para_uni %}
@@ -83,18 +88,17 @@
                                 {% endif %}
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Tema -->
-                    <div class="col-md-4">
-                        <label for="tema" class="form-label fw-bold">Tema</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-primary text-white">
-                                <i class="fas fa-question-circle"></i>
-                            </span>
-                            <select name="tema" id="tema" class="form-select" {% if not curso_filter %}disabled{% endif %}>
+                        <!-- Tema -->
+                        <div class="col-md-4 col-lg-3">
+                            <label for="tema" id="temaLabel" class="form-label fw-semibold small mb-1">
+                                <i class="fas fa-question-circle me-1 text-primary"></i> Tema
+                            </label>
+                            <select name="tema" id="tema" class="form-select form-select-sm shadow-sm" 
+                                    {% if not curso_filter %}disabled{% endif %}
+                                    aria-labelledby="temaLabel {% if not curso_filter %}- disabled{% endif %}">
                                 <option value="">
-                                    {% if curso_filter %}Todos los temas{% else %}Seleccione Curso{% endif %}
+                                    {% if curso_filter %}Todos los temas{% else %}Seleccione curso{% endif %}
                                 </option>
                                 {% if curso_filter %}
                                     {% for tema in temas_para_curso %}
@@ -105,18 +109,38 @@
                                 {% endif %}
                             </select>
                         </div>
-                    </div>
 
-                    <!-- Botones -->
-                    <div class="col-12 text-end">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-filter me-1"></i> Aplicar Filtros
-                        </button>
-                        <a href="{% url 'pregunta-list' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-undo me-1"></i> Restablecer
-                        </a>
-                    </div>
-                </form>
+                        <!-- Filtro por tiempo -->
+                        <div class="col-md-4 col-lg-3">
+                            <label for="tiempo_filtro" class="form-label fw-semibold small mb-1">
+                                <i class="fas fa-clock me-1 text-primary"></i> Mostrar últimas
+                            </label>
+                            <select name="tiempo_filtro" id="tiempo_filtro" class="form-select form-select-sm shadow-sm">
+                                <option value="">Todas las preguntas</option>
+                                <option value="15" {% if tiempo_filtro == "15" %}selected{% endif %}>Últimos 15 min</option>
+                                <option value="30" {% if tiempo_filtro == "30" %}selected{% endif %}>Últimos 30 min</option>
+                                <option value="60" {% if tiempo_filtro == "60" %}selected{% endif %}>Última hora</option>
+                                <option value="120" {% if tiempo_filtro == "120" %}selected{% endif %}>Últimas 2 horas</option>
+                                <option value="360" {% if tiempo_filtro == "360" %}selected{% endif %}>Últimas 6 horas</option>
+                                <option value="720" {% if tiempo_filtro == "720" %}selected{% endif %}>Últimas 12 horas</option>
+                                <option value="1440" {% if tiempo_filtro == "1440" %}selected{% endif %}>Últimas 24 horas</option>
+                            </select>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="col-12 mt-2">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'pregunta-list' %}" class="btn btn-sm btn-outline-secondary" 
+                                aria-label="Restablecer filtros">
+                                    <i class="fas fa-undo me-1"></i> Restablecer
+                                </a>
+                                <button type="submit" class="btn btn-sm btn-primary" aria-label="Aplicar filtros">
+                                    <i class="fas fa-filter me-1"></i> Aplicar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -161,6 +185,9 @@
                                         <span class="fw-bold">Tiempo Restante</span>
                                     </th>
                                     <th scope="col" style="width: 150px;"><span class="fw-bold">Acciones</span></th>
+                                    <th scope="col" style="width: 120px;" class="text-center">
+                                        <span class="fw-bold"><i class="fas fa-check-circle me-1"></i> Solución</span>
+                                    </th>                                    
                                 </tr>
                             </thead>
                             <tbody>
@@ -269,6 +296,27 @@
                                                 <span class="visually-hidden">Eliminar</span>
                                             </a>
                                         </div>
+                                    </td>
+                                    <!-- Edición rápida de Solución y Alternativa -->
+                                    <td class="align-middle text-center">
+                                        <form class="form-update-rapida d-flex flex-column align-items-center" data-id="{{ pregunta.id }}">
+                                            <div class="form-check form-switch mb-1">
+                                                <input class="form-check-input tiene-solucion-checkbox" type="checkbox" 
+                                                    {% if pregunta.tiene_solucion %}checked{% endif %}
+                                                    id="solucion-{{ pregunta.id }}">
+                                                <label class="form-check-label small" for="solucion-{{ pregunta.id }}">¿Sol?</label>
+                                            </div>
+                                            <select class="form-select form-select-sm alternativa-select mb-1" style="width: 80px;"
+                                                id="alternativa-{{ pregunta.id }}">
+                                                {% for letra in "ABCDE" %}
+                                                <option value="{{ letra }}" {% if pregunta.respuesta == letra %}selected{% endif %}>{{ letra }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="button" class="btn btn-sm btn-success guardar-cambios-btn" 
+                                                id="guardar-{{ pregunta.id }}">
+                                                <i class="fas fa-save"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -610,6 +658,61 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     });
+// Función para configurar los listeners de un formulario
+function setupFormListener(form) {
+    const boton = form.querySelector('.guardar-cambios-btn');
+    if (!boton) {
+        console.error('No se encontró el botón en el formulario:', form);
+        return;
+    }
+
+    // Remover cualquier listener previo para evitar duplicados
+    boton.removeEventListener('click', handleGuardarCambios);
+    
+    // Agregar el nuevo listener
+    boton.addEventListener('click', handleGuardarCambios);
+
+    function handleGuardarCambios() {
+        const formData = new FormData();
+        formData.append('id', form.dataset.id);
+        formData.append('tiene_solucion', form.querySelector('.tiene-solucion-checkbox').checked);
+        formData.append('alternativa', form.querySelector('.alternativa-select').value);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        // Mostrar loading
+        const originalHTML = boton.innerHTML;
+        boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        boton.disabled = true;
+
+        fetch("{% url 'actualizar-rapido-pregunta' %}", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Cambios guardados correctamente');
+            } else {
+                alert('Error: ' + (data.error || 'Error desconocido'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión');
+        })
+        .finally(() => {
+            boton.innerHTML = originalHTML;
+            boton.disabled = false;
+        });
+    }
+}
+
+function showToast(message) {
+    const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+    document.getElementById('toastMessage').textContent = message;
+    toast.show();
+}
+
 </script>
 {% endblock %}
 
