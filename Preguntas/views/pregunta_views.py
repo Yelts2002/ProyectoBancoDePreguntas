@@ -47,30 +47,23 @@ from django.core.paginator import Paginator
 @exclude_supervisor
 @login_required
 def pregunta_list(request):
+    # Perfil del usuario
     user_profile = get_object_or_404(UserProfile, user=request.user)
 
+    # Base queryset según permisos
     if request.user.is_superuser:
         qs = Pregunta.objects.filter(usuario=user_profile)
     else:
         limite = timezone.now() - timedelta(days=1)
         qs = Pregunta.objects.filter(usuario=user_profile, fecha_creacion__gte=limite)
 
-    qs = qs.order_by('-fecha_creacion')
-
+    # Leer filtros del GET
     universidad_id = request.GET.get('universidad')
     curso_id = request.GET.get('curso')
     tema_id = request.GET.get('tema')
     nivel = request.GET.get('nivel')
-    tiempo_filtro = request.GET.get('tiempo_filtro')
 
-    if tiempo_filtro:
-        try:
-            minutos = int(tiempo_filtro)
-            limite_tiempo = timezone.now() - timedelta(minutes=minutos)
-            qs = qs.filter(fecha_creacion__gte=limite_tiempo)
-        except ValueError:
-            pass
-
+    # Aplicar filtros en cascada
     if universidad_id:
         qs = qs.filter(universidad_id=universidad_id)
     if curso_id:
@@ -80,15 +73,18 @@ def pregunta_list(request):
     if nivel:
         qs = qs.filter(nivel=nivel)
 
+    # Paginación - 30 preguntas por página
     paginator = Paginator(qs, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Formulario para el nivel (opcional)
     form = FiltroPreguntaForm(request.GET or None)
 
+    # Contexto para la plantilla
     context = {
         'total_preguntas': Pregunta.objects.filter(usuario=user_profile).count(),
-        'page_obj': page_obj,
+        'page_obj': page_obj,  # Cambiamos 'preguntas' por 'page_obj'
         'form': form,
         'universidades': Universidad.objects.all(),
         'cursos_para_uni': Curso.objects.filter(universidades__id=universidad_id) if universidad_id else [],
@@ -97,12 +93,9 @@ def pregunta_list(request):
         'curso_filter': curso_id,
         'tema_filter': tema_id,
         'nivel_filter': nivel,
-        'tiempo_filtro': tiempo_filtro,
         'now': timezone.now(),
     }
-
     return render(request, 'Preguntas/pregunta_list.html', context)
-
 
 @login_required
 def pregunta_list_supervisor(request):
@@ -609,51 +602,37 @@ def cleanup_old_pdfs():
 @staff_member_required
 @exclude_supervisor
 def todas_las_preguntas(request):
-    # QuerySet base
-    qs = Pregunta.objects.all().order_by('-fecha_creacion')
+    qs = Pregunta.objects.all()
 
-    # Filtros
+    # Leer filtros del GET
     buscar_nombre = request.GET.get('nombre')
-    usuario_id = request.GET.get('usuario')
-    fecha_filtro = request.GET.get('fecha')
-    per_page = int(request.GET.get('per_page', 20))
+    usuario_id    = request.GET.get('usuario')
 
-    # Aplicar filtros
+    # Aplicar filtros si existen
     if buscar_nombre:
         qs = qs.filter(nombre__icontains=buscar_nombre)
-    
     if usuario_id:
         qs = qs.filter(usuario_id=usuario_id)
-    
-    if fecha_filtro:
-        ahora = timezone.now()
 
-        if fecha_filtro == 'hoy':
-            limite = ahora - timedelta(days=1)
-            qs = qs.filter(fecha_creacion__gte=limite)
-        elif fecha_filtro == 'semana':
-            limite = ahora - timedelta(days=7)
-            qs = qs.filter(fecha_creacion__gte=limite)
-        elif fecha_filtro == 'mes':
-            limite = ahora - timedelta(days=30)
-            qs = qs.filter(fecha_creacion__gte=limite)
+    # Ordenar por fecha reciente
+    qs = qs.order_by('-fecha_creacion')
 
     # Paginación
-    paginator = Paginator(qs, per_page)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    paginator = Paginator(qs, 20)
+    page = request.GET.get('page')
+    qs_paginated = paginator.get_page(page)
 
-    # Contexto
     context = {
         'total_preguntas': qs.count(),
-        'preguntas': page_obj,
-        'usuarios': User.objects.all().order_by('username'),
-        'now': timezone.now(),
+        'preguntas': qs_paginated,
+        'usuarios': User.objects.all(),
+        'buscar_nombre': buscar_nombre,
+        'usuario_id': usuario_id,
         'modo_admin': True,
-        'request': request,  # Para acceder a los parámetros GET en el template
+        'now': timezone.now(),
+
     }
-    
-    # Respuesta completa
+
     return render(request, 'Preguntas/todas_las_preguntas.html', context)
 
 @login_required
