@@ -264,6 +264,20 @@
             <!-- Tarjetas específicas para administradores -->
             {% if user.is_authenticated and user.is_superuser %}
             <div class="col-12 col-md-6 col-lg-4 mt-4">
+                <div class="card h-100 shadow-sm border-0 animate__animated animate__fadeInLeft">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-container bg-warning bg-opacity-10 mb-4 p-3 rounded-circle d-inline-block">
+                            <i class="fas fa-question-circle text-warning fa-3x"></i>
+                        </div>
+                        <h3 class="card-title h5 mb-3">Preguntas</h3>
+                        <a href="{% url 'pregunta-list' %}" class="btn btn-warning px-4">
+                            Gestionar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4 mt-4">
                 <div class="card h-100 shadow-sm border-0 animate__animated animate__fadeInUp">
                     <div class="card-body text-center p-4">
                         <div class="icon-container bg-secondary bg-opacity-10 mb-4 p-3 rounded-circle d-inline-block">
